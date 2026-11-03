@@ -415,6 +415,7 @@
         break;
       default:
     }
+    if (m.clockPos === m.clock.length) ZG.Audio.sfx('braam');
     if (m.clockPos === m.clock.length) await UI().banner('Последний ход!', 'Часы на исходе. Если Угроза не будет повержена — миссия провалена.', 'bad');
     else if (m.clock.length - m.clockPos === 5) await UI().banner('Осталось 5 ходов', 'Время уходит.', 'warn');
     return null;
@@ -1308,6 +1309,7 @@
     const bi = loc.deck.findIndex((i) => ZG.card(i.id).type === 'boss');
     if (bi >= 0) {
       const b = loc.deck.splice(bi, 1)[0];
+      ZG.Audio.sfx('braam');
       await UI().banner(T('boss_hiding'), `${ZG.card(b.id).name} выходит из темноты`, 'bad');
       return await G.encounter(mh, b, loc, { noEvade: true });
     }
@@ -1408,6 +1410,7 @@
       R.shuffle(l.deck);
     });
     G.log(`Угроза («${def.name}») скрылась. В ${remaining.length} ${ZG.plural(remaining.length, 'локацию', 'локации', 'локаций')} замешано по карте: Угроза или Ложный след.`, 'bad');
+    ZG.Audio.sfx('braam');
     await ui.banner('Угроза скрылась', remaining.length > 1 ? `Где — неизвестно. В каждую неперекрытую локацию (${remaining.length}) ушла одна карта: Угроза или Ложный след.` : `Ей осталось только одно укрытие: «${G.ldef(remaining[0]).name}».`, 'bad', true);
     return null;
   };

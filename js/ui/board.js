@@ -13,6 +13,7 @@
 
   /* ============================== Каркас ============================== */
   UI.showBoard = function () {
+    ZG.Audio.music('missions');
     const app = document.getElementById('app');
     app.innerHTML = `<div class="board screen" id="board">
       <div class="topbar" id="topbar"></div>
@@ -329,6 +330,7 @@
     if (phaseChanged) {
       const night = m.phase === 'night';
       ZG.FX.setNight(night);
+      ZG.Audio.sfx(night ? 'psychedelic' : 'tension', 0.8);
       ZG.FX.burst(window.innerWidth / 2, window.innerHeight * 0.4, night ? 'blue' : 'spark', 50);
       await UI.banner(night ? T('phase_night_banner') : T('phase_day_banner'), night ? T('phase_night_sub', { n: G().nightBonus() }) : T('phase_day_sub'), night ? 'night' : 'warn');
     }
@@ -359,8 +361,8 @@
     if (fl) fl.classList.remove('down');
     await ZG.sleep(650);
     const cardEl = UI.enc.el.querySelector('.enc-card .card');
-    if (d.type === 'boss') { ZG.FX.flash('red'); ZG.FX.shake(); ZG.FX.burstAt(cardEl, 'blood', 70); }
-    else if (ZG.isEnemy(d)) ZG.FX.burstAt(cardEl, 'blood', 22);
+    if (d.type === 'boss') { ZG.FX.flash('red'); ZG.FX.shake(); ZG.FX.burstAt(cardEl, 'blood', 70); ZG.Audio.sfx('braam'); ZG.Audio.sfx('growl', 0.8); }
+    else if (ZG.isEnemy(d)) { ZG.FX.burstAt(cardEl, 'blood', 22); if (!d.living) ZG.Audio.sfx('growl', d.type === 'henchman' ? 1 : 0.75); else ZG.Audio.sfx('braam', 0.5); }
     else if (ZG.isBoon(d)) ZG.FX.burstAt(cardEl, 'gold', 18);
     await ZG.sleep(200);
   };
@@ -663,6 +665,8 @@
     if (el) { el.classList.add('horde-hit'); ZG.FX.burstAt(el, 'blood', 80); }
     ZG.FX.flash('red');
     ZG.FX.shake();
+    ZG.Audio.sfx('braam');
+    setTimeout(() => ZG.Audio.sfx('growl'), 400);
     await UI.banner(T('horde'), T('horde_sub', { n, loc: ZG.LOCATIONS[loc.id].name }), 'horde bad');
   };
 
@@ -684,6 +688,7 @@
   };
 
   UI.fxInfect = async function (mh, n) {
+    ZG.Audio.sfx('psychedelic', n >= 2 ? 1 : 0.7);
     ZG.FX.flash('toxic');
     ZG.FX.burstAt(UI.cardBox() || document.querySelector('.hero-panel .avatar'), 'toxic', 60);
     UI.toast(`${ZG.icon('biohazard')} ${esc(G().hname(mh))}: Инфекция ${n}/3`, 'bad');
@@ -698,6 +703,8 @@
   };
 
   UI.fxDeath = async function (mh, reason) {
+    ZG.Audio.sfx('braam');
+    if (reason === 'turned') setTimeout(() => ZG.Audio.sfx('growl'), 600);
     ZG.FX.flash('red');
     ZG.FX.shake();
     UI.renderBoard();
@@ -760,6 +767,7 @@
   UI.fxCond = async function (mh, key) {
     const c = ZG.CONDS[key];
     ZG.FX.flash(key === 'panic' ? 'toxic' : 'red');
+    if (key === 'panic') ZG.Audio.sfx('psychedelic');
     UI.toast(`${ZG.icon(c.icon)} ${ZG.esc(ZG.Game.hname(mh))}: ${ZG.esc(c.name)}`, 'bad');
     UI.renderBoard();
     await ZG.sleep(500);

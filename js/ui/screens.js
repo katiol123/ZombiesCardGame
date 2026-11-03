@@ -19,6 +19,7 @@
   /* ============================== Главное меню ============================== */
   UI.showTitle = function () {
     ZG.FX.setNight(false);
+    ZG.Audio.music('shelter');
     const last = ZG.Save.lastSlot();
     const s = show(`<div class="screen title-screen">
       <svg class="blood-drip" viewBox="0 0 1200 90" preserveAspectRatio="none"><path fill="#5a0b07" d="M0 0h1200v18c-30 0-30 40-45 40s-10-30-40-30-20 60-38 60-12-50-40-50-30 22-60 22-25-14-55-14-20 44-42 44-18-38-48-38-40 20-70 20S740 30 710 30s-20 52-40 52-22-60-50-60-30 18-60 18-25-10-48-10-15 34-38 34-24-30-50-30-30 12-60 12S330 26 300 26s-18 40-42 40-20-46-50-46-30 20-55 20S120 22 92 22 60 48 40 48 20 20 0 20z"/></svg>
@@ -57,6 +58,7 @@
 
   /* ============================== Слоты ============================== */
   UI.showSlots = function (mode) {
+    ZG.Audio.music('shelter');
     const rows = [];
     for (let i = 0; i < ZG.Save.SLOTS; i++) {
       const s = ZG.Save.read(i);
@@ -156,6 +158,7 @@
 
   /* ============================== Карта кампании ============================== */
   UI.showMap = function () {
+    ZG.Audio.music('shelter');
     const S = ZG.Save.current;
     S.screen = 'map';
     ZG.Save.persist();
@@ -195,6 +198,8 @@
 
   /* ============================== Брифинг ============================== */
   UI.showBriefing = function (idx) {
+    ZG.Audio.music('shelter');
+    setTimeout(() => ZG.Audio.sfx('tension'), 350);
     const m = ZG.MISSIONS[idx];
     const S = ZG.Save.current;
     S.screen = 'map';
@@ -241,6 +246,7 @@
 
   /* ============================== Итоги миссии ============================== */
   UI.showResult = function () {
+    ZG.Audio.music('shelter');
     const S = ZG.Save.current;
     const r = S.lastResult;
     const m = ZG.MISSIONS[r.idx];
@@ -282,6 +288,7 @@
   /* ============================== Лагерь ============================== */
   UI.campHero = 0;
   UI.showCamp = function () {
+    ZG.Audio.music('shelter');
     const S = ZG.Save.current;
     S.screen = 'camp';
     const camp = S.campaign;
@@ -449,6 +456,10 @@
     const ov = UI.overlay(`<div class="modal panel"><div class="page-head" style="margin-bottom:6px"><h1 style="font-size:28px">${T('settings')}</h1><button class="btn icon ghost" data-x>${ZG.icon('x')}</button></div>
       <div class="set-row"><span>${T('set_speed')}</span><div class="seg" data-k="speed"><button data-v="normal">${T('normal')}</button><button data-v="fast">${T('fast')}</button></div></div>
       <div class="set-row"><span>${T('set_fx')}</span><div class="seg" data-k="fx"><button data-v="1">${T('on')}</button><button data-v="0">${T('off')}</button></div></div>
+      <div class="set-row"><span>Музыка</span><div class="seg" data-k="music"><button data-v="1">${T('on')}</button><button data-v="0">${T('off')}</button></div></div>
+      <div class="set-row"><span>Громкость музыки</span><input type="range" min="0" max="100" data-vol="musicVol" style="width:180px"></div>
+      <div class="set-row"><span>Звуки</span><div class="seg" data-k="sfx"><button data-v="1">${T('on')}</button><button data-v="0">${T('off')}</button></div></div>
+      <div class="set-row"><span>Громкость звуков</span><input type="range" min="0" max="100" data-vol="sfxVol" style="width:180px"></div>
       <div class="set-row"><span>${T('set_tips')}</span><div class="seg" data-k="tips"><button data-v="1">${T('on')}</button><button data-v="0">${T('off')}</button></div></div>
       <p class="muted">${T('save_note')}</p></div>`);
     const upd = () => {
@@ -464,8 +475,15 @@
       const k = b.parentElement.dataset.k;
       st[k] = k === 'speed' ? b.dataset.v : b.dataset.v === '1';
       ZG.Settings.save();
+      ZG.Audio.apply();
       upd();
     }));
+    ov.querySelectorAll('[data-vol]').forEach((r) => {
+      const k = r.dataset.vol;
+      r.value = Math.round((st[k] != null ? st[k] : k === 'musicVol' ? 0.5 : 0.8) * 100);
+      r.addEventListener('input', () => { st[k] = r.value / 100; ZG.Settings.save(); ZG.Audio.apply(); });
+      r.addEventListener('change', () => { if (k === 'sfxVol') ZG.Audio.sfx('growl'); });
+    });
     ov.querySelector('[data-x]').addEventListener('click', () => UI.closeOverlay(ov));
     upd();
   };
