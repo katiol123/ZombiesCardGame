@@ -137,7 +137,7 @@
 
   /* ============================== Создание миссии ============================== */
   G.LOC_SIZE = 7;
-  G.CLOCK_BY_PARTY = [20, 30, 32, 35];
+  G.CLOCK_BY_PARTY = [20, 25, 27, 30];
   G.enemyDmgType = (def, loc) => def.dmgType || ((G.ldef(loc).rules || {}).enemyDmgType) || null;
   G.dmgCap = (def) => def.maxDmg || (def.type === 'boss' ? 5 : def.type === 'henchman' ? 4 : 3);
   G.newMission = function (idx) {
@@ -207,7 +207,7 @@
     }
 
     // Часы
-    const len = G.CLOCK_BY_PARTY[Math.min(4, party.length) - 1] - (S.difficulty === 'hard' ? 4 : 0) + (special.clockMod || 0) + (def.act === 2 && party.length >= 3 ? 3 : 0);
+    const len = G.CLOCK_BY_PARTY[Math.min(4, party.length) - 1] - (S.difficulty === 'hard' ? 4 : 0) + (special.clockMod || 0) + (def.act === 2 ? (party.length >= 3 ? 8 : party.length === 2 ? 5 : 0) : 0);
     const evCount = Math.round(len * 0.3);
     const evs = [];
     for (let i = 0; i < evCount; i++) evs.push(def.clockEvents[i % def.clockEvents.length]);
@@ -1310,11 +1310,13 @@
     const dd = ZG.card(c.id).displayed;
     return dd && dd.reduce && (!dd.combatOnly || (opts && opts.combat)) ? dd.reduce : 0;
   }));
-  G.damageNeeded = function (mh, n, plays) {
+  G.playBlocks = (pl, opts) => !(opts && opts.noReduce) && (!pl.onlyType || pl.onlyType.includes(opts && opts.dmgType)) && (!pl.combatOnly || (opts && opts.combat));
+  G.damageNeeded = function (mh, n, plays, opts) {
     let reduce = 0;
     let removed = 0;
     plays.forEach((p) => {
       const pl = G.playDef(p);
+      if (!G.playBlocks(pl, opts)) return;
       reduce = pl.reduce === 'all' ? Infinity : reduce + pl.reduce;
       if (G.effMode(mh, p.id, pl) !== 'reveal') removed++;
     });
@@ -1337,6 +1339,7 @@
     const r = await UI().damage(mh, n, opts);
     let reduce = 0;
     if (opts.noReduce) r.plays = [];
+    r.plays = r.plays.filter((p) => G.playBlocks(G.playDef(p), opts));
     r.plays.forEach((p) => {
       const pl = G.playDef(p);
       reduce = pl.reduce === 'all' ? Infinity : reduce + pl.reduce;
@@ -1466,6 +1469,7 @@
     const villains = loc.deck.filter((i) => ZG.card(i.id).type === 'boss');
     if (villains.length) {
       const banished = loc.deck.length - villains.length;
+      G.rescueObjectives(loc, loc.deck.filter((c) => ZG.card(c.id).type === 'objective'));
       loc.deck = R.shuffle(villains);
       loc.henchDown = false;
       G.log(`«${G.ldef(loc).name}» не заколочена: здесь притаилась Угроза. Изгнано карт: ${banished}. Угроза осталась в колоде.`, 'bad');
@@ -1477,7 +1481,27 @@
     return null;
   };
 
+  /** Карты-цели (канистры) не изгоняются: они переносятся в другую открытую локацию или сразу засчитываются */
+  G.rescueObjectives = function (loc, cards) {
+    if (!cards || !cards.length) return;
+    const m = G.M();
+    const ob = G.special().objective;
+    const open = G.openLocs().filter((l) => l !== loc);
+    cards.forEach((c) => {
+      if (open.length) {
+        const to = R.pick(open);
+        to.deck.push(c);
+        R.shuffle(to.deck);
+        G.log(`«${ZG.card(c.id).name}» перенесена в «${G.ldef(to).name}».`, 'loot');
+      } else if (ob) {
+        m.obj = (m.obj || 0) + 1;
+        G.log(`«${ZG.card(c.id).name}» найдена при зачистке: ${ob.label} ${m.obj}/${ob.need}.`, 'loot');
+      }
+    });
+  };
+
   G.closeLoc = async function (loc) {
+    G.rescueObjectives(loc, loc.deck.filter((c) => ZG.card(c.id).type === 'objective'));
     loc.closed = true;
     loc.deck = [];
     loc.noise = 0;
@@ -1554,6 +1578,7 @@
       if (villains.length) {
         // в колоде есть ещё Угроза: локация не закрывается, всё остальное (включая вожаков) изгоняется
         const banished = loc.deck.length - villains.length;
+        G.rescueObjectives(loc, loc.deck.filter((c) => ZG.card(c.id).type === 'objective'));
         loc.deck = R.shuffle(villains);
         loc.henchDown = false;
         G.log(`«${G.ldef(loc).name}» не закрыта: в колоде есть ещё Угроза. Изгнано карт: ${banished}.`, 'bad');

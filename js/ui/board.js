@@ -606,7 +606,7 @@
         resolve({ plays, discards: [...sel] });
       };
       const render = () => {
-        const need = g.damageNeeded(mh, n, plays);
+        const need = g.damageNeeded(mh, n, plays, opts);
         // убрать лишние выделения
         while (sel.size > need) sel.delete([...sel].pop());
         const usedU = new Set(plays.map((p) => p.u));
@@ -645,7 +645,7 @@
             }
           }
           if (sel.has(u)) sel.delete(u);
-          else if (sel.size < g.damageNeeded(mh, n, plays)) sel.add(u);
+          else if (sel.size < g.damageNeeded(mh, n, plays, opts)) sel.add(u);
           render();
         }));
         UI.fitHand(panel.querySelector('.hand'));

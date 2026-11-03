@@ -584,7 +584,7 @@
       text: 'Угроза. При встрече: шум +2. Урон от него +1.', flavor: 'Сорок лет под землёй. Теперь он и есть шахта.' },
     { id: 'packwolf', type: 'henchman', name: 'Волк стаи', tier: 3, icon: 'paw', dc: 11, bite: true, before: { damage: 1 },
       text: 'Вожак. До проверки: 1 урон. Победив его, можно сразу попытаться заколотить локацию.', flavor: 'Глаза светятся в темноте. Все двенадцать пар.' },
-    { id: 'alpha', type: 'boss', name: 'Вожак стаи', tier: 3, icon: 'bossskull', dc: 16, bite: true, before: { damage: 1 }, roams: true,
+    { id: 'alpha', type: 'boss', name: 'Вожак стаи', tier: 3, icon: 'bossskull', dc: 18, bite: true, before: { damage: 1 }, roams: true,
       text: 'Угроза. До проверки: 1 урон. Каждые 3 хода меняет логово — уходит в случайную открытую локацию.', flavor: 'Белая шерсть, чёрная пасть. Он помнит запах каждого.' },
     { id: 'hallmonitor', type: 'henchman', name: 'Школьный сторож', tier: 3, icon: 'ghost', dc: 11, bite: true, dmgAdd: 1,
       text: 'Вожак. Урон от него +1. Победив его, можно сразу попытаться заколотить локацию.', flavor: 'Связка ключей звенит в каждом коридоре.' },
