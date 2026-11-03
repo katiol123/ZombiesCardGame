@@ -14,6 +14,7 @@
  * ===================================================================== */
 window.ZG_ART = {
   cards: {
+    subject: 'assets/cards/subject.webp',
     bearz: 'assets/cards/bearz.webp',
     coach: 'assets/cards/coach.webp',
     counselorz: 'assets/cards/counselorz.webp',
