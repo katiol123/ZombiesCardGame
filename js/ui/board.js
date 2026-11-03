@@ -161,7 +161,7 @@
         <div class="piles">
           <div class="pile ${mh.deck.length <= 2 ? 'warn' : ''}" title="Колода — это здоровье"><b>${mh.deck.length}</b>${T('deck')}</div>
           <div class="pile"><b>${mh.discard.length}</b>${T('discard')}</div>
-          <div class="pile" title="Сожжённые расходники: не возвращаются лечением до конца миссии"><b>${(mh.burned || []).length}</b>${T('burned')}</div>
+          <div class="pile" title="Сожжённые расходники: сгорели навсегда"><b>${(mh.burned || []).length}</b>${T('burned')}</div>
           <div class="pile inf" title="Три Инфекции — обращение"><b>${inf}/3</b>☣</div>
         </div>
       </div>

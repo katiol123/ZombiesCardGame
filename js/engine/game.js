@@ -1231,7 +1231,7 @@
     if (!win) {
       for (const mh of m.heroes) {
         if (mh.dead) continue;
-        const looted = [...G.allPiles(mh), ...(mh.burned || [])].filter((c) => c.l && !c.v && ZG.isBoon(ZG.card(c.id)));
+        const looted = G.allPiles(mh).filter((c) => c.l && !c.v && ZG.isBoon(ZG.card(c.id)));
         if (looted.length > 1) {
           const k = await UI().choose({ title: `${G.hname(mh)}: что унести?`, text: 'Миссия провалена. Из найденного можно спасти только одну карту.', options: looted.map((c) => ({ label: ZG.card(c.id).name, sub: ZG.cardTypeLabel(ZG.card(c.id)) })) });
           chosen[mh.id] = looted[k].u;
@@ -1245,7 +1245,7 @@
     const vault = m.reserve.slice();
     const loot = [];
     m.heroes.forEach((mh) => {
-      [...G.allPiles(mh), ...(mh.burned || [])].forEach((c) => {
+      G.allPiles(mh).forEach((c) => {
         const d = ZG.card(c.id);
         if (!ZG.isBoon(d)) return;
         if (c.v) vault.push(c.id);
@@ -1269,7 +1269,8 @@
       camp.progress = Math.max(camp.progress, m.idx + 1);
     }
     camp.vault = vault;
-    S.lastResult = { win, reason, idx: m.idx, stats: m.stats, turns: m.turn, scars, loot, reward, dead: m.heroes.filter((h) => h.dead).map((h) => h.id) };
+    const burnedIds = []; m.heroes.forEach((mh) => (mh.burned || []).forEach((c) => burnedIds.push(c.id)));
+    S.lastResult = { burned: burnedIds, win, reason, idx: m.idx, stats: m.stats, turns: m.turn, scars, loot, reward, dead: m.heroes.filter((h) => h.dead).map((h) => h.id) };
     S.mission = null;
     S.screen = 'result';
     G.ensureDecks();
