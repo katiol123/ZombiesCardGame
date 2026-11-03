@@ -1309,12 +1309,16 @@
       G.log(`Не удалось заколотить «${G.ldef(loc).name}».`, 'bad');
       return null;
     }
-    const bi = loc.deck.findIndex((i) => ZG.card(i.id).type === 'boss');
-    if (bi >= 0) {
-      const b = loc.deck.splice(bi, 1)[0];
+    // Если в колоде притаилась Угроза — локация остаётся открытой, всё остальное изгоняется
+    const villains = loc.deck.filter((i) => ZG.card(i.id).type === 'boss');
+    if (villains.length) {
+      const banished = loc.deck.length - villains.length;
+      loc.deck = R.shuffle(villains);
+      loc.henchDown = false;
+      G.log(`«${G.ldef(loc).name}» не заколочена: здесь притаилась Угроза. Изгнано карт: ${banished}. Угроза осталась в колоде.`, 'bad');
       ZG.Audio.sfx('braam');
-      await UI().banner(T('boss_hiding'), `${ZG.card(b.id).name} выходит из темноты`, 'bad');
-      return await G.encounter(mh, b, loc, { noEvade: true });
+      await UI().banner(T('boss_hiding'), `Локация остаётся открытой. Всё остальное вычищено (${banished}) — в колоде осталась только Угроза.`, 'bad', true);
+      return null;
     }
     await G.closeLoc(loc);
     return null;
