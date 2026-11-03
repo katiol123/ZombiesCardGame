@@ -57,7 +57,7 @@
     if (mh.dead) return;
     const c = G.conds(mh);
     if (c[key]) return;
-    c[key] = key === 'panic' ? 2 : 1;
+    c[key] = key === 'panic' ? 2 : key === 'bleed' ? 3 : 1;
     G.log(`${G.hname(mh)}: состояние «${ZG.CONDS[key].name}».`, 'bad');
     await UI().fxCond(mh, key);
   };
@@ -136,7 +136,7 @@
 
   /* ============================== Создание миссии ============================== */
   G.LOC_SIZE = 7;
-  G.CLOCK_BY_PARTY = [22, 30, 32, 33];
+  G.CLOCK_BY_PARTY = [22, 30, 32, 35];
   G.dmgCap = (def) => def.maxDmg || (def.type === 'boss' ? 5 : def.type === 'henchman' ? 4 : 3);
   G.newMission = function (idx) {
     const S = G.S();
@@ -197,7 +197,7 @@
     });
 
     // Часы
-    const len = G.CLOCK_BY_PARTY[Math.min(4, party.length) - 1] - (S.difficulty === 'hard' ? 4 : 0) + (special.clockMod || 0);
+    const len = G.CLOCK_BY_PARTY[Math.min(4, party.length) - 1] - (S.difficulty === 'hard' ? 4 : 0) + (special.clockMod || 0) + (def.act === 2 && party.length >= 3 ? 3 : 0);
     const evCount = Math.round(len * 0.3);
     const evs = [];
     for (let i = 0; i < evCount; i++) evs.push(def.clockEvents[i % def.clockEvents.length]);
@@ -264,7 +264,7 @@
     const comp = G.deckComp(ph);
     ZG.CARD_TYPES.forEach((t) => {
       let have = ZG.count(ph.deck, (id) => ZG.card(id).type === t);
-      const cands = pool.filter((id) => ZG.card(id).type === t).sort((a, b) => G.cardValue(b) - G.cardValue(a));
+      const cands = pool.filter((id) => ZG.card(id).type === t && G.cardUsable(ph.id, id)).sort((a, b) => G.cardValue(b) - G.cardValue(a));
       while (have < comp[t]) {
         let id = cands.shift();
         if (id) pool.splice(pool.indexOf(id), 1);
@@ -276,6 +276,22 @@
         have++;
       }
     });
+  };
+
+  /** Подходит ли карта герою: есть владение и навык перезарядки приёма */
+  G.cardUsable = (heroId, id) => {
+    const d = ZG.card(id);
+    if (G.missingProf({ id: heroId }, id).length) return false;
+    if (d.recharge && !d.recharge.skills.some((sk) => (ZG.HEROES[heroId].skills[sk] || 0) > 0)) return false;
+    return true;
+  };
+  G.cardWarn = (heroId, id) => {
+    const d = ZG.card(id);
+    const miss = G.missingProf({ id: heroId }, id);
+    if (miss.includes('heavyarmor')) return 'сгорит';
+    if (miss.length) return '−4';
+    if (d.recharge && !d.recharge.skills.some((sk) => (ZG.HEROES[heroId].skills[sk] || 0) > 0)) return 'сгорит';
+    return '';
   };
 
   G.deckValid = (ph) => {
@@ -298,9 +314,12 @@
       const fc = await G.flipClock(mh);
       if (fc === 'lose') return G.finish(false, 'time');
       m.ts = { moved: false, explored: false, explores: 1, closeTried: false, rested: false, gave: false, scouted: false, med: false, evaded: false };
-      if (G.conds(mh).bleed && mh.deck.length) {
-        mh.discard.push(mh.deck.shift());
-        G.log(`${G.hname(mh)} истекает кровью: −1 карта колоды.`, 'bad');
+      const cs = G.conds(mh);
+      if (cs.bleed) {
+        if (mh.deck.length) mh.discard.push(mh.deck.shift());
+        cs.bleed--;
+        G.log(`${G.hname(mh)} истекает кровью: −1 карта колоды${cs.bleed ? ` (ещё ${cs.bleed})` : ', кровь остановилась'}.`, 'bad');
+        if (!cs.bleed) delete cs.bleed;
         await ui.fxCond(mh, 'bleed');
       }
       ui.renderBoard();
@@ -557,6 +576,7 @@
       G.clearConds(t);
       UI().fxHeal(t);
     } else if (k === 'heal') {
+      G.clearConds(t, ['bleed']);
       const n = G.heal(t, 2);
       G.log(`Марина лечит: ${G.hname(t)} восстанавливает ${n}.`, 'good');
       UI().fxHeal(t);
@@ -603,9 +623,10 @@
       await ui.banner('Лечение', `${G.hname(target)}: +${n} в колоду`, 'good');
     }
     if (p.clearConds) G.clearConds(target);
+    if (p.heal && (d.traits || []).includes('Медицина')) G.clearConds(target, ['bleed']);
     if (p.clearCond) G.clearConds(target, [p.clearCond]);
     if (p.craft) {
-      const nc = G.inst(ZG.boxPick(p.craft, G.def().tier), { l: 1 });
+      const nc = G.inst(ZG.rng.pick(G.BASICS[p.craft]), { tmp: 1 });
       mh.hand.push(nc);
       G.log(`${G.hname(mh)} мастерит: «${ZG.card(nc.id).name}».`, 'loot');
       await ui.gain(nc, 'Смастерил!');
@@ -639,7 +660,6 @@
 
   G.heal = function (mh, n) {
     let k = 0;
-    if (n > 0 && G.conds(mh).bleed) G.clearConds(mh, ['bleed']);
     for (let i = 0; i < n && mh.discard.length; i++) {
       const c = mh.discard.splice(R.int(mh.discard.length), 1)[0];
       mh.deck.push(c);
@@ -1412,6 +1432,7 @@
       G.allPiles(mh).forEach((c) => {
         const d = ZG.card(c.id);
         if (!ZG.isBoon(d)) return;
+        if (c.tmp) return;
         if (c.v) vault.push(c.id);
         else if (c.l && !mh.dead && (win || chosen[mh.id] === c.u)) { vault.push(c.id); loot.push(c.id); }
       });

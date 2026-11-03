@@ -647,6 +647,7 @@
       acquire: { skills: ['tech'], dc: 6 },
       recharge: { skills: ['tech'], dc: 8 },
       plays: [{ on: 'action', mode: 'technique', craft: 'item' }],
+      text: 'Смастерённая вещь — базовое Снаряжение; после миссии она разваливается.',
       flavor: 'Из того, что было. А было немного.' },
     { id: 'warcry', type: 'technique', name: 'Боевой клич', tier: 1, icon: 'noise', traits: ['Приём'],
       acquire: { skills: ['persuasion', 'melee'], dc: 6 },
@@ -727,8 +728,8 @@
     if (C[id] && !C[id].plays.some((p) => p.mode === 'display')) C[id].plays.push({ on: 'action', mode: 'display' });
   });
   // состояния от препятствий
-  const evFail = { glass: [{ damage: 1 }, { cond: 'bleed' }], smokefill: [{ damage: 1 }, { cond: 'exhausted' }], nursery: [{ cond: 'panic' }, { shock: 1 }], tripwire: [{ damage: 'd4' }, { cond: 'fracture' }, { noise: 2 }], fire: [{ damage: 1 }, { cond: 'exhausted' }, { noise: 2 }], rubble: [{ clock: 1 }, { cond: 'exhausted' }] };
-  const evText = { glass: 'Провал: 1 урон и Кровотечение.', smokefill: 'Провал: 1 урон и Истощение.', nursery: 'Успех: найдите Решимость. Провал: Паника, сбросьте 1 случайную карту из руки.', tripwire: 'Провал: 1к4 урона, Перелом, шум +2.', fire: 'Провал: 1 урон, Истощение, шум +2.', rubble: 'Провал: сбросьте карту Часов и получите Истощение.' };
+  const evFail = { glass: [{ damage: 1 }, { cond: 'bleed' }], smokefill: [{ damage: 1 }, { cond: 'exhausted' }], nursery: [{ cond: 'panic' }, { shock: 1 }], tripwire: [{ damage: 'd4' }, { cond: 'fracture' }, { noise: 2 }], fire: [{ damage: 1 }, { cond: 'exhausted' }, { noise: 2 }], rubble: [{ clock: 1 }, { cond: 'fracture' }] };
+  const evText = { glass: 'Провал: 1 урон и Кровотечение.', smokefill: 'Провал: 1 урон и Истощение.', nursery: 'Успех: найдите Решимость. Провал: Паника, сбросьте 1 случайную карту из руки.', tripwire: 'Провал: 1к4 урона, Перелом, шум +2.', fire: 'Провал: 1 урон, Истощение, шум +2.', rubble: 'Провал: сбросьте карту Часов и получите Перелом.' };
   Object.keys(evFail).forEach((id) => { if (C[id]) { C[id].fail = evFail[id]; C[id].text = evText[id]; } });
   // консервы снимают истощение, бинты — кровотечение
   if (C.cannedfood) C.cannedfood.plays[0].clearCond = 'exhausted';

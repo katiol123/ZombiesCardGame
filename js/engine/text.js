@@ -66,7 +66,7 @@
     if (p.on === 'action') {
       if (p.mode === 'display') return 'Выложите в свой ход перед собой (не больше 2 выложенных карт).';
       const fx = [];
-      if (p.craft) fx.push(`смастерите случайное ${TYPE_GEN[p.craft] || p.craft} в руку`);
+      if (p.craft) fx.push(`смастерите базовое ${TYPE_GEN[p.craft] || p.craft} в руку`);
       if (p.clearConds) fx.push('снимите все состояния героя на вашей локации');
       if (p.clearCond) fx.push(`снимите «${ZG.CONDS[p.clearCond].name}»`);
       if (p.heal) fx.push(`${p.target === 'here' ? 'герой на вашей локации перетасовывает' : 'перетасуйте'} ${healText(p.heal)} из сброса в колоду`);

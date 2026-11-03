@@ -28,7 +28,7 @@
 
   /* Состояния */
   ZG.CONDS = {
-    bleed: { name: 'Кровотечение', icon: 'heartbeat', text: 'В начале хода сбросьте верхнюю карту колоды. Снимается любым лечением или отдыхом.' },
+    bleed: { name: 'Кровотечение', icon: 'heartbeat', text: 'В начале каждого из 3 следующих ходов сбросьте верхнюю карту колоды. Раньше снимается медицинским лечением (Бинты, медицинские приёмы и карты, Полевая медицина) или отдыхом.' },
     fracture: { name: 'Перелом', icon: 'bat', text: 'Нельзя идти в другую локацию. Снимается отдыхом, Полевой медициной или медицинскими приёмами.' },
     panic: { name: 'Паника', icon: 'alert', text: 'Нельзя играть карты Решимости. Проходит в конце вашего следующего хода.' },
     exhausted: { name: 'Истощение', icon: 'hourglass', text: 'Размер руки −1. Снимается отдыхом или едой.' },
@@ -80,9 +80,9 @@
       attrs: { str: 'd4', dex: 'd12', wit: 'd8', end: 'd6', will: 'd6' },
       skills: { stealth: 3, shooting: 1 },
       hand: 5,
-      deck: { weapon: 2, item: 3, consumable: 3, ally: 2, resolve: 3, technique: 2 },
+      deck: { weapon: 2, item: 2, consumable: 3, ally: 2, resolve: 4, technique: 2 },
       prof: ['firearms'],
-      start: ['knife', 'pistol', 'flashlight', 'binoculars', 'pads', 'energy', 'bandage', 'molotov', 'rex', 'neighbor', 'hope', 'hope', 'prayer', 'shadowstep', 'sprint'],
+      start: ['knife', 'pistol', 'flashlight', 'pads', 'energy', 'bandage', 'molotov', 'rex', 'neighbor', 'hope', 'hope', 'hope', 'prayer', 'ambush', 'sprint'],
       powers: [
         { id: 'evade', name: 'Ускользнуть', text: 'Раз в ход, встретив мертвеца или человека (не Угрозу), можете уклониться: проверка Скрытности против сложности врага. Успех — враг уходит под низ колоды локации, а вы получаете +1 исследование.' },
         { id: 'silent', name: 'Бесшумная', text: 'Боевые проверки с оружием «Тихое» получают +1к4.' },
@@ -101,7 +101,7 @@
       hand: 4,
       deck: { weapon: 3, item: 4, consumable: 3, ally: 1, resolve: 2, technique: 2 },
       prof: ['heavyweapons', 'heavyarmor'],
-      start: ['crowbar', 'bat', 'hatchet', 'toolbox', 'flashlight', 'jacket', 'trashlid', 'molotov', 'bandage', 'cannedfood', 'trucker', 'hope', 'hope', 'brace', 'jury'],
+      start: ['crowbar', 'bat', 'hatchet', 'toolbox', 'flashlight', 'jacket', 'trashlid', 'molotov', 'bandage', 'cannedfood', 'trucker', 'hope', 'hope', 'brace', 'headshot'],
       powers: [
         { id: 'carpenter', name: 'Золотые руки', text: 'Проверки баррикады получают +1к6. Боевые проверки с оружием «Инструмент» получают +1к4.' },
         { id: 'scrounger', name: 'Барахольщик', text: 'Проверки поиска Оружия и Снаряжения получают +2.' },
