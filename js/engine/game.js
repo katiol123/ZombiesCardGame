@@ -1398,8 +1398,13 @@
     // 1–3. Других злодеев в колоде нет — локация закрывается автоматически, карты изгоняются, срабатывает награда
     if (!loc.closed) {
       const villains = loc.deck.filter((c) => ZG.card(c.id).type === 'boss');
-      if (villains.length) loc.deck = villains;
-      else await G.closeLoc(loc);
+      if (villains.length) {
+        // в колоде есть ещё Угроза: локация не закрывается, всё остальное (включая вожаков) изгоняется
+        const banished = loc.deck.length - villains.length;
+        loc.deck = R.shuffle(villains);
+        loc.henchDown = false;
+        G.log(`«${G.ldef(loc).name}» не закрыта: в колоде есть ещё Угроза. Изгнано карт: ${banished}.`, 'bad');
+      } else await G.closeLoc(loc);
     }
     // Угроза не может бежать туда, где её победили, и в перекрытые локации
     const remaining = G.openLocs().filter((l) => !guarded.has(l) && l !== loc);
