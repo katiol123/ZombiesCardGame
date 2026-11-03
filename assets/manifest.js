@@ -14,6 +14,14 @@
  * ===================================================================== */
 window.ZG_ART = {
   cards: {
+    alpha: 'assets/cards/alpha.webp',
+    burke: 'assets/cards/burke.webp',
+    colossus: 'assets/cards/colossus.webp',
+    drhale: 'assets/cards/drhale.webp',
+    holt: 'assets/cards/holt.webp',
+    matriarch: 'assets/cards/matriarch.webp',
+    principal: 'assets/cards/principal.webp',
+    ridge: 'assets/cards/ridge.webp',
     butcher: 'assets/cards/butcher.webp',
     echo: 'assets/cards/echo.webp',
     foreman: 'assets/cards/foreman.webp',
