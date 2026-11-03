@@ -273,7 +273,7 @@
       acquire: { skills: ['tech', 'persuasion'], dc: 6 },
       plays: [{ on: 'check', mode: 'recharge', kind: ['close'], dice: ['d8'] }],
       flavor: 'Строил мосты. Теперь строит стены.' },
-    { id: 'bouncer', type: 'ally', name: 'Вышибала Тоня', tier: 1, icon: 'shield', traits: ['Горожанин'],
+    { id: 'bouncer', type: 'ally', name: 'Вышибала Тони', tier: 1, icon: 'shield', traits: ['Горожанин'],
       acquire: { skills: ['persuasion', 'str'], dc: 6 },
       plays: [
         { on: 'damage', mode: 'discard', reduce: 3 },

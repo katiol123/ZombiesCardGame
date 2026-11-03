@@ -14,6 +14,17 @@
  * ===================================================================== */
 window.ZG_ART = {
   cards: {
+    bouncer: 'assets/cards/bouncer.webp',
+    deputy: 'assets/cards/deputy.webp',
+    engineer: 'assets/cards/engineer.webp',
+    hunter: 'assets/cards/hunter.webp',
+    kid: 'assets/cards/kid.webp',
+    neighbor: 'assets/cards/neighbor.webp',
+    nurse: 'assets/cards/nurse.webp',
+    priest: 'assets/cards/priest.webp',
+    rex: 'assets/cards/rex.webp',
+    stranger: 'assets/cards/stranger.webp',
+    trucker: 'assets/cards/trucker.webp',
     burnt: 'assets/cards/burnt.webp',
     patientzero: 'assets/cards/patientzero.webp',
     alpha: 'assets/cards/alpha.webp',
