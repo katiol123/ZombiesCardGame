@@ -14,6 +14,14 @@
  * ===================================================================== */
 window.ZG_ART = {
   cards: {
+    drowned: 'assets/cards/drowned.webp',
+    hiker: 'assets/cards/hiker.webp',
+    labtech: 'assets/cards/labtech.webp',
+    linesman: 'assets/cards/linesman.webp',
+    mechanicz: 'assets/cards/mechanicz.webp',
+    paratrooper: 'assets/cards/paratrooper.webp',
+    quarantined: 'assets/cards/quarantined.webp',
+    stockboy: 'assets/cards/stockboy.webp',
     shopper: 'assets/cards/shopper.webp',
     strangerz: 'assets/cards/strangerz.webp',
     subject: 'assets/cards/subject.webp',
