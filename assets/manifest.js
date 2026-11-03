@@ -14,6 +14,10 @@
  * ===================================================================== */
 window.ZG_ART = {
   cards: {
+    shopper: 'assets/cards/shopper.webp',
+    strangerz: 'assets/cards/strangerz.webp',
+    subject: 'assets/cards/subject.webp',
+    surgeonz: 'assets/cards/surgeonz.webp',
     biker: 'assets/cards/biker.webp',
     blindminer: 'assets/cards/blindminer.webp',
     bloater: 'assets/cards/bloater.webp',
