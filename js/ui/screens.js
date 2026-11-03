@@ -287,13 +287,14 @@
 
   /* ============================== Лагерь ============================== */
   UI.campHero = 0;
-  UI.showCamp = function () {
+  UI.showCamp = function (refresh) {
     ZG.Audio.music('shelter');
     const S = ZG.Save.current;
     S.screen = 'camp';
     const camp = S.campaign;
     const g = G();
-    g.ensureDecks();
+    const prevScroll = refresh && app().firstElementChild ? app().firstElementChild.scrollTop : 0;
+    if (!refresh) g.ensureDecks();
     ZG.Save.persist();
     const ph = camp.party[UI.campHero] || camp.party[0];
     const hd = ZG.HEROES[ph.id];
@@ -343,8 +344,12 @@
         </div>
       </div>
     </div></div>`);
-    const rerender = () => { ZG.Save.persist(); UI.showCamp(); };
-    s.querySelectorAll('[data-h]').forEach((t) => t.addEventListener('click', () => { UI.campHero = +t.dataset.h; UI.showCamp(); }));
+    if (refresh) {
+      s.style.animation = 'none';
+      s.scrollTop = prevScroll;
+    }
+    const rerender = () => { ZG.Save.persist(); UI.showCamp(true); };
+    s.querySelectorAll('[data-h]').forEach((t) => t.addEventListener('click', () => { UI.campHero = +t.dataset.h; UI.showCamp(true); }));
     s.querySelectorAll('[data-rm]').forEach((c) => c.addEventListener('click', () => { ph.deck.splice(+c.dataset.rm, 1); rerender(); }));
     s.querySelectorAll('[data-add]').forEach((c) => c.addEventListener('click', () => {
       const id = c.dataset.add;
