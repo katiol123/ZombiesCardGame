@@ -33,7 +33,7 @@ window.ZG_ART = {
     stockboy: 'assets/cards/stockboy.webp',
     shopper: 'assets/cards/shopper.webp',
     strangerz: 'assets/cards/strangerz.webp',
-    subject: 'assets/cards/subject.webp',
+    coldbody: 'assets/cards/coldbody.webp',
     surgeonz: 'assets/cards/surgeonz.webp',
     biker: 'assets/cards/biker.webp',
     blindminer: 'assets/cards/blindminer.webp',
