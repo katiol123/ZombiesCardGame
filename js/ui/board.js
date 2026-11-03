@@ -67,6 +67,7 @@
     document.getElementById('topbar').innerHTML = `
       <div class="mtitle"><small>Миссия ${def.num} · ${esc(def.place)}</small>${esc(def.name)}</div>
       <div class="spacer"></div>
+      ${def.special && def.special.objective ? `<div class="clockw" title="Цель миссии"><div class="phase">${ZG.icon('fuel')}</div><div class="cnum">${m.obj || 0}/${def.special.objective.need}</div><div class="clab">${esc(def.special.objective.label)}${m.bossDown ? '<br>Угроза уничтожена' : ''}</div></div>` : ''}
       <div class="clockw ${night ? 'night' : ''} ${left <= 5 ? 'low' : ''}" title="Карты Часов: осталось ${left}. Смена дня и ночи через ${nextPhaseIn + 1} ${ZG.plural(nextPhaseIn + 1, 'ход', 'хода', 'ходов')}.">
         <div class="phase">${ZG.icon(night ? 'moon' : 'sun')}</div>
         <div><div class="cnum">${left}</div></div>
@@ -477,7 +478,7 @@
         <div class="sec-label">${T('your_cards')}</div>
         <div class="mini-hand" data-owner="${mh.id}">${handCards(mh) || `<span class="muted">${T('no_cards')}</span>`}</div>
         ${helpHtml}
-        <div class="enc-actions"><button class="btn primary pulse" data-roll>${ZG.icon('dice')} ${T('roll')}</button></div>
+        <div class="enc-actions">${helpers.length ? `<span class="more-below">↓ Ниже — помощь соседей</span>` : ''}<button class="btn primary pulse" data-roll>${ZG.icon('dice')} ${T('roll')}</button></div>
       </div>`;
 
     panel.querySelectorAll('[data-skill]').forEach((el) => el.addEventListener('click', () => {
@@ -595,7 +596,7 @@
           const d = ZG.card(c.id);
           const red = (d.plays || []).map((p, pi) => (isRed(p) && !usedU.has(c.u) && !plays.some((x) => ZG.card(x.id).type === d.type) ? pi : -1)).filter((x) => x >= 0);
           const used = usedU.has(c.u);
-          const badge = used ? 'блок' : red.length ? 'Блок' : '';
+          const badge = used ? 'блок' : sel.has(c.u) ? 'в сброс' : red.length ? 'Блок' : '';
           return UI.cardHTML(c, { u: c.u, cls: `${used ? 'inpool' : ''} ${red.length ? 'playable' : ''} ${sel.has(c.u) ? 'selected' : ''}`, badge });
         }).join('');
         const reduced = plays.length ? `<div class="muted">Защита: ${plays.map((p) => esc(ZG.card(p.id).name)).join(', ')}</div>` : '';

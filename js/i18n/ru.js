@@ -130,6 +130,7 @@
     type_boss: 'Угроза',
     type_event: 'Препятствие',
     type_infection: 'Инфекция',
+    type_objective: 'Цель',
     type_location: 'Локация',
     type_clock: 'Часы',
 

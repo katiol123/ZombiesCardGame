@@ -34,8 +34,9 @@
     ZG.CARD_TYPES.forEach((t) => (out[t] = base[t] + ((ph.feats.slots || {})[t] || 0)));
     return out;
   };
-  G.nightBonus = () => (G.S().difficulty === 'hard' ? 3 : 2);
-  G.phaseAt = (pos) => (Math.floor((Math.max(1, pos) - 1) / 5) % 2 ? 'night' : 'day');
+  G.nightBonus = () => (G.S().difficulty === 'hard' || (G.M() && G.M().heroes.length >= 3) ? 3 : 2);
+  G.special = () => (G.M() ? ZG.MISSIONS[G.M().idx].special || {} : {});
+  G.phaseAt = (pos) => (G.special().forceNight ? 'night' : Math.floor((Math.max(1, pos) - 1) / 5) % 2 ? 'night' : 'day');
 
   /* ============================== Экземпляры карт ============================== */
   G.inst = (id, flags) => {
@@ -79,7 +80,7 @@
 
   /* ============================== Создание миссии ============================== */
   G.LOC_SIZE = 7;
-  G.CLOCK_BY_PARTY = [24, 30, 34, 36];
+  G.CLOCK_BY_PARTY = [22, 30, 32, 33];
   G.dmgCap = (def) => def.maxDmg || (def.type === 'boss' ? 5 : def.type === 'henchman' ? 4 : 3);
   G.newMission = function (idx) {
     const S = G.S();
@@ -124,6 +125,14 @@
       if (special.extraEnemy) deck.push(G.inst(special.extraEnemy));
       m.locations.push({ id: lid, deck, noise: 0, closed: false, limit: Math.max(3, ld.noise + (special.noiseLimitMod || 0)) });
     });
+    if (special.objective) {
+      m.obj = 0;
+      for (let i = 0; i < special.objective.count; i++) {
+        const l = m.locations[i % m.locations.length];
+        l.deck.push(G.inst(special.objective.card));
+      }
+    }
+    if (special.forceNight) m.phase = 'night';
     const villains = R.shuffle([def.boss, ...Array(n - 1).fill(def.henchman)]);
     m.locations.forEach((l, i) => {
       l.deck.push(G.inst(villains[i]));
@@ -264,6 +273,29 @@
     m.phase = G.phaseAt(m.clockPos);
     m.turnMods = {};
     await UI().clockFlip(c, old !== m.phase && m.turn > 1);
+    const sp = G.special();
+    if (sp.nightInfect && old === 'day' && m.phase === 'night') {
+      await UI().banner('Заражённый воздух', 'Каждый герой проверяет Выдержку или Выживание', 'bad');
+      for (const h of m.heroes) {
+        if (h.dead) continue;
+        const r = await G.doCheck(h, { kind: 'event', skills: sp.nightInfect.skills, dc: sp.nightInfect.dc, base: sp.nightInfect.dc, mods: [], title: `Заражённый воздух: ${G.hname(h)}`, locIdx: h.loc });
+        if (!r.success) await G.infect(h);
+      }
+    }
+    if (sp.roamEvery && m.turn > 1 && m.turn % sp.roamEvery === 0) {
+      const open = G.openLocs();
+      const from = open.find((l) => l.deck.some((c) => ZG.card(c.id).type === 'boss'));
+      const others = open.filter((l) => l !== from);
+      if (from && others.length) {
+        const bi = from.deck.findIndex((c) => ZG.card(c.id).type === 'boss');
+        const b = from.deck.splice(bi, 1)[0];
+        const to = R.pick(others);
+        to.deck.push(b);
+        R.shuffle(to.deck);
+        G.log(`${ZG.card(b.id).name} меняет логово. Где он теперь — неизвестно.`, 'bad');
+        await UI().banner('Стая сменила логово', `${ZG.card(b.id).name} ушёл из прежней локации`, 'bad');
+      }
+    }
     if (old === 'night' && m.phase === 'day') {
       m.locations.forEach((l) => (l.noise = Math.max(0, l.noise - 1)));
       G.log('Утро: шум всех локаций −1.', 'clock');
@@ -580,6 +612,7 @@
     const mods = [];
     if (!def.living && m.phase === 'night') mods.push({ label: 'Ночь', v: G.nightBonus() });
     if (def.type === 'boss' && m.heroes.length === 1) mods.push({ label: 'Соло', v: -1 });
+    if (def.mutates && m.bossMut) mods.push({ label: 'Мутация', v: m.bossMut });
     const lm = (G.ldef(loc).mods || {}).enemyDc;
     if (lm) mods.push({ label: 'Локация', v: lm });
     if (m.turnMods.fog) mods.push({ label: 'Туман', v: 1 });
@@ -712,6 +745,11 @@
       G.log(`${def.name} отбирает «${ZG.card(c.id).name}».`, 'bad');
       await ui.banner('Ограблен!', `${def.name} забирает «${ZG.card(c.id).name}»`, 'bad');
     }
+    if (def.mutates) {
+      m.bossMut = (m.bossMut || 0) + 1;
+      G.log(`${def.name} мутирует: сложность +${m.bossMut}.`, 'bad');
+      await ui.banner('Мутация!', `${def.name} становится сильнее: +${m.bossMut} к сложности`, 'bad');
+    }
     if (def.failSummon) {
       G.openLocs().forEach((l) => {
         l.deck.push(G.inst(ZG.boxPick('enemy', G.def().tier)));
@@ -737,6 +775,25 @@
   G.acquire = async function (mh, inst, loc) {
     const m = G.M();
     const def = ZG.card(inst.id);
+    if (def.type === 'objective') {
+      const ob = G.special().objective;
+      const res = await G.doCheck(mh, { kind: 'acquire', skills: def.acquire.skills, dc: def.acquire.dc, base: def.acquire.dc, mods: [], card: def, cardId: def.id, title: `${ob.label}: ${def.name}` });
+      if (!res.success) {
+        loc.deck.push(inst);
+        R.shuffle(loc.deck);
+        G.log(`${def.name} не поддалась — осталась в локации.`, 'bad');
+        return null;
+      }
+      m.obj = (m.obj || 0) + 1;
+      UI().fxLoot();
+      G.log(`${ob.label}: ${m.obj}/${ob.need}.`, 'loot');
+      await UI().banner(`${ob.label}: ${m.obj}/${ob.need}`, m.obj >= ob.need ? 'Достаточно! Осталось разобраться с Угрозой.' : 'Канистра в автобусе', 'good');
+      if (m.bossDown && m.obj >= ob.need) {
+        await UI().banner('Можно уезжать!', 'Топливо собрано, Угроза уничтожена', 'win');
+        return 'win';
+      }
+      return null;
+    }
     const res = await G.doCheck(mh, G.acquireCheck(def, loc));
     if (res.success) {
       inst.l = 1;
@@ -1126,9 +1183,11 @@
         if (res.success) await G.closeLoc(loc);
       }
     }
+    const soloOwn = m.heroes.length === 1 && !loc.closed ? loc : null;
     const open = G.openLocs();
     const guarded = new Set();
     for (const l of open) {
+      if (l === soloOwn) continue;
       const hs = G.heroesAt(m.locations.indexOf(l));
       for (const h of hs) {
         const c = await ui.choose({
@@ -1142,6 +1201,13 @@
       }
     }
     const remaining = open.filter((l) => !guarded.has(l));
+    const ob = G.special().objective;
+    if (!remaining.length && ob && (m.obj || 0) < ob.need) {
+      m.bossDown = true;
+      G.log(`${def.name} уничтожен. Не хватает: ${ob.label} ${m.obj || 0}/${ob.need}.`, 'win');
+      await ui.banner(T('boss_cornered'), `${def.name} уничтожен. Теперь соберите ${ob.label.toLowerCase()}: ${m.obj || 0}/${ob.need}`, 'win');
+      return null;
+    }
     if (!remaining.length) {
       G.log(T('boss_cornered'), 'win');
       await ui.banner(T('boss_cornered'), `${def.name} уничтожен`, 'win');

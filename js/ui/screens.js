@@ -63,7 +63,7 @@
       const sm = ZG.Save.summary(s);
       rows.push(`<div class="slot panel" data-i="${i}">
         <div class="slot-num">${i + 1}</div>
-        <div class="slot-info">${sm ? `<b>${esc(sm.mission)}</b><span class="progress-dots">${[0, 1, 2, 3, 4].map((k) => `<i class="${k < sm.done ? 'on' : ''}"></i>`).join('')}</span><br><span class="muted">${esc(sm.names)} · ${esc(sm.date)}${sm.inMission ? ' · в миссии' : ''}</span>` : `<b class="muted">${T('slot_empty')}</b>`}</div>
+        <div class="slot-info">${sm ? `<b>${esc(sm.mission)}</b><span class="progress-dots">${ZG.MISSIONS.map((_, k) => `<i class="${k < sm.done ? 'on' : ''}"></i>`).join('')}</span><br><span class="muted">${esc(sm.names)} · ${esc(sm.date)}${sm.inMission ? ' · в миссии' : ''}</span>` : `<b class="muted">${T('slot_empty')}</b>`}</div>
         <div class="slot-actions">
           ${mode === 'new' ? `<button class="btn primary small" data-a="new">${T('slot_new_here')}</button>` : ''}
           ${sm && mode !== 'new' ? `<button class="btn primary small" data-a="load">${T('slot_load')}</button>` : ''}
@@ -160,9 +160,9 @@
     ZG.Save.persist();
     const camp = S.campaign;
     const pending = camp.party.some((ph) => ph.featsPending > 0);
-    const allDone = camp.done.every(Boolean);
+    const allDone = ZG.MISSIONS.every((_, i) => camp.done[i]);
     const s = show(`<div class="screen"><div class="page">
-      <div class="page-head"><button class="btn icon ghost" data-a="menu" title="${T('menu_main')}">${ZG.icon('x')}</button><h1>${T('map_title')}: «Первые дни»</h1>
+      <div class="page-head"><button class="btn icon ghost" data-a="menu" title="${T('menu_main')}">${ZG.icon('x')}</button><h1>${T('map_title')}</h1>
         <button class="btn ${pending ? 'primary pulse' : ''}" data-a="camp">${ZG.icon('tent')} ${T('map_camp')}${pending ? ' · опыт!' : ''}</button>
         <button class="btn icon ghost" data-a="rules" title="${T('rules')}">${ZG.icon('book')}</button></div>
       <div class="campaign-map">
@@ -170,7 +170,8 @@
           const done = camp.done[i];
           const avail = i <= camp.progress;
           const cur = avail && !done;
-          return `<div class="mnode ${done ? 'done' : ''} ${cur ? 'current' : ''} ${avail ? '' : 'locked'}">
+          const actHead = i === 0 ? '<div class="act-head">Акт I · Первые дни</div>' : i === 5 ? '<div class="act-head">Акт II · Другой берег</div>' : '';
+          return actHead + `<div class="mnode ${done ? 'done' : ''} ${cur ? 'current' : ''} ${avail ? '' : 'locked'}">
             <div class="num">${m.num}</div><div class="micon">${ZG.art('missions', m.id, m.icon)}</div>
             <h3>${esc(m.name)}</h3><div class="place">${esc(m.place)}</div>
             <span class="badge">${done ? T('map_done') : cur ? 'Текущая' : avail ? '' : T('map_locked')}</span>
@@ -178,7 +179,7 @@
           </div>`;
         }).join('')}</div>
       </div>
-      ${allDone ? `<div class="panel" style="padding:18px;margin-top:18px;text-align:center"><h2 style="color:var(--amber)">Кампания пройдена</h2><p class="flavor">${esc(ZG.MISSIONS[4].outro)}</p></div>` : ''}
+      ${allDone ? `<div class="panel" style="padding:18px;margin-top:18px;text-align:center"><h2 style="color:var(--amber)">Кампания пройдена</h2><p class="flavor">${esc(ZG.MISSIONS[ZG.MISSIONS.length - 1].outro)}</p></div>` : ''}
       <div class="party-strip">${camp.party.map((ph) => {
         const h = ZG.HEROES[ph.id];
         return `<div class="party-chip">${UI.avatar(ph.id)}<div><b style="font-family:var(--font-head)">${esc(h.name)}</b><br><span class="muted" style="font-size:12px">${esc(h.role)} · колода ${ph.deck.length}${ph.scars.length ? ` · <span class="scar">шрамов: ${ph.scars.length}</span>` : ''}</span></div></div>`;
@@ -200,7 +201,7 @@
     const boss = ZG.card(m.boss);
     const hen = ZG.card(m.henchman);
     const s = show(`<div class="screen briefing"><div class="brief-box panel">
-      <div class="brief-kicker">Миссия ${m.num} из 5 · ${esc(m.place)}</div>
+      <div class="brief-kicker">${m.act === 2 ? 'Акт II · ' : ''}Миссия ${m.num} из ${ZG.MISSIONS.length} · ${esc(m.place)}</div>
       <h1>${esc(m.name)}</h1>
       <div class="typewriter" id="tw"></div>
       <div class="brief-facts" id="facts">
@@ -243,7 +244,7 @@
     const r = S.lastResult;
     const m = ZG.MISSIONS[r.idx];
     ZG.FX.setNight(false);
-    const finalWin = r.win && r.idx === 4;
+    const finalWin = r.win && r.idx === ZG.MISSIONS.length - 1;
     const s = show(`<div class="screen result-screen"><div class="result-box panel ${r.win ? 'win' : 'lose'}">
       <div class="brief-kicker">Миссия ${m.num} · ${esc(m.name)}</div>
       <h1>${r.win ? T('win_title') : T('lose_title')}</h1>
@@ -265,7 +266,8 @@
     </div></div>`);
     s.scrollTop = 0;
     if (r.win) setTimeout(() => { ZG.FX.burst(window.innerWidth / 2, window.innerHeight * 0.3, 'gold', 120); }, 300);
-    if (finalWin) setTimeout(() => UI.banner('Первые дни позади', 'Спасибо, что выжили.', 'win', true), 900);
+    if (finalWin) setTimeout(() => UI.banner('Источник уничтожен', 'Кампания завершена. Спасибо, что выжили.', 'win', true), 900);
+    else if (r.win && r.idx === 4) setTimeout(() => UI.banner('Первые дни позади', 'Впереди — Акт II: «Другой берег»', 'win', true), 900);
     s.querySelectorAll('[data-a]').forEach((b) => b.addEventListener('click', () => {
       const a = b.dataset.a;
       S.lastResult = null;
@@ -389,7 +391,7 @@
       <p>Кооперативная карточная кампания на 1–4 героев. Все играют за одним устройством, передавая его по кругу. Цель каждой миссии — найти <b>Угрозу</b>, победить её и не дать ей сбежать, пока не закончились <b>Часы</b>.</p>
       <h2>Ход героя</h2>
       <ol>
-        <li><b>Часы.</b> Переворачивается карта Часов. Иногда это событие (сирена, голод, вой). Каждые 5 ходов день сменяется ночью; на рассвете шум всех локаций снижается на 1. Длина Часов зависит от размера отряда: 24 / 30 / 34 / 36 ходов на 1 / 2 / 3 / 4 героев.</li>
+        <li><b>Часы.</b> Переворачивается карта Часов. Иногда это событие (сирена, голод, вой). Каждые 5 ходов день сменяется ночью; на рассвете шум всех локаций снижается на 1. Длина Часов зависит от размера отряда: 22 / 30 / 32 / 33 хода на 1 / 2 / 3 / 4 героев. В отряде из 3+ героев ночью мертвецы получают +3 вместо +2.</li>
         <li><b>Идти.</b> До исследования можно перейти в любую локацию.</li>
         <li><b>Исследовать.</b> Откройте верхнюю карту локации и разберитесь с ней. Одно исследование бесплатно; карты вроде «Пёс Рекс» или «Надежда» дают ещё.</li>
         <li><b>Заколотить.</b> Если колода локации пуста или в ней повержен вожак — попробуйте её заколотить (проверка баррикады, одна попытка за ход).</li>
@@ -414,7 +416,7 @@
       <h2>Шум и орда</h2>
       <p>Громкое оружие, крикуны и ловушки поднимают шум локации. Когда шум достигает порога — приходит <b>Орда</b>: в колоду локации замешиваются новые мертвецы. Тихое оружие, глушитель и сигнальные ракеты помогают.</p>
       <h2>Баррикады и Угроза</h2>
-      <p>Победив <b>вожака</b>, можно сразу попытаться заколотить его локацию; если не вышло — локацию можно пытаться заколотить в каждый следующий ход, даже если в ней ещё есть карты. Заколоченная локация — убежище: там можно отдыхать (вернуть 3 карты из сброса в колоду). Когда Угроза побеждена, её локация заколачивается, только если колода там пуста; герои во всех открытых локациях могут попытаться перекрыть пути. Если все оставшиеся открытые локации заколочены или перекрыты — победа. Иначе Угроза сбегает в одну из неперекрытых. В соло Угроза на 1 слабее, а победив её, можно сразу попытаться заколотить её локацию.</p>
+      <p>Победив <b>вожака</b>, можно сразу попытаться заколотить его локацию; если не вышло — локацию можно пытаться заколотить в каждый следующий ход, даже если в ней ещё есть карты. Заколоченная локация — убежище: там можно отдыхать (вернуть 3 карты из сброса в колоду). Когда Угроза побеждена, её локация заколачивается, только если колода там пуста; герои во всех открытых локациях могут попытаться перекрыть пути. Если все оставшиеся открытые локации заколочены или перекрыты — победа. Иначе Угроза сбегает в одну из неперекрытых. В соло Угроза на 1 слабее, а победив её, можно сразу попытаться заколотить её локацию (перекрыть собственную локацию в соло нельзя).</p>
       <h2>Лагерь</h2>
       <p>После успешной миссии каждый герой получает улучшение: +1 к характеристике, +1 к руке, +1 слот колоды или лечение шрама. В лагере колоды пересобираются из общего склада находок.</p>
       <h2>Управление</h2>

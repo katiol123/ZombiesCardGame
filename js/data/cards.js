@@ -489,6 +489,114 @@
       text: 'Успех: случайный Расходник. Провал: Инфекция.', flavor: 'Жёлтая лента. Белые мешки. Один шевелится.' },
   ]);
 
+
+  /* ============================== АКТ II: ДРУГОЙ БЕРЕГ (уровень III) ============================== */
+  add([
+    { id: 'sledge', type: 'weapon', name: 'Кувалда', tier: 3, icon: 'hammer', traits: ['Ближнее', 'Тяжёлое', 'Инструмент'],
+      acquire: { skills: ['str'], dc: 9 },
+      plays: [{ on: 'check', mode: 'reveal', kind: COMBAT, weapon: ['str', 'melee'], dice: ['d10'], bonus: 2, noise: 2 }],
+      flavor: 'Дорожные работы отменяются. Навсегда.' },
+    { id: 'flamer', type: 'weapon', name: 'Самодельный огнемёт', tier: 3, icon: 'fire', traits: ['Огонь', 'Самоделка'],
+      acquire: { skills: ['tech'], dc: 10 },
+      plays: [
+        { on: 'check', mode: 'reveal', kind: COMBAT, weapon: ['tech', 'dex', 'shooting'], dice: ['d8', 'd8'], noise: 3 },
+        { on: 'check', mode: 'recharge', kind: COMBAT, weapon: ['tech', 'dex', 'shooting'], dice: ['d8', 'd8', 'd8'], noise: 4 },
+      ],
+      flavor: 'Баллон от барбекю и садовый распылитель. Палыч гордится.' },
+    { id: 'tacshield', type: 'item', name: 'Тактический щит', tier: 3, icon: 'shield', traits: ['Броня', 'Щит'],
+      acquire: { skills: ['str', 'end'], dc: 9 },
+      plays: [
+        { on: 'damage', mode: 'reveal', reduce: 2 },
+        { on: 'damage', mode: 'recharge', reduce: 'all' },
+      ],
+      flavor: 'Надпись «ПОЛИЦИЯ» стёрта когтями.' },
+    { id: 'stim', type: 'consumable', name: 'Боевой стимулятор', tier: 3, icon: 'syringe', traits: ['Медицина'],
+      acquire: { skills: ['medicine', 'wit'], dc: 8 },
+      plays: [{ on: 'check', mode: 'burn', kind: 'any', skillDie: 2, help: true }],
+      flavor: 'Военный образец. Побочные эффекты засекречены.' },
+    { id: 'fieldmedic', type: 'ally', name: 'Военврач Окафор', tier: 3, icon: 'cross', traits: ['Медик', 'Армия'],
+      acquire: { skills: ['persuasion', 'medicine'], dc: 9 },
+      plays: [
+        { on: 'action', mode: 'recharge', heal: { dice: ['d6'], bonus: 1 }, target: 'here' },
+        { on: 'action', mode: 'discard', cure: 1, target: 'here' },
+      ],
+      flavor: '«Сначала вытаскиваем живых. Потом решаем, кто жив».' },
+    { id: 'sniper', type: 'ally', name: 'Снайпер Вега', tier: 3, icon: 'crosshair', traits: ['Армия'],
+      acquire: { skills: ['persuasion'], dc: 9 },
+      plays: [{ on: 'check', mode: 'recharge', kind: COMBAT, dice: ['d12'], noise: 1 }],
+      flavor: 'Лежит на крыше третьи сутки. Промахов — ноль.' },
+    { id: 'oath', type: 'resolve', name: 'Клятва', tier: 3, icon: 'flame', traits: [],
+      acquire: { skills: ['will'], dc: 7 },
+      plays: [{ on: 'check', mode: 'discard', kind: 'any', skillDie: 2, help: true, rechargeOnSuccess: true }],
+      flavor: '«Я вытащу всех. Или останусь с ними».' },
+    { id: 'assaultrifle', type: 'weapon', name: 'Винтовка полковника', tier: 9, reward: true, icon: 'shotgun', traits: ['Огнестрел', 'Трофей'],
+      acquire: { skills: ['dex'], dc: 4 },
+      plays: [
+        { on: 'check', mode: 'reveal', kind: COMBAT, weapon: ['dex', 'shooting'], dice: ['d10', 'd6'], noise: 3 },
+        { on: 'check', mode: 'recharge', kind: COMBAT, weapon: ['dex', 'shooting'], dice: ['d10', 'd10', 'd6'], noise: 4 },
+      ],
+      flavor: 'Табельный номер спилен. Приклад исцарапан засечками.' },
+    { id: 'minerlamp', type: 'item', name: 'Шахтёрская лампа Холта', tier: 9, reward: true, icon: 'flashlight', traits: ['Свет', 'Трофей'],
+      acquire: { skills: ['wit'], dc: 4 },
+      plays: [
+        { on: 'check', mode: 'reveal', kind: 'any', dice: ['d6'], nightDice: ['d10'] },
+        { on: 'action', mode: 'recharge', scout: true },
+      ],
+      flavor: 'Светит сорок лет. Видела всё.' },
+    { id: 'alphafang', type: 'resolve', name: 'Клык вожака', tier: 9, reward: true, icon: 'paw', traits: ['Трофей'],
+      acquire: { skills: ['will'], dc: 4 },
+      plays: [{ on: 'check', mode: 'recharge', kind: COMBAT, skillDie: 2, help: true }],
+      flavor: 'Носишь на шее — и стая обходит стороной.' },
+    { id: 'busdriver', type: 'ally', name: 'Водитель Глория', tier: 9, reward: true, icon: 'truck', traits: ['Трофей'],
+      acquire: { skills: ['persuasion'], dc: 4 },
+      plays: [
+        { on: 'action', mode: 'recharge', explore: true },
+        { on: 'damage', mode: 'discard', reduce: 3 },
+      ],
+      flavor: '«Дети, пристегнитесь. Будет трясти».' },
+    { id: 'fuelcan', type: 'objective', name: 'Канистра с топливом', tier: 9, eventOnly: true, icon: 'fuel', traits: ['Цель'],
+      acquire: { skills: ['str', 'survival', 'tech'], dc: 5 },
+      text: 'Цель миссии. Успех: канистра отправляется в автобус. Провал: она остаётся в колоде локации.',
+      flavor: 'Двадцать литров. Пахнет домом.' },
+
+    { id: 'hazmat', type: 'enemy', name: 'Мертвец в химзащите', tier: 3, icon: 'mask', dc: 11, bite: true, armor: 2,
+      text: 'Костюм: проверки Силой и Рукопашной против него −2.', flavor: 'Жёлтая резина, внутри — бульон.' },
+    { id: 'mutant', type: 'enemy', name: 'Мутант', tier: 3, icon: 'skull', dc: 12, bite: true, dmgAdd: 1,
+      text: 'Урон от него +1.', flavor: 'Сыворотка 7-Б делала их сильнее. И голоднее.' },
+    { id: 'stalker', type: 'enemy', name: 'Сталкер', tier: 3, icon: 'skull', dc: 10, bite: true, before: { damage: 2 }, noEvade: true,
+      text: 'До проверки: 2 урона. От него нельзя уклониться.', flavor: 'Он шёл за вами от самого моста.' },
+    { id: 'soldier', type: 'enemy', living: true, name: 'Солдат карантина', tier: 3, icon: 'raider', dc: 10, before: { damage: 1 }, theft: true,
+      text: 'Человек. До проверки: 1 урон. Если вы не победили его, он изымает случайную карту из руки.', flavor: '«Предъявите руки. Медленно».' },
+    { id: 'wolfz', type: 'enemy', name: 'Мёртвый волк', tier: 3, icon: 'paw', dc: 9, bite: true, before: { damage: 1 }, noEvade: true,
+      text: 'До проверки: 1 урон. От него нельзя уклониться.', flavor: 'Стая не ест. Стая охотится.' },
+    { id: 'blindminer', type: 'enemy', name: 'Слепой шахтёр', tier: 3, icon: 'skull', dc: 10, bite: true, noiseOnEncounter: 1,
+      text: 'При встрече: шум +1 (каска звенит о камень).', flavor: 'Фонарь на каске давно погас. Ему всё равно.' },
+
+    { id: 'patrol', type: 'henchman', living: true, name: 'Санитарный патруль', tier: 3, icon: 'raider', dc: 11, theft: true,
+      text: 'Вожак, человек. Если вы не победили его, он изымает случайную карту. Победив его, можно сразу попытаться заколотить локацию.',
+      flavor: 'Огнемёты, противогазы, приказ: «Никого не выпускать».' },
+    { id: 'ridge', type: 'boss', living: true, name: 'Полковник Ридж', tier: 3, icon: 'bossskull', dc: 16, before: { damage: 2 }, theft: true,
+      text: 'Угроза, человек. До проверки: 2 урона. Если вы не победили его, он изымает случайную карту.',
+      flavor: '«Карантин — это не тюрьма. Это фильтр»' },
+    { id: 'foreman', type: 'henchman', name: 'Бригадир смены', tier: 3, icon: 'ghost', dc: 11, bite: true, armor: 1,
+      text: 'Вожак. Каска: Сила и Рукопашная −1. Победив его, можно сразу попытаться заколотить локацию.', flavor: 'Табельная книжка всё ещё в кармане.' },
+    { id: 'holt', type: 'boss', name: 'Старик Холт', tier: 3, icon: 'bossskull', dc: 16, bite: true, dmgAdd: 1, noiseOnEncounter: 2,
+      text: 'Угроза. При встрече: шум +2. Урон от него +1.', flavor: 'Сорок лет под землёй. Теперь он и есть шахта.' },
+    { id: 'packwolf', type: 'henchman', name: 'Волк стаи', tier: 3, icon: 'paw', dc: 11, bite: true, before: { damage: 1 },
+      text: 'Вожак. До проверки: 1 урон. Победив его, можно сразу попытаться заколотить локацию.', flavor: 'Глаза светятся в темноте. Все двенадцать пар.' },
+    { id: 'alpha', type: 'boss', name: 'Вожак стаи', tier: 3, icon: 'bossskull', dc: 16, bite: true, before: { damage: 1 }, roams: true,
+      text: 'Угроза. До проверки: 1 урон. Каждые 4 хода меняет логово — уходит в случайную открытую локацию.', flavor: 'Белая шерсть, чёрная пасть. Он помнит запах каждого.' },
+    { id: 'hallmonitor', type: 'henchman', name: 'Школьный сторож', tier: 3, icon: 'ghost', dc: 11, bite: true, dmgAdd: 1,
+      text: 'Вожак. Урон от него +1. Победив его, можно сразу попытаться заколотить локацию.', flavor: 'Связка ключей звенит в каждом коридоре.' },
+    { id: 'principal', type: 'boss', name: 'Директор Брэдшоу', tier: 3, icon: 'bossskull', dc: 16, bite: true, noiseOnEncounter: 3,
+      text: 'Угроза. При встрече: шум +3 (школьный звонок).', flavor: '«Опоздавших не пускаем».' },
+    { id: 'guardz', type: 'henchman', name: 'Охрана «Хейл Биомед»', tier: 3, icon: 'ghost', dc: 12, bite: true, armor: 2,
+      text: 'Вожак. Броня: Сила и Рукопашная −2. Победив его, можно сразу попытаться заколотить локацию.', flavor: 'Пропуск уровня 4. Доступ куда угодно.' },
+    { id: 'patientzero', type: 'boss', name: 'Нулевой пациент', tier: 3, icon: 'bossskull', dc: 17, bite: true, hits: 2, mutates: true, infectOnFail: true,
+      text: 'Угроза. Нужно победить в двух проверках подряд. Каждый раз, когда его не победили, он мутирует: +1 к сложности до конца миссии. При поражении — Инфекция.',
+      flavor: 'Объект 0. Доброволец. С него всё началось.' },
+  ]);
+
   /* ============================== ПОМОЩНИКИ ============================== */
   ZG.CARDS = C;
 
@@ -514,7 +622,7 @@
   /** Случайная карта из коробки по типу и уровню миссии */
   ZG.boxPick = function (type, tier) {
     const pool = Object.values(C).filter((c) => {
-      if (c.type !== type || c.reward || c.eventOnly || c.tier > 2) return false;
+      if (c.type !== type || c.reward || c.eventOnly || c.tier > 3) return false;
       if (c.type === 'event' && c.tier > tier) return false;
       return c.tier <= tier;
     });

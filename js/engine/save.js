@@ -67,7 +67,7 @@
         created: Date.now(),
         updated: Date.now(),
         difficulty: difficulty || 'normal',
-        campaign: { progress: 0, done: [false, false, false, false, false], party, vault, tips: {}, stats: { kills: 0, finds: 0, deaths: 0 } },
+        campaign: { progress: 0, done: ZG.MISSIONS.map(() => false), party, vault, tips: {}, stats: { kills: 0, finds: 0, deaths: 0 } },
         mission: null,
         screen: 'map',
       };
@@ -99,9 +99,9 @@
     summary(s) {
       if (!s) return null;
       const names = s.campaign.party.map((h) => ZG.HEROES[h.id].name.split(' ')[0]).join(', ');
-      const m = ZG.MISSIONS[Math.min(s.campaign.progress, 4)];
-      const done = s.campaign.done.filter(Boolean).length;
-      return { names, mission: done >= 5 ? 'Кампания пройдена' : `Миссия ${m.num}: ${m.name}`, done, date: new Date(s.updated).toLocaleString('ru-RU'), inMission: !!s.mission };
+      const m = ZG.MISSIONS[Math.min(s.campaign.progress, ZG.MISSIONS.length - 1)];
+      const done = ZG.MISSIONS.filter((_, i) => s.campaign.done[i]).length;
+      return { names, mission: done >= ZG.MISSIONS.length ? 'Кампания пройдена' : `Миссия ${m.num}: ${m.name}`, done, date: new Date(s.updated).toLocaleString('ru-RU'), inMission: !!s.mission };
     },
   };
 

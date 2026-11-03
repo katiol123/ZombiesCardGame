@@ -108,6 +108,107 @@
     close: { skills: ['str', 'persuasion'], dc: 9 }, noise: 5, mods: { enemyDc: 1 },
     flavor: 'Последний вертолёт улетел вчера. Но кто-то ещё отвечает по рации.' });
 
+
+  /* ---------- Миссия 6: Карантинный лагерь Форт-Ривер ---------- */
+  loc({ id: 'gate', name: 'КПП «Альфа»', icon: 'flag', deck: { e: 4, w: 2, i: 1, c: 1, a: 0, r: 1, v: 1 },
+    close: { skills: ['str', 'tech'], dc: 9 }, noise: 6, mods: { acquireDc: { weapon: -1 } },
+    flavor: 'Шлагбаум, вышка, прожектор. И список фамилий на стене.' });
+  loc({ id: 'tents', name: 'Палаточный городок', icon: 'tent', deck: { e: 3, w: 0, i: 1, c: 3, a: 2, r: 1, v: 0 },
+    close: { skills: ['survival', 'str'], dc: 8 }, noise: 6, mods: {},
+    flavor: 'Сотни коек. На каждой — бирка с номером.' });
+  loc({ id: 'lab', name: 'Мобильная лаборатория', icon: 'vial', deck: { e: 3, w: 0, i: 2, c: 3, a: 0, r: 0, v: 2 },
+    close: { skills: ['tech', 'medicine', 'end'], dc: 9 }, noise: 5, mods: { acquireDc: { consumable: -1 }, eventDc: 1 },
+    flavor: 'Логотип «Хейл Биомед» на каждом ящике с пробирками.' });
+  loc({ id: 'armory', name: 'Склад вооружения', icon: 'warehouse', deck: { e: 4, w: 3, i: 1, c: 1, a: 0, r: 0, v: 1 },
+    close: { skills: ['tech', 'str'], dc: 9 }, noise: 6, mods: { enemyDc: 1 },
+    flavor: 'Половина стоек пуста. Вторую охраняют.' });
+  loc({ id: 'isolation', name: 'Изолятор', icon: 'lock', deck: { e: 5, w: 0, i: 1, c: 1, a: 1, r: 1, v: 1 },
+    close: { skills: ['str', 'end'], dc: 9 }, noise: 5, mods: { enemyDc: 1 },
+    flavor: 'Двери заварены снаружи. Изнутри — стук.' });
+  loc({ id: 'helipad', name: 'Вертолётная площадка', icon: 'flag', deck: { e: 3, w: 1, i: 1, c: 1, a: 1, r: 2, v: 1 },
+    close: { skills: ['survival', 'tech'], dc: 8 }, noise: 7, mods: {},
+    flavor: 'Последний вертолёт стоит без топлива. Лопасти скрипят на ветру.' });
+
+  /* ---------- Миссия 7: Шахта Блэкстоун ---------- */
+  loc({ id: 'shaftentry', name: 'Устье шахты', icon: 'door', deck: { e: 3, w: 1, i: 2, c: 1, a: 1, r: 1, v: 0 },
+    close: { skills: ['str', 'tech'], dc: 8 }, noise: 6, mods: {},
+    flavor: 'Табличка «Без каски не входить». Касок не осталось.' });
+  loc({ id: 'cage', name: 'Клеть подъёмника', icon: 'warehouse', deck: { e: 3, w: 1, i: 1, c: 1, a: 0, r: 1, v: 2 },
+    close: { skills: ['tech'], dc: 9 }, noise: 5, mods: { eventDc: 1 },
+    flavor: 'Трос стонет. До дна — двести метров.' });
+  loc({ id: 'drift', name: 'Штрек №3', icon: 'road', deck: { e: 4, w: 2, i: 1, c: 1, a: 0, r: 0, v: 1 },
+    close: { skills: ['str', 'survival'], dc: 9 }, noise: 5, mods: { enemyDc: 1 },
+    flavor: 'Узкий, низкий, бесконечный. Шаги отдаются со всех сторон.' });
+  loc({ id: 'pumproom', name: 'Насосная', icon: 'waves', deck: { e: 3, w: 0, i: 3, c: 1, a: 0, r: 1, v: 1 },
+    close: { skills: ['tech', 'end'], dc: 9 }, noise: 6, mods: { acquireDc: { item: -1 } },
+    flavor: 'Вода по колено. Насосы молчат.' });
+  loc({ id: 'shelterroom', name: 'Убежище горноспасателей', icon: 'medkit', deck: { e: 2, w: 0, i: 1, c: 3, a: 2, r: 1, v: 0 },
+    close: { skills: ['wit', 'str'], dc: 8 }, noise: 6, mods: { acquireDc: { consumable: -1 } },
+    flavor: 'Запас воздуха на 72 часа. Отсчёт идёт с понедельника.' });
+  loc({ id: 'deepface', name: 'Забой', icon: 'hammer', deck: { e: 4, w: 1, i: 1, c: 1, a: 0, r: 1, v: 1 },
+    close: { skills: ['str', 'tech'], dc: 10 }, noise: 4, mods: { enemyDc: 1 },
+    flavor: 'Здесь нашли то, что не стоило находить.' });
+
+  /* ---------- Миссия 8: Лагерь «Сосновый ручей» ---------- */
+  loc({ id: 'campfire', name: 'Кострище', icon: 'fire', deck: { e: 3, w: 1, i: 1, c: 2, a: 1, r: 1, v: 0 },
+    close: { skills: ['survival', 'str'], dc: 8 }, noise: 6, mods: {},
+    flavor: 'Угли ещё тёплые. Кто-то был здесь вчера.' });
+  loc({ id: 'cabins', name: 'Домики вожатых', icon: 'building', deck: { e: 3, w: 1, i: 2, c: 1, a: 1, r: 1, v: 0 },
+    close: { skills: ['tech', 'str'], dc: 8 }, noise: 6, mods: {},
+    flavor: 'Расписание на двери: «Ночная игра. 21:00».' });
+  loc({ id: 'lake', name: 'Озеро', icon: 'waves', deck: { e: 3, w: 1, i: 1, c: 1, a: 1, r: 2, v: 0 },
+    close: { skills: ['survival', 'end'], dc: 9 }, noise: 7, mods: {},
+    flavor: 'Байдарки перевёрнуты. Что-то движется под водой.' });
+  loc({ id: 'ranger', name: 'Пост лесничего', icon: 'binoculars', deck: { e: 3, w: 2, i: 1, c: 1, a: 1, r: 0, v: 1 },
+    close: { skills: ['tech', 'survival'], dc: 9 }, noise: 6, mods: { acquireDc: { weapon: -1 } },
+    flavor: 'Капканы, ружья, и записка: «Они идут стаей».' });
+  loc({ id: 'ravine', name: 'Овраг', icon: 'trees', deck: { e: 4, w: 1, i: 0, c: 1, a: 0, r: 1, v: 2 },
+    close: { skills: ['survival', 'str'], dc: 10 }, noise: 5, mods: { enemyDc: 1, eventDc: 1 },
+    flavor: 'Кости. Много костей.' });
+  loc({ id: 'den', name: 'Логово', icon: 'paw', deck: { e: 5, w: 0, i: 1, c: 1, a: 0, r: 1, v: 1 },
+    close: { skills: ['str', 'survival'], dc: 10 }, noise: 5, mods: { enemyDc: 1 },
+    flavor: 'Пахнет мокрой шерстью и смертью.' });
+
+  /* ---------- Миссия 9: Школа Ривертона ---------- */
+  loc({ id: 'busyard', name: 'Автобусный парк', icon: 'truck', deck: { e: 3, w: 1, i: 2, c: 1, a: 1, r: 0, v: 1 },
+    close: { skills: ['tech', 'str'], dc: 9 }, noise: 6, mods: {},
+    flavor: 'Жёлтый автобус №12. Ключ в замке. Бак пуст.' });
+  loc({ id: 'gym', name: 'Спортзал', icon: 'building', deck: { e: 4, w: 2, i: 1, c: 1, a: 0, r: 1, v: 0 },
+    close: { skills: ['str', 'end'], dc: 9 }, noise: 5, mods: { enemyDc: 1 },
+    flavor: 'Здесь был пункт эвакуации. Здесь он и остался.' });
+  loc({ id: 'cafeteria', name: 'Столовая', icon: 'coffee', deck: { e: 3, w: 0, i: 1, c: 3, a: 1, r: 1, v: 0 },
+    close: { skills: ['str', 'tech'], dc: 8 }, noise: 6, mods: { acquireDc: { consumable: -1 } },
+    flavor: 'Подносы, лужи, детские рюкзаки.' });
+  loc({ id: 'chemlab', name: 'Кабинет химии', icon: 'vial', deck: { e: 3, w: 1, i: 2, c: 2, a: 0, r: 0, v: 1 },
+    close: { skills: ['tech', 'wit'], dc: 9 }, noise: 6, mods: { acquireDc: { item: -1 } },
+    flavor: 'Таблица Менделеева в брызгах. Вытяжка ещё работает.' });
+  loc({ id: 'library', name: 'Библиотека', icon: 'book', deck: { e: 3, w: 0, i: 1, c: 1, a: 2, r: 2, v: 0 },
+    close: { skills: ['wit', 'str'], dc: 8 }, noise: 7, mods: {},
+    flavor: '«Соблюдайте тишину». Наконец-то все соблюдают.' });
+  loc({ id: 'boilerroom', name: 'Подвал', icon: 'factory', deck: { e: 4, w: 1, i: 1, c: 1, a: 0, r: 1, v: 1 },
+    close: { skills: ['tech', 'end'], dc: 10 }, noise: 5, mods: { enemyDc: 1 },
+    flavor: 'Сторож прятал здесь бензин для газонокосилок.' });
+
+  /* ---------- Миссия 10: Комплекс «Хейл Биомед» ---------- */
+  loc({ id: 'lobbyhb', name: 'Вестибюль', icon: 'building', deck: { e: 4, w: 1, i: 1, c: 1, a: 1, r: 1, v: 0 },
+    close: { skills: ['str', 'tech'], dc: 10 }, noise: 6, mods: {},
+    flavor: 'Мраморный пол. Слоган на стене: «Мы лечим будущее».' });
+  loc({ id: 'offices', name: 'Офисы', icon: 'building', deck: { e: 3, w: 1, i: 2, c: 1, a: 1, r: 1, v: 0 },
+    close: { skills: ['wit', 'str'], dc: 9 }, noise: 6, mods: {},
+    flavor: 'Шредеры забиты. Не успели.' });
+  loc({ id: 'vivarium', name: 'Виварий', icon: 'paw', deck: { e: 5, w: 0, i: 1, c: 1, a: 0, r: 1, v: 1 },
+    close: { skills: ['str', 'end'], dc: 10 }, noise: 5, mods: { enemyDc: 1 },
+    flavor: 'Клетки открыты. Подопытными были не только мыши.' });
+  loc({ id: 'cleanroom', name: 'Чистая зона', icon: 'biohazard', deck: { e: 3, w: 0, i: 2, c: 3, a: 0, r: 0, v: 1 },
+    close: { skills: ['tech', 'medicine'], dc: 10 }, noise: 5, mods: { acquireDc: { consumable: -1 }, eventDc: 1 },
+    flavor: 'Белые стены. Красные отпечатки ладоней.' });
+  loc({ id: 'server', name: 'Серверная', icon: 'bolt', deck: { e: 3, w: 1, i: 2, c: 1, a: 1, r: 1, v: 0 },
+    close: { skills: ['tech', 'wit'], dc: 10 }, noise: 6, mods: { acquireDc: { item: -1 } },
+    flavor: 'Где-то здесь — формула. И приказ об утилизации свидетелей.' });
+  loc({ id: 'sublevel', name: 'Подуровень Ноль', icon: 'skull', deck: { e: 4, w: 1, i: 1, c: 1, a: 0, r: 2, v: 0 },
+    close: { skills: ['str', 'end', 'tech'], dc: 11 }, noise: 4, mods: { enemyDc: 1 },
+    flavor: 'Камера с табличкой «Объект 0». Дверь открыта изнутри.' });
+
   ZG.LOCATIONS = L;
 
   /* ============================== КАРТЫ ЧАСОВ ============================== */
@@ -206,7 +307,93 @@
       locations: ['checkpoint', 'jam', 'pylons', 'fieldhospital', 'embankment', 'evac'],
       clockEvents: ['siren', 'siren', 'howl', 'howl', 'hunger', 'dawn', 'broadcast'],
       reward: null,
-      outro: 'Колосс рушится в реку. Вы бежите по мосту, и за спиной поднимается огненная стена. Вертолёт ждёт. Первые дни закончились. Начинается всё остальное.',
+      outro: 'Колосс рушится в реку. Вы бежите по мосту, и за спиной поднимается огненная стена. Вертолёт… не ждёт. Он улетает без вас. Первые дни закончились. На другом берегу — карантинный лагерь Форт-Ривер. Начинается Акт II.',
+    },
+
+    {
+      id: 'm6', num: 6, act: 2, name: 'Фильтр', icon: 'biohazard', tier: 3,
+      place: 'Карантинный лагерь Форт-Ривер',
+      intro: [
+        'Другой берег. Колючая проволока, прожекторы, громкоговоритель: «Всем выжившим — пройти фильтрацию».',
+        'Фильтрация оказалась простой: кого укусили — в изолятор. Кого не укусили — в изолятор «на наблюдение».',
+        'Полковник Ридж знает, что такое «Хейл Биомед». И он не собирается никого выпускать.',
+      ],
+      goal: 'Одолейте Полковника Риджа. Его солдаты — люди: они изымают карты и не боятся ночи.',
+      rule: 'Заражённый воздух: в начале каждой ночи каждый герой проходит проверку Выдержки или Выживания 6, при провале — Инфекция. В каждой локации прячется лишний солдат.',
+      special: { nightInfect: { skills: ['end', 'survival'], dc: 6 }, extraEnemy: 'soldier', clockMod: 2 },
+      boss: 'ridge', henchman: 'patrol',
+      locations: ['gate', 'tents', 'lab', 'armory', 'isolation', 'helipad'],
+      clockEvents: ['siren', 'howl', 'hunger', 'broadcast', 'dawn', 'fog', 'siren'],
+      reward: { card: 'assaultrifle', text: 'Трофей: Винтовка полковника' },
+      outro: 'В сейфе Риджа — карта с пометками. Красным обведена шахта Блэкстоун: «Партия 7-Б. Склад». Если там сыворотка — там и ответ.',
+    },
+    {
+      id: 'm7', num: 7, act: 2, name: 'Глубина', icon: 'hammer', tier: 3,
+      place: 'Шахта Блэкстоун',
+      intro: [
+        'Шахту закрыли в восемьдесят девятом. «Хейл Биомед» арендовала её в двадцать третьем — «для хранения образцов».',
+        'Под землёй не бывает дня. Только фонари, эхо и шаги, которые не совпадают с вашими.',
+        'Старый горный мастер Холт так и не поднялся наверх. Говорят, он охраняет то, что внизу.',
+      ],
+      goal: 'Найдите и уничтожьте Старика Холта в вечной темноте шахты.',
+      rule: 'Вечная ночь: под землёй всегда ночь — мертвецы сильнее, искать проще, фонари и молитвы работают в полную силу. Эхо: порог орды на 1 ниже.',
+      special: { forceNight: true, noiseLimitMod: -1, clockMod: 2 },
+      boss: 'holt', henchman: 'foreman',
+      locations: ['shaftentry', 'cage', 'drift', 'pumproom', 'shelterroom', 'deepface'],
+      clockEvents: ['siren', 'howl', 'howl', 'hunger', 'dawn', 'broadcast', 'rain'],
+      reward: { card: 'minerlamp', text: 'Трофей: Шахтёрская лампа Холта' },
+      outro: 'Ящики с сывороткой пусты. Накладная: «Отправлено в лагерь «Сосновый ручей» — полевые испытания». Детский лагерь.',
+    },
+    {
+      id: 'm8', num: 8, act: 2, name: 'Стая', icon: 'paw', tier: 3,
+      place: 'Детский лагерь «Сосновый ручей»',
+      intro: [
+        'Лагерь пуст уже месяц. Но не мёртв.',
+        'Здесь испытывали сыворотку на животных. Волки из питомника лесничества вырвались первыми. Теперь у них есть вожак.',
+        'Он не ждёт вас в одном месте. Он охотится.',
+      ],
+      goal: 'Выследите и убейте Вожака стаи. Он меняет логово каждые 4 хода — заколачивайте локации, чтобы сужать круг.',
+      rule: 'Охота: Угроза каждые 4 хода уходит в случайную открытую локацию. В каждой локации бродит лишний мёртвый волк.',
+      special: { extraEnemy: 'wolfz', roamEvery: 4 },
+      boss: 'alpha', henchman: 'packwolf',
+      locations: ['campfire', 'cabins', 'lake', 'ranger', 'ravine', 'den'],
+      clockEvents: ['howl', 'howl', 'siren', 'hunger', 'dawn', 'fog', 'rain'],
+      reward: { card: 'alphafang', text: 'Трофей: Клык вожака' },
+      outro: 'В журнале вожатых — последняя запись: «Детей увезли автобусом в школу Ривертона. Автобус не вернулся». Дети могут быть живы.',
+    },
+    {
+      id: 'm9', num: 9, act: 2, name: 'Последний автобус', icon: 'truck', tier: 3,
+      place: 'Средняя школа Ривертона',
+      intro: [
+        'Автобус №12 стоит у школы. Внутри — следы детских ладоней на запотевших окнах. Изнутри.',
+        'Двенадцать детей заперлись в кабинете музыки. Живые. Голодные. Ждут.',
+        'Чтобы увезти их, нужно топливо. А директор Брэдшоу всё ещё звонит в звонок на перемену.',
+      ],
+      goal: 'Соберите 3 канистры топлива и уничтожьте Директора Брэдшоу. Без топлива победа над Угрозой не закончит миссию.',
+      rule: 'Топливо: в локациях спрятаны 4 канистры (проверка Силы, Выживания или Техники 5; при провале канистра остаётся в колоде). Нужно 3.',
+      special: { objective: { card: 'fuelcan', count: 4, need: 3, label: 'Топливо' }, clockMod: 2 },
+      boss: 'principal', henchman: 'hallmonitor',
+      locations: ['busyard', 'gym', 'cafeteria', 'chemlab', 'library', 'boilerroom'],
+      clockEvents: ['siren', 'siren', 'howl', 'hunger', 'broadcast', 'dawn', 'fog'],
+      reward: { card: 'busdriver', text: 'Новый союзник: Водитель Глория' },
+      outro: 'Автобус ревёт, дети поют что-то фальшиво и громко. Глория ведёт машину туда, откуда всё началось: штаб-квартира «Хейл Биомед». Пора закончить это.',
+    },
+    {
+      id: 'm10', num: 10, act: 2, name: 'Источник', icon: 'biohazard', tier: 3,
+      place: 'Комплекс «Хейл Биомед»',
+      intro: [
+        'Стеклянная башня на холме над Холлоу-Криком. Здесь всё и началось.',
+        'В подвале — «Объект 0». Доброволец, которому ввели первую дозу. Он всё ещё жив. В каком-то смысле.',
+        'Каждый раз, когда вы его ранете и отступите, он станет сильнее. Второго шанса может не быть.',
+      ],
+      goal: 'Уничтожьте Нулевого пациента: две победы подряд. Каждая ваша неудача делает его сильнее (+1 к сложности).',
+      rule: 'Мутация: каждый раз, когда Угрозу не победили, её сложность растёт на 1. Орда приводит 3 мертвецов. В каждой локации — лишний Харкун.',
+      special: { extraEnemy: 'spitter', hordeSize: 3, clockMod: 2 },
+      boss: 'patientzero', henchman: 'guardz',
+      locations: ['lobbyhb', 'offices', 'vivarium', 'cleanroom', 'server', 'sublevel'],
+      clockEvents: ['siren', 'siren', 'howl', 'howl', 'hunger', 'dawn', 'broadcast'],
+      reward: null,
+      outro: 'Объект 0 затихает навсегда. В серверной вы находите формулу — не лекарство, но начало. Над Холлоу-Криком встаёт солнце. Впервые за много дней вы смотрите на него без страха. Кампания завершена.',
     },
   ];
 })();
