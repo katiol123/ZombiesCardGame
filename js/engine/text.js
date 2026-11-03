@@ -4,7 +4,7 @@
   const ZG = window.ZG;
   const T = ZG.T;
 
-  const VERB = { reveal: 'Покажите', discard: 'Сбросьте', recharge: 'Перезарядите', banish: 'Изгоните' };
+  const VERB = { reveal: 'Покажите', discard: 'Сбросьте', recharge: 'Перезарядите', banish: 'Изгоните', burn: 'Сожгите' };
   const KIND = {
     combat: 'боевой проверки',
     acquire: 'проверки поиска',
@@ -58,7 +58,7 @@
       return s;
     }
     if (p.on === 'damage') {
-      return `${v}, получая урон: ${p.reduce === 'all' ? 'предотвратите весь урон' : `уменьшите урон на ${p.reduce}`}.`;
+      return `${v}, получая урон${p.combatOnly ? ' в бою' : ''}: ${p.reduce === 'all' ? 'заблокируйте весь урон' : `заблокируйте ${p.reduce} урона`}.`;
     }
     if (p.on === 'evade') return `${v} при встрече с врагом (не Угрозой): уклонитесь от него.`;
     if (p.on === 'infect') return `${v}, получая Инфекцию: отмените её.`;

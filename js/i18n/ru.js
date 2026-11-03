@@ -142,6 +142,8 @@
     mode_discard: 'Сбросить',
     mode_recharge: 'Перезарядить',
     mode_banish: 'Изгнать',
+    mode_burn: 'Сжечь',
+    burned: 'Сожжено',
 
     dmg_title: 'Урон',
     dmg_hint: 'Сбросьте {n} {cards} из руки. Сначала можно сыграть защиту.',

@@ -155,11 +155,12 @@
     }
     tray.innerHTML = `
       <div class="hero-panel" style="--hc:${hd.color}">
-        <div class="hp-top">${UI.avatar(mh.id)}<div><div class="hp-name">${esc(hd.name)}</div><div class="hp-role">${esc(hd.role)}</div></div></div>
+        <div class="hp-top">${UI.avatar(mh.id)}<div><div class="hp-name">${esc(hd.name)}</div><div class="hp-role">${esc(hd.role)}</div></div><button class="btn small ghost tray-toggle" data-act="traytoggle">${UI.trayCollapsed ? 'Рука ▴' : 'Свернуть ▾'}</button></div>
         ${UI.statsHTML(ph)}
         <div class="piles">
           <div class="pile ${mh.deck.length <= 2 ? 'warn' : ''}" title="Колода — это здоровье"><b>${mh.deck.length}</b>${T('deck')}</div>
           <div class="pile"><b>${mh.discard.length}</b>${T('discard')}</div>
+          <div class="pile" title="Сожжённые расходники: не возвращаются лечением до конца миссии"><b>${(mh.burned || []).length}</b>${T('burned')}</div>
           <div class="pile inf" title="Три Инфекции — обращение"><b>${inf}/3</b>☣</div>
         </div>
       </div>
@@ -178,6 +179,9 @@
         <button class="btn ${w && !w.explore && !w.close ? 'pulse' : ''} ${mh.id === 'ten' || mh.id === 'marina' ? '' : 'wide'}" data-act="end" ${w ? '' : 'disabled'}>${ZG.icon('next')} ${T('act_end')}</button>
         <div class="hint">${esc(hint)}</div>
       </div>`;
+    tray.classList.toggle('collapsed', !!UI.trayCollapsed);
+    const bd = document.getElementById('board');
+    if (bd) bd.classList.toggle('tray-small', !!UI.trayCollapsed);
     UI.fitHand(tray.querySelector('.hand'));
   };
 
@@ -200,6 +204,7 @@
   UI.onAct = async function (act) {
     if (act === 'rules') return UI.showRules(true);
     if (act === 'menu') return UI.gameMenu();
+    if (act === 'traytoggle') { UI.trayCollapsed = !UI.trayCollapsed; return UI.renderTray(); }
     const w = UI.waiting;
     if (!w) return;
     const a = w.actions;
@@ -392,6 +397,14 @@
         own = UI.overlay(`<div class="encounter"><div class="enc-card drop">${ctx.check.kind === 'close' ? UI.locCardHTML(loc) : ctx.check.cardId ? UI.cardHTML(ctx.check.cardId, { size: 'big' }) : UI.locCardHTML(loc)}</div><div class="enc-panel panel"></div></div>`, 'enc-ov');
         panel = own.querySelector('.enc-panel');
       }
+      if (!own && ctx.check.kind === 'close' && ctx.check.locIdx != null) {
+        const box = UI.cardBox();
+        if (box) {
+          box.className = 'enc-card drop';
+          const c = box.querySelector('.card');
+          if (c) c.outerHTML = UI.locCardHTML(G().M().locations[ctx.check.locIdx]);
+        }
+      }
       const st = { rolled: false };
       const render = () => UI.renderCheck(panel, ctx, st, finish);
       const finish = async (res) => {
@@ -413,6 +426,10 @@
   }
 
   UI.renderCheck = function (panel, ctx, st, finish) {
+    const keepScroll = panel.scrollTop;
+    const keepWin = window.scrollY;
+    const ovs = panel.closest('.overlay');
+    const keepOv = ovs ? ovs.scrollTop : 0;
     const g = G();
     const m = g.M();
     const ck = ctx.check;
@@ -497,6 +514,9 @@
       }));
     });
     panel.querySelectorAll('.mini-hand').forEach(UI.fitHand);
+    panel.scrollTop = keepScroll;
+    if (ovs) ovs.scrollTop = keepOv;
+    window.scrollTo(0, keepWin);
     panel.querySelector('[data-roll]').addEventListener('click', () => UI.doRoll(panel, ctx, finish));
     UI.keyRoll = () => { const b = panel.querySelector('[data-roll]'); if (b) b.click(); };
   };
@@ -552,6 +572,7 @@
       const g = G();
       const plays = [];
       const sel = new Set();
+      const isRed = (p) => p.on === 'damage' && (!p.combatOnly || opts.combat);
       ZG.FX.flash('red');
       ZG.FX.shake();
       const hd = ZG.HEROES[mh.id];
@@ -572,9 +593,9 @@
         const usedU = new Set(plays.map((p) => p.u));
         const cards = mh.hand.map((c) => {
           const d = ZG.card(c.id);
-          const red = (d.plays || []).map((p, pi) => (p.on === 'damage' && !usedU.has(c.u) && !plays.some((x) => ZG.card(x.id).type === d.type) ? pi : -1)).filter((x) => x >= 0);
+          const red = (d.plays || []).map((p, pi) => (isRed(p) && !usedU.has(c.u) && !plays.some((x) => ZG.card(x.id).type === d.type) ? pi : -1)).filter((x) => x >= 0);
           const used = usedU.has(c.u);
-          const badge = used ? 'защита' : red.length ? 'Защита' : '';
+          const badge = used ? 'блок' : red.length ? 'Блок' : '';
           return UI.cardHTML(c, { u: c.u, cls: `${used ? 'inpool' : ''} ${red.length ? 'playable' : ''} ${sel.has(c.u) ? 'selected' : ''}`, badge });
         }).join('');
         const reduced = plays.length ? `<div class="muted">Защита: ${plays.map((p) => esc(ZG.card(p.id).name)).join(', ')}</div>` : '';
@@ -591,7 +612,7 @@
             plays.splice(i, 1);
             return render();
           }
-          const red = (d.plays || []).map((p, pi) => (p.on === 'damage' ? pi : -1)).filter((x) => x >= 0);
+          const red = (d.plays || []).map((p, pi) => (isRed(p) ? pi : -1)).filter((x) => x >= 0);
           if (red.length && !plays.some((x) => ZG.card(x.id).type === d.type) && !sel.has(u)) {
             const opts2 = red.map((pi) => ({ label: T('mode_' + d.plays[pi].mode), sub: ZG.playText(d.plays[pi]), pi }));
             opts2.push({ label: 'Сбросить как урон', sub: '', pi: -2 });
@@ -612,7 +633,7 @@
       };
       ZG.FX.burstAt(document.querySelector('.hero-panel .avatar'), 'blood', 50);
       // если защититься нечем и выбора нет — авто
-      const anyRed = mh.hand.some((c) => (ZG.card(c.id).plays || []).some((p) => p.on === 'damage'));
+      const anyRed = mh.hand.some((c) => (ZG.card(c.id).plays || []).some(isRed));
       if (!anyRed && mh.hand.length <= n) {
         mh.hand.forEach((c) => sel.add(c.u));
         render();
@@ -690,7 +711,7 @@
     const cards = Array.from(el.querySelectorAll(':scope > .card'));
     el.classList.remove('fanned');
     cards.forEach((c) => (c.style.marginLeft = ''));
-    if (cards.length < 2) return;
+    if (cards.length < 2 || window.innerWidth <= 900) return;
     const cw = cards[0].offsetWidth;
     const avail = el.clientWidth - 16;
     const gap = 10;

@@ -64,7 +64,7 @@
       skills: { stealth: 3, shooting: 1 },
       hand: 5,
       deck: { weapon: 2, item: 3, consumable: 3, ally: 3, resolve: 4 },
-      start: ['knife', 'pistol', 'flashlight', 'binoculars', 'backpack', 'energy', 'bandage', 'molotov', 'rex', 'neighbor', 'trucker', 'hope', 'hope', 'hope', 'prayer'],
+      start: ['knife', 'pistol', 'flashlight', 'binoculars', 'pads', 'energy', 'bandage', 'molotov', 'rex', 'neighbor', 'trucker', 'hope', 'hope', 'hope', 'prayer'],
       powers: [
         { id: 'evade', name: 'Ускользнуть', text: 'Раз в ход, встретив мертвеца или человека (не Угрозу), можете уклониться: проверка Скрытности против сложности врага. Успех — враг уходит под низ колоды локации, а вы получаете +1 исследование.' },
         { id: 'scout', name: 'Разведка', text: 'Раз в ход: посмотрите верхнюю карту любой локации, можете положить её вниз колоды.' },
@@ -81,7 +81,7 @@
       skills: { tech: 3, melee: 2 },
       hand: 4,
       deck: { weapon: 3, item: 5, consumable: 3, ally: 1, resolve: 3 },
-      start: ['crowbar', 'bat', 'hatchet', 'toolbox', 'flashlight', 'jacket', 'backpack', 'binoculars', 'molotov', 'bandage', 'cannedfood', 'trucker', 'hope', 'hope', 'prayer'],
+      start: ['crowbar', 'bat', 'hatchet', 'toolbox', 'flashlight', 'jacket', 'backpack', 'trashlid', 'molotov', 'bandage', 'cannedfood', 'trucker', 'hope', 'hope', 'prayer'],
       powers: [
         { id: 'carpenter', name: 'Золотые руки', text: 'Проверки баррикады получают +1к6. Боевые проверки с оружием «Инструмент» получают +1к4.' },
         { id: 'scrounger', name: 'Барахольщик', text: 'Проверки поиска Оружия и Снаряжения получают +2.' },

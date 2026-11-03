@@ -73,7 +73,8 @@
     if (!c) return;
     if (mode === 'discard') owner.discard.push(c);
     else if (mode === 'recharge') owner.deck.push(c);
-    else if (mode === 'banish') { /* карта уходит в коробку */ }
+    else if (mode === 'burn') { (owner.burned = owner.burned || []).push(c); }
+    else if (mode === 'banish') { /* карта уходит в коробку навсегда */ }
   };
 
   /* ============================== Создание миссии ============================== */
@@ -142,7 +143,7 @@
     // Герои
     party.forEach((ph, pi) => {
       const deck = R.shuffle(ph.deck.map((id) => G.inst(id, { v: 1 })));
-      const mh = { pi, id: ph.id, deck, hand: [], discard: [], loc: 0, dead: false, turned: false };
+      const mh = { pi, id: ph.id, deck, hand: [], discard: [], burned: [], loc: 0, dead: false, turned: false };
       const hs = G.handSize(ph);
       while (mh.hand.length < hs && mh.deck.length) mh.hand.push(mh.deck.shift());
       m.heroes.push(mh);
@@ -153,7 +154,7 @@
   };
 
   /* ============================== Колоды героев (лагерь) ============================== */
-  G.BASICS = { weapon: ['knife', 'bat', 'pistol'], item: ['flashlight', 'jacket'], consumable: ['bandage', 'ammo'], ally: ['neighbor'], resolve: ['hope'] };
+  G.BASICS = { weapon: ['knife', 'bat', 'pistol'], item: ['flashlight', 'jacket', 'trashlid'], consumable: ['bandage', 'ammo'], ally: ['neighbor'], resolve: ['hope'] };
 
   G.reserve = function () {
     const camp = G.S().campaign;
@@ -609,7 +610,7 @@
 
   G.closeCheck = function (loc, title) {
     const ld = G.ldef(loc);
-    return { kind: 'close', skills: ld.close.skills, dc: ld.close.dc, base: ld.close.dc, mods: [], title: title || `${T('check_close')}: ${ld.name}` };
+    return { kind: 'close', skills: ld.close.skills, dc: ld.close.dc, base: ld.close.dc, mods: [], locIdx: G.M().locations.indexOf(loc), title: title || `${T('check_close')}: ${ld.name}` };
   };
 
   /* ---------- Бой ---------- */
@@ -658,7 +659,7 @@
     // до проверки
     if (def.before && def.before.damage) {
       G.log(`${def.name} атакует первым: ${def.before.damage} урона.`, 'bad');
-      await G.damage(mh, def.before.damage, { source: def.name });
+      await G.damage(mh, def.before.damage, { source: def.name, combat: true });
     }
     if (def.before && def.before.infectCheck) {
       const ic = def.before.infectCheck;
@@ -703,7 +704,7 @@
     }
     // поражение
     const dmg = Math.min(ck.dc - res.total, G.dmgCap(def)) + (def.dmgAdd || 0);
-    const taken = await G.damage(mh, dmg, { source: def.name, bite: def.bite });
+    const taken = await G.damage(mh, dmg, { source: def.name, bite: def.bite, combat: true });
     if ((def.bite && taken > 0) || def.infectOnFail) await G.infect(mh);
     if (def.theft && !mh.dead && mh.hand.length) {
       const c = mh.hand.splice(R.int(mh.hand.length), 1)[0];
@@ -1154,7 +1155,7 @@
     const loot = [];
     const keptOne = new Set();
     m.heroes.forEach((mh) => {
-      G.allPiles(mh).forEach((c) => {
+      [...G.allPiles(mh), ...(mh.burned || [])].forEach((c) => {
         const d = ZG.card(c.id);
         if (!ZG.isBoon(d)) return;
         if (c.v) vault.push(c.id);
