@@ -14,6 +14,15 @@
  * ===================================================================== */
 window.ZG_ART = {
   cards: {
+    butcher: 'assets/cards/butcher.webp',
+    echo: 'assets/cards/echo.webp',
+    foreman: 'assets/cards/foreman.webp',
+    guardz: 'assets/cards/guardz.webp',
+    hallmonitor: 'assets/cards/hallmonitor.webp',
+    orderly: 'assets/cards/orderly.webp',
+    packwolf: 'assets/cards/packwolf.webp',
+    patrol: 'assets/cards/patrol.webp',
+    veteran: 'assets/cards/veteran.webp',
     subject: 'assets/cards/subject.webp',
     bearz: 'assets/cards/bearz.webp',
     coach: 'assets/cards/coach.webp',
