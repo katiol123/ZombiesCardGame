@@ -13,16 +13,16 @@
     close: { skills: ['tech', 'str'], dc: 6 }, noise: 7, mods: {},
     flavor: 'Каталки поперёк коридора. Табло всё ещё показывает очередь: 47.' });
   loc({ id: 'wards', name: 'Палаты', icon: 'bed', deck: { e: 3, w: 0, i: 1, c: 3, a: 1, r: 0, v: 1 },
-    close: { skills: ['wit', 'tech'], dc: 6 }, noise: 6, mods: { acquireDc: { consumable: -1 } },
+    close: { skills: ['wit', 'tech', 'str'], dc: 6 }, noise: 6, mods: { acquireDc: { consumable: -1 } },
     flavor: 'Пустые кровати. Ремни на некоторых разорваны.' });
   loc({ id: 'morgue', name: 'Морг', icon: 'skull', deck: { e: 4, w: 1, i: 1, c: 0, a: 0, r: 1, v: 2 },
     close: { skills: ['str', 'tech'], dc: 7 }, noise: 7, mods: { enemyDc: 1 },
     flavor: 'Холодильные камеры открыты изнутри.' });
   loc({ id: 'pharmacy', name: 'Аптека', icon: 'pill', deck: { e: 2, w: 0, i: 1, c: 4, a: 1, r: 0, v: 1 },
-    close: { skills: ['tech'], dc: 7 }, noise: 6, mods: { acquireDc: { consumable: -1 } },
+    close: { skills: ['tech', 'str'], dc: 7 }, noise: 6, mods: { acquireDc: { consumable: -1 } },
     flavor: 'Решётка выломана. Но не всё вынесли.' });
   loc({ id: 'boiler', name: 'Котельная', icon: 'factory', deck: { e: 2, w: 2, i: 2, c: 0, a: 0, r: 1, v: 2 },
-    close: { skills: ['tech'], dc: 6 }, noise: 8, mods: {},
+    close: { skills: ['tech', 'end'], dc: 6 }, noise: 8, mods: {},
     flavor: 'Гул труб глушит шаги. Твои — и их.' });
   loc({ id: 'ambulance', name: 'Парковка скорой', icon: 'car', deck: { e: 3, w: 1, i: 1, c: 0, a: 2, r: 1, v: 1 },
     close: { skills: ['str', 'survival'], dc: 6 }, noise: 5, mods: {},
@@ -117,7 +117,7 @@
     rain: { id: 'rain', name: 'Ливень', icon: 'waves', text: 'Шум всех локаций −1.' },
     hunger: { id: 'hunger', name: 'Голод', icon: 'can', text: 'Каждый живой герой сбрасывает верхнюю карту своей колоды.' },
     howl: { id: 'howl', name: 'Вой из темноты', icon: 'skull', text: 'В случайную открытую локацию приходит мертвец.' },
-    broadcast: { id: 'broadcast', name: 'Обрывок радиопередачи', icon: 'radio', text: 'Активный герой берёт 1 карту.' },
+    broadcast: { id: 'broadcast', name: 'Обрывок радиопередачи', icon: 'radio', text: 'Активный герой перетасовывает 1 карту из сброса в колоду.' },
     dawn: { id: 'dawn', name: 'Холодный рассвет', icon: 'sunrise', text: 'Каждый живой герой перетасовывает 1 случайную карту из сброса в колоду.' },
     fog: { id: 'fog', name: 'Туман', icon: 'smoke', text: 'В этот ход проверки поиска −1 к сложности, но враги +1.' },
   };

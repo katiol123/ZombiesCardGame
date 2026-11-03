@@ -266,7 +266,7 @@
     await UI().clockFlip(c, old !== m.phase && m.turn > 1);
     if (old === 'night' && m.phase === 'day') {
       m.locations.forEach((l) => (l.noise = Math.max(0, l.noise - 1)));
-      G.log('Рассвет: шум всех локаций −1.', 'clock');
+      G.log('Утро: шум всех локаций −1.', 'clock');
     }
     const cd = ZG.CLOCK[c.id];
     if (c.id !== 'calm') G.log(`Часы: ${cd.name}. ${cd.text}`, 'clock');
@@ -579,6 +579,7 @@
     const m = G.M();
     const mods = [];
     if (!def.living && m.phase === 'night') mods.push({ label: 'Ночь', v: G.nightBonus() });
+    if (def.type === 'boss' && m.heroes.length === 1) mods.push({ label: 'Соло', v: -1 });
     const lm = (G.ldef(loc).mods || {}).enemyDc;
     if (lm) mods.push({ label: 'Локация', v: lm });
     if (m.turnMods.fog) mods.push({ label: 'Туман', v: 1 });
@@ -879,6 +880,7 @@
       noise += pl.noise || 0;
       noiseMod += pl.noiseMod || 0;
     });
+    if (mh.id === 'ten' && ck.kind === 'combat' && wp && ZG.card(wp.id).traits.includes('Тихое')) dice.push({ d: 'd4', src: 'Бесшумная' });
     if (mh.id === 'grom') {
       if (ck.kind === 'combat' && wp) dice.push({ d: 'd4', src: 'Боевой опыт' });
       if (wp && (G.playDef(wp).noise || 0) > 0) noise += 1;
@@ -922,7 +924,6 @@
     const pl = def.plays[pi];
     if (!pl || pl.on !== 'check') return false;
     const ck = ctx.check;
-    if (ck.kind === 'evade') return false;
     if (owner !== ctx.mh) {
       if (!pl.help || owner.dead || owner.loc !== ctx.mh.loc) return false;
     }
@@ -1113,6 +1114,18 @@
     const def = ZG.card(inst.id);
     const ui = UI();
     if (!loc.closed && loc.deck.length === 0) await G.closeLoc(loc);
+    if (!loc.closed && m.heroes.length === 1 && !mh.dead) {
+      loc.henchDown = true;
+      const c = await ui.choose({
+        title: 'Угроза отброшена',
+        text: `Соло: попытаться заколотить «${G.ldef(loc).name}» прямо сейчас? (${ZG.cardCheckLineClose(loc)})`,
+        options: [{ label: 'Заколотить', primary: true }, { label: 'Нет' }],
+      });
+      if (c === 0) {
+        const res = await G.doCheck(mh, G.closeCheck(loc));
+        if (res.success) await G.closeLoc(loc);
+      }
+    }
     const open = G.openLocs();
     const guarded = new Set();
     for (const l of open) {
@@ -1144,22 +1157,33 @@
   };
 
   /* ============================== Итоги миссии ============================== */
-  G.finish = function (win, reason) {
+  G.finish = async function (win, reason) {
     const S = G.S();
     const m = S.mission;
+    // при провале каждый выживший сам выбирает одну находку
+    const chosen = {};
+    if (!win) {
+      for (const mh of m.heroes) {
+        if (mh.dead) continue;
+        const looted = [...G.allPiles(mh), ...(mh.burned || [])].filter((c) => c.l && !c.v && ZG.isBoon(ZG.card(c.id)));
+        if (looted.length > 1) {
+          const k = await UI().choose({ title: `${G.hname(mh)}: что унести?`, text: 'Миссия провалена. Из найденного можно спасти только одну карту.', options: looted.map((c) => ({ label: ZG.card(c.id).name, sub: ZG.cardTypeLabel(ZG.card(c.id)) })) });
+          chosen[mh.id] = looted[k].u;
+        } else if (looted.length) chosen[mh.id] = looted[0].u;
+      }
+    }
     const camp = S.campaign;
     const def = ZG.MISSIONS[m.idx];
     m.over = true;
     // пересчёт склада
     const vault = m.reserve.slice();
     const loot = [];
-    const keptOne = new Set();
     m.heroes.forEach((mh) => {
       [...G.allPiles(mh), ...(mh.burned || [])].forEach((c) => {
         const d = ZG.card(c.id);
         if (!ZG.isBoon(d)) return;
         if (c.v) vault.push(c.id);
-        else if (c.l && !mh.dead && (win || !keptOne.has(mh.id))) { vault.push(c.id); loot.push(c.id); if (!win) keptOne.add(mh.id); }
+        else if (c.l && !mh.dead && (win || chosen[mh.id] === c.u)) { vault.push(c.id); loot.push(c.id); }
       });
     });
     const scars = [];

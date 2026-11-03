@@ -112,7 +112,7 @@
     { id: 'trashlid', type: 'item', name: 'Крышка от мусорного бака', tier: 0, basic: true, icon: 'shield', traits: ['Броня', 'Щит'],
       acquire: { skills: ['str', 'survival'], dc: 4 },
       plays: [
-        { on: 'damage', mode: 'reveal', reduce: 1, combatOnly: true },
+        { on: 'damage', mode: 'recharge', reduce: 1, combatOnly: true },
         { on: 'damage', mode: 'burn', reduce: 'all' },
       ],
       flavor: 'Гнётся. Звенит. Держит.' },
