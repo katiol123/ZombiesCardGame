@@ -371,6 +371,17 @@
         if (!r.success) await G.infect(h);
       }
     }
+    if (sp.henchPatrol && m.turn > 1 && m.turn % sp.henchPatrol === 0) {
+      const hid = G.def().henchman;
+      const open = G.openLocs();
+      const sources = open.filter((l) => l.deck.some((c) => c.id === hid));
+      if (sources.length && open.length > 1) {
+        const loudest = (exclude) => open.filter((l) => l !== exclude).sort((a, b) => b.noise - a.noise || R.next() - 0.5)[0];
+        const from = R.pick(sources);
+        const to = loudest(from);
+        await G.moveHench(from, to, 'Обход');
+      }
+    }
     if (sp.roamEvery && m.turn > 1 && m.turn % sp.roamEvery === 0) {
       const open = G.openLocs();
       const from = open.find((l) => l.deck.some((c) => ZG.card(c.id).type === 'boss'));
@@ -1297,6 +1308,22 @@
     loc.noise = Math.max(0, loc.noise + n);
   };
 
+  /** Перемещение вожака между локациями (особые правила миссий) */
+  G.moveHench = async function (from, to, why) {
+    if (!from || !to || from === to || to.closed) return;
+    const hid = G.def().henchman;
+    const i = from.deck.findIndex((c) => c.id === hid);
+    if (i < 0) return;
+    const c = from.deck.splice(i, 1)[0];
+    to.deck.push(c);
+    R.shuffle(to.deck);
+    const name = ZG.card(hid).name;
+    G.log(`${why}: ${name} уходит из «${G.ldef(from).name}» в «${G.ldef(to).name}».`, 'bad');
+    ZG.Audio.sfx('growl', 0.7);
+    await UI().banner(`${why}: ${name}`, `Из «${G.ldef(from).name}» в «${G.ldef(to).name}»`, 'warn');
+    UI().renderBoard();
+  };
+
   G.checkHorde = async function (loc) {
     if (loc.closed || loc.noise < loc.limit) return;
     const size = (G.def().special || {}).hordeSize || 2;
@@ -1306,6 +1333,11 @@
     G.M().stats.hordes++;
     G.log(`ОРДА! +${size} мертвецов в «${G.ldef(loc).name}».`, 'bad');
     await UI().horde(loc, size);
+    if ((G.def().special || {}).henchToHorde) {
+      const hid = G.def().henchman;
+      const src = G.openLocs().filter((l) => l !== loc && l.deck.some((c) => c.id === hid));
+      if (src.length) await G.moveHench(R.pick(src), loc, 'На крик');
+    }
   };
 
   /* ============================== Баррикады и угроза ============================== */
