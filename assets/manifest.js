@@ -14,6 +14,15 @@
  * ===================================================================== */
 window.ZG_ART = {
   cards: {
+    bearz: 'assets/cards/bearz.webp',
+    coach: 'assets/cards/coach.webp',
+    counselorz: 'assets/cards/counselorz.webp',
+    drvoss: 'assets/cards/drvoss.webp',
+    gasminer: 'assets/cards/gasminer.webp',
+    kane: 'assets/cards/kane.webp',
+    liquidator: 'assets/cards/liquidator.webp',
+    rockcrawler: 'assets/cards/rockcrawler.webp',
+    studentz: 'assets/cards/studentz.webp',
     drowned: 'assets/cards/drowned.webp',
     hiker: 'assets/cards/hiker.webp',
     labtech: 'assets/cards/labtech.webp',
