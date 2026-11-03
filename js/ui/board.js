@@ -590,7 +590,7 @@
       const g = G();
       const plays = [];
       const sel = new Set();
-      const isRed = (p) => p.on === 'damage' && !opts.noReduce && (!p.combatOnly || opts.combat);
+      const isRed = (p) => p.on === 'damage' && !opts.noReduce && (!p.combatOnly || opts.combat) && (!p.onlyType || p.onlyType.includes(opts.dmgType));
       ZG.FX.flash('red');
       ZG.FX.shake();
       ZG.Audio.synth('hit');

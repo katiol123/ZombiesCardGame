@@ -59,7 +59,7 @@
       return s;
     }
     if (p.on === 'damage') {
-      return `${v}, получая урон${p.combatOnly ? ' в бою' : ''}: ${p.reduce === 'all' ? 'заблокируйте весь урон' : `заблокируйте ${p.reduce} урона`}.`;
+      return `${v}, получая урон${p.combatOnly ? ' в бою' : ''}${p.onlyType ? ' (' + p.onlyType.map((t) => ZG.DMG_TYPES[t]).join(', ') + ')' : ''}: ${p.reduce === 'all' ? 'заблокируйте весь урон' : `заблокируйте ${p.reduce} урона`}.`;
     }
     if (p.on === 'evade') return `${v} при встрече с врагом (не Угрозой): уклонитесь от него.`;
     if (p.on === 'infect') return `${v}, получая Инфекцию: отмените её.`;

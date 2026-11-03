@@ -57,7 +57,7 @@
     if (mh.dead) return;
     const c = G.conds(mh);
     if (c[key]) return;
-    c[key] = key === 'vuln' || key === 'doom' ? 3 : 1;
+    c[key] = key === 'vuln' || key === 'doom' || key === 'poison' ? 3 : 1;
     G.log(`${G.hname(mh)}: состояние «${ZG.CONDS[key].name}».`, 'bad');
     await UI().fxCond(mh, key);
   };
@@ -137,7 +137,7 @@
 
   /* ============================== Создание миссии ============================== */
   G.LOC_SIZE = 7;
-  G.CLOCK_BY_PARTY = [22, 30, 32, 35];
+  G.CLOCK_BY_PARTY = [20, 30, 32, 35];
   G.enemyDmgType = (def, loc) => def.dmgType || ((G.ldef(loc).rules || {}).enemyDmgType) || null;
   G.dmgCap = (def) => def.maxDmg || (def.type === 'boss' ? 5 : def.type === 'henchman' ? 4 : 3);
   G.newMission = function (idx) {
@@ -244,7 +244,7 @@
 
   G.cardValue = (id) => {
     const d = ZG.card(id);
-    return (d.tier === 9 ? 3.5 : d.tier) * 10 + (d.basic ? 0 : 1);
+    return (d.tier === 9 || d.mission ? 3.5 : d.tier) * 10 + (d.basic ? 0 : 1);
   };
 
   /** Привести колоды к составу: убрать недостающие на складе карты, лишние вернуть, пустые слоты заполнить */
@@ -575,6 +575,8 @@
       const c = mh.hand.splice(R.int(mh.hand.length), 1)[0];
       mh.deck.push(c);
       G.log(`Отравление: «${ZG.card(c.id).name}» уходит под низ колоды.`, 'bad');
+      cs.poison--;
+      if (!cs.poison) { delete cs.poison; G.log(`${G.hname(mh)}: яд выветрился.`, 'good'); }
       UI().toast(`${ZG.icon('vial')} Отравление: −1 карта в руке`, 'bad');
     }
   };
@@ -815,7 +817,6 @@
     const m = G.M();
     const mods = [];
     if (!def.living && m.phase === 'night') mods.push({ label: 'Ночь', v: G.nightBonus() });
-    if (def.type === 'boss' && m.heroes.length === 1) mods.push({ label: 'Соло', v: -1 });
     if (def.mutates && m.bossMut) mods.push({ label: 'Мутация', v: m.bossMut });
     const lr = G.lrule(loc);
     if (!def.living && lr.undeadDc) mods.push({ label: 'Локация: мертвецы', v: lr.undeadDc });
@@ -1578,8 +1579,10 @@
       const others = m.locations.map((_, i) => i).filter((i) => i !== li);
       for (const h of G.heroesAt(li)) {
         if (!others.length) break;
-        let to = await ui.pickLocation(`${G.hname(h)}: куда отступить из заколоченной локации?`, others);
-        if (to == null) to = R.pick(others);
+        const openOthers = others.filter((i) => !m.locations[i].closed);
+        const pickFrom = openOthers.length ? openOthers : others;
+        let to = await ui.pickLocation(`${G.hname(h)}: куда отступить из заколоченной локации?`, pickFrom);
+        if (to == null) to = R.pick(pickFrom);
         h.loc = to;
         G.log(`${G.hname(h)} уходит в «${G.ldef(m.locations[to]).name}».`, 'move');
       }
