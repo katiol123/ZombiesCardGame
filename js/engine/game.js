@@ -1397,7 +1397,8 @@
       if (villains.length) loc.deck = villains;
       else await G.closeLoc(loc);
     }
-    const remaining = G.openLocs().filter((l) => !guarded.has(l));
+    // Угроза не может бежать туда, где её победили, и в перекрытые локации
+    const remaining = G.openLocs().filter((l) => !guarded.has(l) && l !== loc);
     const ob = G.special().objective;
     if (!remaining.length && ob && (m.obj || 0) < ob.need) {
       m.bossDown = true;
