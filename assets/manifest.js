@@ -14,6 +14,8 @@
  * ===================================================================== */
 window.ZG_ART = {
   cards: {
+    burnt: 'assets/cards/burnt.webp',
+    patientzero: 'assets/cards/patientzero.webp',
     alpha: 'assets/cards/alpha.webp',
     burke: 'assets/cards/burke.webp',
     colossus: 'assets/cards/colossus.webp',
