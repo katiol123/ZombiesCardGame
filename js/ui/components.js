@@ -173,7 +173,7 @@
   };
 
   UI.inspect = function (inst) {
-    const ov = UI.overlay(`<div class="inspect" style="display:flex;flex-direction:column;align-items:center;gap:18px">${UI.cardHTML(inst, { size: 'big' })}<button class="btn">${T('close')}</button></div>`);
+    const ov = UI.overlay(`<div class="inspect" style="display:flex;flex-direction:column;align-items:center;gap:18px">${UI.cardHTML(inst, { size: 'big' })}<button class="btn" data-x>${T('close')}</button></div>`);
     const close = () => UI.closeOverlay(ov);
     ov.addEventListener('click', close);
   };

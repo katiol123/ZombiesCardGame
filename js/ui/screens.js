@@ -67,8 +67,8 @@
         <div class="slot-actions">
           ${mode === 'new' ? `<button class="btn primary small" data-a="new">${T('slot_new_here')}</button>` : ''}
           ${sm && mode !== 'new' ? `<button class="btn primary small" data-a="load">${T('slot_load')}</button>` : ''}
-          ${sm ? `<button class="btn small" data-a="export" title="${T('slot_export')}">${ZG.icon('download')}</button>` : ''}
-          <button class="btn small" data-a="import" title="${T('slot_import')}">${ZG.icon('upload')}</button>
+          ${sm ? `<button class="btn small" data-a="export" title="Сохранить кампанию в файл">${ZG.icon('download')} ${T('slot_export')}</button>` : ''}
+          <button class="btn small" data-a="import" title="Загрузить кампанию из файла">${ZG.icon('upload')} Импорт</button>
           ${sm ? `<button class="btn small ghost" data-a="del" title="${T('slot_delete')}">${ZG.icon('trash')}</button>` : ''}
         </div></div>`);
     }
@@ -263,6 +263,7 @@
         <button class="btn ghost" data-a="map">${T('to_map')}</button>
       </div>
     </div></div>`);
+    s.scrollTop = 0;
     if (r.win) setTimeout(() => { ZG.FX.burst(window.innerWidth / 2, window.innerHeight * 0.3, 'gold', 120); }, 300);
     if (finalWin) setTimeout(() => UI.banner('Первые дни позади', 'Спасибо, что выжили.', 'win', true), 900);
     s.querySelectorAll('[data-a]').forEach((b) => b.addEventListener('click', () => {

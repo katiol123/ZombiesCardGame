@@ -111,7 +111,7 @@
       const loc = ZG.LOCATIONS[m.locations[h.loc].id];
       return `<div class="pmini ${i === m.active ? 'active' : ''} ${h.dead ? 'dead' : ''}" data-hero="${i}">
         ${UI.avatar(h.id, h.dead ? 'dead' : '')}
-        <div class="pinfo"><div class="pname">${esc(hd.name)}</div>
+        <div class="pinfo"><div class="pname">${esc(UI.shortName(h.id))}</div>
         <div class="pstats">${h.dead ? (h.turned ? 'Обращение' : 'Гибель') : `<span title="${T('deck')}">${ZG.icon('cards')} ${h.deck.length}</span><span title="${T('hand')}">${ZG.icon('hand')} ${h.hand.length}</span><span class="inf-pips" title="${T('infection')} ${inf}/3">${[0, 1, 2].map((k) => `<i class="${k < inf ? 'on' : ''}"></i>`).join('')}</span><span title="Локация">${ZG.icon('mappin')} ${esc(loc.name)}</span>`}</div></div>
       </div>`;
     }).join('');
@@ -178,6 +178,7 @@
         <button class="btn ${w && !w.explore && !w.close ? 'pulse' : ''} ${mh.id === 'ten' || mh.id === 'marina' ? '' : 'wide'}" data-act="end" ${w ? '' : 'disabled'}>${ZG.icon('next')} ${T('act_end')}</button>
         <div class="hint">${esc(hint)}</div>
       </div>`;
+    UI.fitHand(tray.querySelector('.hand'));
   };
 
   /* ---------- Ожидание действия ---------- */
@@ -431,7 +432,7 @@
       const owner = m.heroes.find((h) => h.id === p.owner);
       return `<div class="slotbox filled" data-unplay="${p.u}" title="Убрать"><span class="sl-name">${esc(ZG.card(p.id).name)}</span>${T('mode_' + g.playDef(p).mode)}${owner !== mh ? ' · ' + esc(g.hname(owner)) : ''}</div>`;
     }).join('');
-    const dice = pool.dice.map((x) => `<div class="die ${x.d}"><span>${T('die')}${ZG.sides(x.d)}</span><small>${esc(x.src.slice(0, 12))}</small></div>`).join('');
+    const dice = pool.dice.map((x) => `<div class="die ${x.d}"><div class="die-body"><span>${T('die')}${ZG.sides(x.d)}</span></div><small>${esc(x.src.slice(0, 12))}</small></div>`).join('');
     const pct = Math.round(pool.chance * 100);
     const handCards = (owner) => owner.hand.map((c) => {
       const d = ZG.card(c.id);
@@ -495,6 +496,7 @@
         st.render();
       }));
     });
+    panel.querySelectorAll('.mini-hand').forEach(UI.fitHand);
     panel.querySelector('[data-roll]').addEventListener('click', () => UI.doRoll(panel, ctx, finish));
     UI.keyRoll = () => { const b = panel.querySelector('[data-roll]'); if (b) b.click(); };
   };
@@ -506,7 +508,7 @@
     const bottom = panel.querySelector('#check-bottom');
     bottom.innerHTML = `<div class="total-line">${T('rolling')}</div>`;
     const diceEl = panel.querySelector('#dice');
-    diceEl.innerHTML = res.rolls.map((r) => `<div class="die ${r.d} rolling"><span>?</span><small>${esc(r.src.slice(0, 12))}</small></div>`).join('');
+    diceEl.innerHTML = res.rolls.map((r) => `<div class="die ${r.d} rolling"><div class="die-body"><span>?</span></div><small>${esc(r.src.slice(0, 12))}</small></div>`).join('');
     const els = Array.from(diceEl.querySelectorAll('.die'));
     let spin = true;
     (async () => {
@@ -605,6 +607,7 @@
           else if (sel.size < g.damageNeeded(mh, n, plays)) sel.add(u);
           render();
         }));
+        UI.fitHand(panel.querySelector('.hand'));
         panel.querySelector('[data-ok]').addEventListener('click', done);
       };
       ZG.FX.burstAt(document.querySelector('.hero-panel .avatar'), 'blood', 50);
@@ -675,5 +678,45 @@
     }
     if (!UI.waiting || UI.encPanel()) return;
     if (e.key === 'e' || e.key === 'у') UI.onAct('explore');
+  });
+})();
+
+(function () {
+  const ZG = window.ZG;
+  const UI = ZG.UI;
+  /** Сжать ряд карт веером, если он не помещается */
+  UI.fitHand = function (el) {
+    if (!el) return;
+    const cards = Array.from(el.querySelectorAll(':scope > .card'));
+    el.classList.remove('fanned');
+    cards.forEach((c) => (c.style.marginLeft = ''));
+    if (cards.length < 2) return;
+    const cw = cards[0].offsetWidth;
+    const avail = el.clientWidth - 16;
+    const gap = 10;
+    if (cards.length * (cw + gap) <= avail) return;
+    const step = Math.max(cw * 0.32, (avail - cw) / (cards.length - 1));
+    el.classList.add('fanned');
+    cards.forEach((c, i) => { if (i) c.style.marginLeft = (step - cw) + 'px'; });
+  };
+  UI.shortName = function (id) {
+    const n = ZG.HEROES[id].name;
+    const m = n.match(/«(.+?)»/);
+    return m ? m[1] : n.split(' ')[0];
+  };
+  window.addEventListener('resize', () => {
+    document.querySelectorAll('#tray .hand, .enc-panel .mini-hand').forEach(UI.fitHand);
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key !== 'Escape') return;
+    const ovs = document.querySelectorAll('#overlay-root > .overlay');
+    const top = ovs[ovs.length - 1];
+    if (top) {
+      const x = top.querySelector('[data-x]');
+      if (x) return x.click();
+      if (top.querySelector('.inspect')) return top.click();
+    }
+    const pop = document.querySelector('.mode-pop');
+    if (pop) pop.remove();
   });
 })();
