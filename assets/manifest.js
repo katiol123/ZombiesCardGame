@@ -14,6 +14,18 @@
  * ===================================================================== */
 window.ZG_ART = {
   cards: {
+    alphafang: 'assets/cards/alphafang.webp',
+    campsong: 'assets/cards/campsong.webp',
+    hope: 'assets/cards/hope.webp',
+    kidsdrawing: 'assets/cards/kidsdrawing.webp',
+    lastlight: 'assets/cards/lastlight.webp',
+    medals: 'assets/cards/medals.webp',
+    memory: 'assets/cards/memory.webp',
+    miracle: 'assets/cards/miracle.webp',
+    oath: 'assets/cards/oath.webp',
+    prayer: 'assets/cards/prayer.webp',
+    rage: 'assets/cards/rage.webp',
+    secondwind: 'assets/cards/secondwind.webp',
     canary: 'assets/cards/canary.webp',
     counselor: 'assets/cards/counselor.webp',
     deserter: 'assets/cards/deserter.webp',
