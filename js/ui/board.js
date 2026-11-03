@@ -171,7 +171,7 @@
         <button class="btn" data-act="move" ${dis('move')}>${ZG.icon('footprints')} ${T('act_move')}</button>
         <button class="btn primary ${w && w.explore ? 'pulse' : ''}" data-act="explore" ${dis('explore')}>${ZG.icon('search')} ${T('act_explore')}${ts.explores > 1 ? ' ×' + ts.explores : ''}</button>
         ${w && w.close ? `<button class="btn primary pulse wide" data-act="close">${ZG.icon('hammer')} ${T('act_close')}</button>` : ''}
-        ${w && w.rest ? `<button class="btn good wide" data-act="rest">${ZG.icon('tent')} ${T('act_rest')} (+2)</button>` : ''}
+        ${w && w.rest ? `<button class="btn good wide" data-act="rest">${ZG.icon('tent')} ${T('act_rest')} (+3)</button>` : ''}
         ${mh.id === 'ten' ? `<button class="btn" data-act="scout" ${dis('scout')}>${ZG.icon('eye')} ${T('act_scout')}</button>` : ''}
         ${mh.id === 'marina' ? `<button class="btn" data-act="fieldmed" ${dis('fieldmed')}>${ZG.icon('cross')} Медицина</button>` : ''}
         <button class="btn" data-act="give" ${dis('give')}>${ZG.icon('swap')} ${T('act_give')}</button>

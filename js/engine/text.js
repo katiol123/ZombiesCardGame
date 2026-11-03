@@ -78,6 +78,7 @@
   ZG.cardRules = function (def) {
     const lines = [];
     if (def.text) lines.push(def.text);
+    if (ZG.isEnemy(def)) lines.push(`Провал: урон = разница, но не больше ${ZG.Game.dmgCap(def)}${def.dmgAdd ? ` (+${def.dmgAdd})` : ''}${def.bite ? '. Укус: Инфекция, если урон прошёл' : ''}.`);
     if (def.plays && def.plays.length) def.plays.forEach((p) => lines.push(ZG.playText(p)));
     return lines;
   };

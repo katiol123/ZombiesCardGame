@@ -446,7 +446,7 @@ h1, h2, h3 { font-family: var(--font-head); font-weight: 600; letter-spacing: 0.
    ОВЕРЛЕИ
    ========================================================================== */
 #overlay-root { position: fixed; inset: 0; z-index: 1000; pointer-events: none; }
-.overlay { position: absolute; inset: 0; pointer-events: all; display: flex; align-items: center; justify-content: center; padding: 16px; background: rgba(4, 4, 6, .72); backdrop-filter: blur(5px); animation: ovin .35s ease both; overflow: auto; }
+.overlay { position: absolute; inset: 0; pointer-events: all; display: flex; align-items: safe center; justify-content: safe center; padding: 16px; background: rgba(4, 4, 6, .72); backdrop-filter: blur(5px); animation: ovin .35s ease both; overflow: auto; }
 .overlay.out { animation: ovout .3s ease both; }
 @keyframes ovin { from { opacity: 0; } }
 @keyframes ovout { to { opacity: 0; } }
@@ -684,7 +684,8 @@ h1, h2, h3 { font-family: var(--font-head); font-weight: 600; letter-spacing: 0.
   .hand .card .cflavor { display: none; }
   .map-nodes { grid-template-columns: 1fr; }
   .camp-grid { grid-template-columns: 1fr; }
-  .encounter { gap: 14px; }
+  .encounter { gap: 14px; flex-direction: column; align-items: center; flex-wrap: nowrap; }
+  .enc-panel { max-height: none; overflow: visible; }
   .enc-card, .card.big { width: 200px; height: 286px; }
   .card.big .cart { height: 80px; }
   .card.big .cart .art-icon { font-size: 54px; }

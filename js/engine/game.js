@@ -78,6 +78,7 @@
 
   /* ============================== Создание миссии ============================== */
   G.LOC_SIZE = 7;
+  G.dmgCap = (def) => def.maxDmg || (def.type === 'boss' ? 5 : def.type === 'henchman' ? 4 : 3);
   G.newMission = function (idx) {
     const S = G.S();
     const def = ZG.MISSIONS[idx];
@@ -114,7 +115,8 @@
       const isE = (c) => ZG.isEnemy(ZG.card(c.id));
       const trimmed = [];
       deck.filter(isE).slice(0, 2).forEach((c) => trimmed.push(c));
-      deck.forEach((c) => { if (trimmed.length < G.LOC_SIZE && !trimmed.includes(c)) trimmed.push(c); });
+      const size = party.length >= 3 ? G.LOC_SIZE - 1 : G.LOC_SIZE;
+      deck.forEach((c) => { if (trimmed.length < size && !trimmed.includes(c)) trimmed.push(c); });
       deck.length = 0;
       deck.push(...trimmed);
       if (special.extraEnemy) deck.push(G.inst(special.extraEnemy));
@@ -364,7 +366,7 @@
         case 'rest': {
           m.ts.rested = true;
           m.ts.explores = 0;
-          const n = G.heal(mh, 2);
+          const n = G.heal(mh, 3);
           G.log(`${G.hname(mh)} отдыхает в убежище и восстанавливает ${n} карт.`, 'good');
           await ui.banner('Отдых', `Перетасовано в колоду: ${n}`, 'good');
           break;
@@ -686,7 +688,7 @@
       return null;
     }
     // поражение
-    const dmg = ck.dc - res.total + (def.dmgAdd || 0);
+    const dmg = Math.min(ck.dc - res.total, G.dmgCap(def)) + (def.dmgAdd || 0);
     const taken = await G.damage(mh, dmg, { source: def.name, bite: def.bite });
     if ((def.bite && taken > 0) || def.infectOnFail) await G.infect(mh);
     if (def.theft && !mh.dead && mh.hand.length) {
