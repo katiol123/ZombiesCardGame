@@ -172,7 +172,7 @@
         <div class="piles">
           <div class="pile ${mh.deck.length <= 2 ? 'warn' : ''}" title="Колода — это здоровье"><b>${mh.deck.length}</b>${T('deck')}</div>
           <div class="pile"><b>${mh.discard.length}</b>${T('discard')}</div>
-          <div class="pile" title="Сожжённые расходники: сгорели навсегда"><b>${(mh.burned || []).length}</b>${T('burned')}</div>
+          <div class="pile" title="Сожжено навсегда: ${(mh.burned || []).length}. Захоронено до конца миссии (Распад): ${(mh.buried || []).length}."><b>${(mh.burned || []).length + (mh.buried || []).length}</b>${T('burned')}</div>
           <div class="pile inf" title="Три Инфекции — обращение"><b>${inf}/3</b>☣</div>
         </div>
       </div>
@@ -323,6 +323,7 @@
     const el = ZG.html(`<div class="clock-flip"><div class="clock-card ${ev ? '' : 'quick'}"><div class="b">${ZG.icon('hourglass')}</div>
       <div class="f ${ev ? 'ev' : ''}"><div class="ph">${T('clock')} · ход ${m.turn} · ${m.phase === 'night' ? T('night') : T('day')}</div>${ZG.icon(ev ? cd.icon : m.phase === 'night' ? 'moon' : 'hourglass')}<h3>${esc(name)}</h3>${ev ? `<p>${esc(cd.text)}</p>` : ''}</div></div></div>`);
     const card = el.querySelector('.clock-card');
+    ZG.Audio.synth('tick');
     card.style.animationDuration = ((ev ? 2.1 : 1.2) * Math.max(ZG.speed, 0.25)) + 's';
     document.body.appendChild(el);
     await ZG.sleep(ev ? 2100 : 1200);
@@ -357,6 +358,7 @@
       UI.enc = { el, depth: 1 };
     }
     await ZG.sleep(280);
+    ZG.Audio.synth('flip');
     const fl = UI.enc.el.querySelector('.card-flipper');
     if (fl) fl.classList.remove('down');
     await ZG.sleep(650);
@@ -390,6 +392,7 @@
     const b = UI.cardBox();
     if (!b) return;
     b.classList.add('acquired');
+    ZG.Audio.synth('loot');
     ZG.FX.burstAt(b, 'gold', 60);
     ZG.FX.flash('green');
   };
@@ -537,6 +540,7 @@
   UI.doRoll = async function (panel, ctx, finish) {
     UI.keyRoll = null;
     const res = G().rollCheck(ctx);
+    ZG.Audio.synth('dice');
     panel.querySelectorAll('[data-skill],[data-unplay]').forEach((el) => (el.style.pointerEvents = 'none'));
     const bottom = panel.querySelector('#check-bottom');
     bottom.innerHTML = `<div class="total-line">${T('rolling')}</div>`;
@@ -568,6 +572,7 @@
     bottom.innerHTML = `<div class="result-banner ${ok ? 'ok' : 'bad'}">${ok ? T('success') : T('fail')}</div>
       <div class="total-line">${res.rolls.map((r) => r.v).join(' + ')}${res.pool.bonus ? (res.pool.bonus > 0 ? ' + ' : ' − ') + Math.abs(res.pool.bonus) : ''} = <b>${res.total}</b> против ${res.dc}${ok ? '' : ` · разница ${res.dc - res.total}`}</div>
       <div class="enc-actions"><button class="btn ${ok ? 'good' : 'primary'}" data-cont>${T('continue')}</button></div>`;
+    ZG.Audio.synth(ok ? 'success' : 'fail');
     if (ok) { ZG.FX.flash('green'); ZG.FX.burstAt(panel.querySelector('.result-banner'), 'gold', 40); }
     else { ZG.FX.flash('red'); ZG.FX.shake(UI.cardBox() || undefined); }
     const btn = bottom.querySelector('[data-cont]');
@@ -585,9 +590,10 @@
       const g = G();
       const plays = [];
       const sel = new Set();
-      const isRed = (p) => p.on === 'damage' && (!p.combatOnly || opts.combat);
+      const isRed = (p) => p.on === 'damage' && !opts.noReduce && (!p.combatOnly || opts.combat);
       ZG.FX.flash('red');
       ZG.FX.shake();
+      ZG.Audio.synth('hit');
       const hd = ZG.HEROES[mh.id];
       let panel = UI.encPanel();
       let own = null;
@@ -613,7 +619,7 @@
           return UI.cardHTML(c, { u: c.u, cls: `${used ? 'inpool' : ''} ${red.length ? 'playable' : ''} ${sel.has(c.u) ? 'selected' : ''}`, badge });
         }).join('');
         const reduced = plays.length ? `<div class="muted">Защита: ${plays.map((p) => esc(ZG.card(p.id).name)).join(', ')}</div>` : '';
-        panel.innerHTML = `<div class="dmg-head"><div class="dmg-num">−${n}</div><div><h2>${T('dmg_title')}: ${esc(hd.name.split(' ')[0])}</h2><div class="mtext" style="margin:0">${opts.source ? esc(opts.source) + '. ' : ''}${opts.bite ? '<span style="color:var(--toxic)">Укус: если урон пройдёт — Инфекция.</span> ' : ''}</div>${reduced}</div></div>
+        panel.innerHTML = `<div class="dmg-head"><div class="dmg-num">−${n}</div><div><h2>${T('dmg_title')}: ${esc(hd.name.split(' ')[0])}</h2><div class="mtext" style="margin:0">${opts.source ? esc(opts.source) + '. ' : ''}${opts.dmgType ? `<span style="color:var(--amber)">Тип урона: ${ZG.DMG_TYPES[opts.dmgType]}.</span> ` : ''}${opts.noReduce ? '<span style="color:var(--blood2)">Уязвимость: этот урон нельзя уменьшить.</span> ' : ''}${opts.bite ? '<span style="color:var(--toxic)">Укус: если урон пройдёт — Инфекция.</span> ' : ''}</div>${reduced}</div></div>
           <div class="mtext" style="margin-top:10px">${need ? `Выберите ${need} ${ZG.plural(need, 'карту', 'карты', 'карт')} для сброса. Карты с защитой можно сыграть, нажав на них.` : T('dmg_none')}</div>
           <div class="hand">${cards || '<span class="muted">Рука пуста</span>'}</div>
           <div class="enc-actions" style="align-items:center;margin-top:8px"><span class="muted">${T('dmg_choose', { a: sel.size, b: need })}</span><button class="btn primary" data-ok ${sel.size === need ? '' : 'disabled'}>${T('dmg_accept')}</button></div>`;
@@ -676,6 +682,7 @@
     UI.renderBoard();
     const el = document.querySelector(`.loc[data-i="${i}"]`);
     if (el) ZG.FX.burstAt(el, 'spark', 40);
+    ZG.Audio.synth('hammer');
     await UI.banner(T('barricaded'), T('barricade_done', { loc: ZG.LOCATIONS[loc.id].name }), 'good');
     UI.closingLoc = null;
   };
@@ -685,6 +692,7 @@
     UI.renderLocs();
     const el = document.querySelector(`[data-noise="${i}"]`);
     if (el) el.classList.add('pulse');
+    ZG.Audio.synth('noise');
   };
 
   UI.fxInfect = async function (mh, n) {
@@ -697,6 +705,7 @@
   };
 
   UI.fxHeal = function (mh) {
+    ZG.Audio.synth('heal');
     const i = G().M().heroes.indexOf(mh);
     ZG.FX.burstAt(document.querySelector(`.pmini[data-hero="${i}"]`), 'gold', 30);
     UI.renderBoard();
@@ -766,8 +775,9 @@
   const UI = ZG.UI;
   UI.fxCond = async function (mh, key) {
     const c = ZG.CONDS[key];
-    ZG.FX.flash(key === 'panic' ? 'toxic' : 'red');
-    if (key === 'panic') ZG.Audio.sfx('psychedelic');
+    ZG.FX.flash(key === 'poison' || key === 'decay' ? 'toxic' : 'red');
+    if (key === 'terror' || key === 'decay' || key === 'doom') ZG.Audio.sfx('psychedelic');
+    ZG.Audio.synth && ZG.Audio.synth('curse');
     UI.toast(`${ZG.icon(c.icon)} ${ZG.esc(ZG.Game.hname(mh))}: ${ZG.esc(c.name)}`, 'bad');
     UI.renderBoard();
     await ZG.sleep(500);

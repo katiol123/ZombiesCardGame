@@ -688,6 +688,156 @@
     plays: [], text: 'Угроза ушла не сюда. Получите +1 исследование. Карта уходит из игры.',
     flavor: 'Кровавые следы обрываются у стены. Обман.' }]);
 
+
+  /* ============================== УНИКАЛЬНОЕ ДЛЯ МИССИЙ ==============================
+   * mission: id миссии — карта замешивается в колоды локаций только этой миссии, без привязки к локации. */
+  const U = (mid, list) => list.forEach((c) => { c.mission = mid; c.tier = c.tier != null ? c.tier : 0; c.traits = c.traits || []; add([c]); });
+  U('m1', [
+    { id: 'morphine', type: 'consumable', name: 'Морфий из сейфа Хейла', icon: 'syringe', traits: ['Медицина'], acquire: { skills: ['medicine', 'wit'], dc: 6 },
+      plays: [{ on: 'damage', mode: 'burn', reduce: 3 }], flavor: 'Ампулы подписаны от руки: «Для себя».' },
+    { id: 'defib', type: 'item', name: 'Дефибриллятор', icon: 'bolt', traits: ['Медицина', 'Электричество'], acquire: { skills: ['medicine', 'tech'], dc: 6 },
+      plays: [{ on: 'action', mode: 'recharge', heal: { dice: ['d4'], bonus: 1 }, target: 'here' }, { on: 'check', mode: 'discard', kind: COMBAT, dice: ['d8'], noise: 1 }],
+      flavor: '«Разряд!» Мертвецы тоже вздрагивают.' },
+    { id: 'orderlykeys', type: 'item', name: 'Ключи санитара', icon: 'lock', traits: ['Инструмент'], acquire: { skills: ['dex', 'wit'], dc: 5 },
+      plays: [{ on: 'check', mode: 'reveal', kind: ['close'], dice: ['d6'] }, { on: 'check', mode: 'reveal', kind: ['acquire'], dice: ['d4'] }],
+      flavor: 'Сорок ключей. Один из них — от морга.' },
+    { id: 'nurseannie', type: 'ally', name: 'Медсестра Энни', icon: 'cross', traits: ['Медик'], acquire: { skills: ['persuasion'], dc: 5 },
+      plays: [{ on: 'action', mode: 'recharge', clearConds: true, target: 'here' }, { on: 'check', mode: 'recharge', kind: ['acquire'], dice: ['d6'] }],
+      flavor: 'Пряталась в бельевой три дня. Помнит всех пациентов по именам.' },
+  ]);
+  U('m2', [
+    { id: 'cart', type: 'item', name: 'Тележка из супермаркета', icon: 'store', traits: [], acquire: { skills: ['str'], dc: 5 },
+      plays: [{ on: 'action', mode: 'display' }], displayed: { hand: 1 }, flavor: 'Одно колесо скрипит. Зато влезает всё.' },
+    { id: 'propane', type: 'consumable', name: 'Баллон пропана', icon: 'fire', traits: ['Огонь'], acquire: { skills: ['str', 'tech'], dc: 6 },
+      plays: [{ on: 'check', mode: 'burn', kind: COMBAT, dice: ['d6', 'd6', 'd6'], noise: 4 }], flavor: 'Для гриля. Был.' },
+    { id: 'cleaver', type: 'weapon', name: 'Тесак мясника', icon: 'knife', traits: ['Ближнее'], acquire: { skills: ['str', 'melee'], dc: 6 },
+      plays: [{ on: 'check', mode: 'reveal', kind: COMBAT, weapon: ['str', 'melee'], dice: ['d8'], bonus: 1, noise: 1 }], flavor: 'Рубит кости. Любые.' },
+    { id: 'managerburt', type: 'ally', name: 'Управляющий Берт', icon: 'user', traits: ['Горожанин'], acquire: { skills: ['persuasion'], dc: 6 },
+      plays: [{ on: 'action', mode: 'recharge', draw: 1 }, { on: 'check', mode: 'discard', kind: ['acquire'], dice: ['d8'] }], flavor: '«Склад? Я покажу. Только не стреляйте».' },
+  ]);
+  U('m3', [
+    { id: 'flaregun', type: 'weapon', name: 'Ракетница', icon: 'flare', traits: ['Дальнее', 'Огонь'], acquire: { skills: ['dex', 'survival'], dc: 6 },
+      plays: [{ on: 'check', mode: 'reveal', kind: COMBAT, weapon: ['dex', 'shooting'], dice: ['d8'], noise: 2 }], flavor: 'Красная звезда. Горячая.' },
+    { id: 'climbgear', type: 'item', name: 'Альпинистское снаряжение', icon: 'tower', traits: [], acquire: { skills: ['str', 'survival'], dc: 6 },
+      plays: [{ on: 'check', mode: 'reveal', kind: NONCOMBAT, dice: ['d6'] }], flavor: 'Карабины, верёвка, страховка. Вверх — безопаснее.' },
+    { id: 'batterypack', type: 'consumable', name: 'Аккумулятор вышки', icon: 'bolt', traits: ['Электричество'], acquire: { skills: ['tech'], dc: 6 },
+      plays: [{ on: 'check', mode: 'burn', kind: COMBAT, dice: ['d10'], noise: 1 }, { on: 'action', mode: 'burn', explore: true }], flavor: '12 вольт ярости.' },
+    { id: 'hamoperator', type: 'ally', name: 'Радиолюбитель Эд', icon: 'radio', traits: ['Горожанин'], acquire: { skills: ['persuasion', 'tech'], dc: 6 },
+      plays: [{ on: 'action', mode: 'recharge', scout: true }, { on: 'action', mode: 'discard', time: 1 }], flavor: '«Я слышу их переговоры. Они идут с севера».' },
+  ]);
+  U('m4', [
+    { id: 'tireiron', type: 'weapon', name: 'Баллонный ключ', icon: 'wrench', traits: ['Ближнее', 'Инструмент'], acquire: { skills: ['str', 'tech'], dc: 6 },
+      plays: [{ on: 'check', mode: 'reveal', kind: COMBAT, weapon: ['str', 'melee'], dice: ['d8'], noise: 1 }], flavor: 'Тяжёлый. Удобный. Честный.' },
+    { id: 'nitro', type: 'consumable', name: 'Канистра нитро', icon: 'fuel', traits: ['Огонь'], acquire: { skills: ['tech', 'survival'], dc: 7 },
+      plays: [{ on: 'check', mode: 'burn', kind: COMBAT, dice: ['d8', 'd8'], noise: 3 }], flavor: 'С гоночной машины Кейна.' },
+    { id: 'cagekey', type: 'item', name: 'Ключ от клетки', icon: 'lock', traits: [], acquire: { skills: ['stealth', 'dex'], dc: 7 },
+      plays: [{ on: 'action', mode: 'burn', gain: 'ally' }], flavor: 'В клетке ещё живые.' },
+    { id: 'prisoner', type: 'ally', name: 'Пленница Роза', icon: 'user', traits: ['Горожанин'], acquire: { skills: ['persuasion'], dc: 6 },
+      plays: [{ on: 'check', mode: 'recharge', kind: COMBAT, dice: ['d6'] }, { on: 'damage', mode: 'discard', reduce: 2 }], flavor: 'Сломанные пальцы. Несломленный взгляд.' },
+  ]);
+  U('m5', [
+    { id: 'detonator', type: 'item', name: 'Детонатор сапёров', icon: 'bomb', traits: ['Огонь'], acquire: { skills: ['tech'], dc: 7 },
+      plays: [{ on: 'check', mode: 'burn', kind: COMBAT, dice: ['d6', 'd6', 'd6', 'd6'], noise: 6 }], flavor: 'Провод тянется к опоре №3.' },
+    { id: 'medals', type: 'resolve', name: 'Медали ветерана', icon: 'badge', traits: [], acquire: { skills: ['will'], dc: 6 },
+      plays: [{ on: 'check', mode: 'discard', kind: COMBAT, skillDie: 2, help: true }], flavor: 'Корея. Вьетнам. Мост Мэдисон.' },
+    { id: 'sandbags', type: 'item', name: 'Мешки с песком', icon: 'warehouse', traits: [], acquire: { skills: ['str', 'end'], dc: 6 },
+      plays: [{ on: 'check', mode: 'reveal', kind: ['close'], dice: ['d8'] }], flavor: 'Тяжело. Надёжно.' },
+    { id: 'sapper', type: 'ally', name: 'Сапёр Ортега', icon: 'bomb', traits: ['Армия'], acquire: { skills: ['persuasion'], dc: 7 },
+      plays: [{ on: 'check', mode: 'recharge', kind: ['close'], dice: ['d10'] }, { on: 'check', mode: 'discard', kind: ['event'], dice: ['d8'] }], flavor: '«Красный провод. Всегда красный».' },
+  ]);
+  U('m6', [
+    { id: 'hazmatsuit', type: 'item', name: 'Костюм химзащиты', icon: 'mask', traits: ['Броня'], acquire: { skills: ['end', 'tech'], dc: 7 },
+      plays: [{ on: 'infect', mode: 'recharge' }, { on: 'action', mode: 'display' }], displayed: { reduce: 1 }, flavor: 'Жёлтый. Душный. Живой внутри.' },
+    { id: 'filterpass', type: 'item', name: 'Пропуск фильтрации', icon: 'badge', traits: [], acquire: { skills: ['stealth', 'wit'], dc: 7 },
+      plays: [{ on: 'action', mode: 'burn', time: 2 }], flavor: 'Штамп «ЧИСТ». Чужая фотография.' },
+    { id: 'serum7b', type: 'consumable', name: 'Сыворотка 7-Б', icon: 'vial', traits: ['Медицина'], acquire: { skills: ['medicine'], dc: 8 },
+      plays: [{ on: 'action', mode: 'burn', cure: 'all', clearConds: true, target: 'here' }], flavor: 'Та самая. Работает. Иногда.' },
+    { id: 'deserter', type: 'ally', name: 'Дезертир Мэйсон', icon: 'crosshair', traits: ['Армия'], acquire: { skills: ['persuasion'], dc: 7 },
+      plays: [{ on: 'check', mode: 'recharge', kind: COMBAT, dice: ['d8'], noise: 2 }], flavor: '«Приказ был стрелять в детей. Я выбрал другую сторону».' },
+  ]);
+  U('m7', [
+    { id: 'dynamite', type: 'consumable', name: 'Динамит', icon: 'bomb', traits: ['Огонь'], acquire: { skills: ['tech', 'survival'], dc: 7 },
+      plays: [{ on: 'check', mode: 'burn', kind: COMBAT, dice: ['d8', 'd8', 'd8'], noise: 6 }], flavor: 'Влажный. Будем надеяться.' },
+    { id: 'pickaxe', type: 'weapon', name: 'Кирка', icon: 'hammer', traits: ['Ближнее', 'Тяжёлое', 'Инструмент'], acquire: { skills: ['str'], dc: 8 },
+      plays: [{ on: 'check', mode: 'reveal', kind: COMBAT, weapon: ['str', 'melee'], dice: ['d10'], bonus: 1, noise: 2 }], flavor: 'Сорок лет била породу.' },
+    { id: 'canary', type: 'ally', name: 'Канарейка в клетке', icon: 'flame', traits: ['Животное'], acquire: { skills: ['survival', 'persuasion'], dc: 6 },
+      plays: [{ on: 'action', mode: 'display' }], displayed: { check: { kind: ['acquire', 'event'], dice: ['d4'] } }, flavor: 'Пока поёт — дышим.' },
+    { id: 'selfrescuer', type: 'item', name: 'Самоспасатель', icon: 'mask', traits: [], acquire: { skills: ['end', 'survival'], dc: 6 },
+      plays: [{ on: 'damage', mode: 'burn', reduce: 'all' }], flavor: 'Сорок минут воздуха.' },
+  ]);
+  U('m8', [
+    { id: 'compoundbow', type: 'weapon', name: 'Блочный лук', icon: 'crossbow', traits: ['Дальнее', 'Тихое'], acquire: { skills: ['dex', 'shooting'], dc: 8 },
+      plays: [{ on: 'check', mode: 'reveal', kind: COMBAT, weapon: ['dex', 'shooting'], dice: ['d10'] }], flavor: 'Тихо. Точно. Насмерть.' },
+    { id: 'beartrap', type: 'item', name: 'Медвежий капкан', icon: 'lock', traits: [], acquire: { skills: ['survival', 'str'], dc: 7 },
+      plays: [{ on: 'check', mode: 'discard', kind: COMBAT, dice: ['d6', 'd6'] }, { on: 'evade', mode: 'discard' }], flavor: 'Щёлк.' },
+    { id: 'counselor', type: 'ally', name: 'Вожатая Ким', icon: 'user', traits: ['Горожанин'], acquire: { skills: ['persuasion'], dc: 7 },
+      plays: [{ on: 'action', mode: 'recharge', heal: { dice: ['d4'] }, target: 'here' }], flavor: 'Знает все песни. И все тропы.' },
+    { id: 'campsong', type: 'resolve', name: 'Песня у костра', icon: 'fire', traits: [], acquire: { skills: ['will', 'persuasion'], dc: 6 },
+      plays: [{ on: 'check', mode: 'discard', kind: 'any', skillDie: 1, nightSkillDie: 2, help: true, rechargeOnSuccess: true }], flavor: 'Ночью громче. Ночью нужнее.' },
+  ]);
+  U('m9', [
+    { id: 'trophycup', type: 'weapon', name: 'Кубок чемпионата', icon: 'trophy', traits: ['Ближнее'], acquire: { skills: ['str'], dc: 7 },
+      plays: [{ on: 'check', mode: 'reveal', kind: COMBAT, weapon: ['str', 'melee'], dice: ['d6'], bonus: 2, noise: 1 }], flavor: '«Ривертон Рэмс, 1998». Тяжёлый.' },
+    { id: 'chemkit', type: 'item', name: 'Набор юного химика', icon: 'vial', traits: [], acquire: { skills: ['tech', 'wit'], dc: 7 },
+      plays: [{ on: 'action', mode: 'recharge', craft: 'consumable' }], flavor: '«От 12 лет». Сойдёт.' },
+    { id: 'kidsdrawing', type: 'resolve', name: 'Детский рисунок', icon: 'photo', traits: [], acquire: { skills: ['will'], dc: 6 },
+      plays: [{ on: 'check', mode: 'discard', kind: 'any', skillDie: 1, help: true }, { on: 'action', mode: 'burn', clearConds: true, target: 'self' }], flavor: 'Солнце, дом, мама. Подпись: «Лили, 7 лет».' },
+    { id: 'janitor', type: 'ally', name: 'Уборщик Луис', icon: 'wrench', traits: ['Горожанин'], acquire: { skills: ['persuasion'], dc: 7 },
+      plays: [{ on: 'check', mode: 'recharge', kind: ['close'], dice: ['d8'] }], flavor: 'Знает, где каждая доска и каждый гвоздь.' },
+  ]);
+  U('m10', [
+    { id: 'antidote', type: 'consumable', name: 'Прототип антидота', icon: 'vial', traits: ['Медицина'], acquire: { skills: ['medicine', 'wit'], dc: 9 },
+      plays: [{ on: 'action', mode: 'burn', cure: 'all', clearConds: true, target: 'here' }], flavor: 'Вариант 41. Предыдущие сорок — нет.' },
+    { id: 'stunbaton', type: 'weapon', name: 'Электрошокер охраны', icon: 'bolt', traits: ['Ближнее', 'Тихое', 'Электричество'], acquire: { skills: ['dex', 'melee'], dc: 8 },
+      plays: [{ on: 'check', mode: 'reveal', kind: COMBAT, weapon: ['dex', 'melee'], dice: ['d8'], bonus: 1 }], flavor: '50 000 вольт. Мертвецы дёргаются смешно.' },
+    { id: 'keycard', type: 'item', name: 'Карта доступа ур. 5', icon: 'badge', traits: [], acquire: { skills: ['stealth', 'wit'], dc: 8 },
+      plays: [{ on: 'check', mode: 'reveal', kind: ['close', 'event'], dice: ['d8'] }], flavor: 'Принадлежала директору исследований. Он не возражает.' },
+    { id: 'drvoss', type: 'ally', name: 'Доктор Восс', icon: 'cross', traits: ['Медик'], acquire: { skills: ['persuasion', 'medicine'], dc: 9 },
+      plays: [{ on: 'check', mode: 'recharge', kind: 'any', skillDie: 1 }, { on: 'action', mode: 'discard', cure: 1, target: 'here' }], flavor: '«Я подписывал протоколы. Я помогу их сжечь».' },
+  ]);
+
+  /* Уникальные враги миссий (обычные, не вожаки) */
+  U('m1', [
+    { id: 'surgeonz', type: 'enemy', name: 'Мёртвый хирург', icon: 'knife', dc: 6, bite: true, inflict: 'poison', flavor: 'Маска на лице. Скальпель в руке. Привычка.' },
+    { id: 'coldbody', type: 'enemy', name: 'Тело из холодильника', icon: 'skull', dc: 6, bite: true, dmgType: 'cold', inflict: 'numb', weak: { 'Огонь': 'd6' }, flavor: 'Иней на ресницах. Холодные пальцы.' },
+  ]);
+  U('m2', [
+    { id: 'shopper', type: 'enemy', name: 'Покупательница', icon: 'skull', dc: 5, bite: true, theft: true, flavor: 'Всё ещё вцепилась в сумочку. И в вашу.' },
+    { id: 'stockboy', type: 'enemy', name: 'Грузчик', icon: 'skull', dc: 8, bite: true, dmgAdd: 1, resist: { 'Тихое': 2 }, flavor: 'Бейдж «Работник месяца».' },
+  ]);
+  U('m3', [
+    { id: 'linesman', type: 'enemy', name: 'Монтёр', icon: 'bolt', dc: 7, bite: true, dmgType: 'electric', before: { damage: 1 }, flavor: 'Вцепился в провод под напряжением. Отпускать не собирается.' },
+    { id: 'hiker', type: 'enemy', name: 'Турист', icon: 'skull', dc: 6, bite: true, inflict: 'terror', flavor: 'Рюкзак «38 литров». Компас всё ещё на шее.' },
+  ]);
+  U('m4', [
+    { id: 'biker', type: 'enemy', living: true, name: 'Байкер банды', icon: 'raider', dc: 8, theft: true, before: { damage: 1 }, flavor: 'Цепь вместо пояса. Улыбка без зубов.' },
+    { id: 'mechanicz', type: 'enemy', name: 'Сгоревший механик', icon: 'fire', dc: 7, bite: true, dmgType: 'fire', inflict: 'vuln', immune: ['Огонь'], flavor: 'Взорвался вместе с бензоколонкой. Встал.' },
+  ]);
+  U('m5', [
+    { id: 'drowned', type: 'enemy', name: 'Утопленник', icon: 'waves', dc: 8, bite: true, dmgType: 'cold', inflict: 'numb', flavor: 'Река вернула его. Не до конца.' },
+    { id: 'paratrooper', type: 'enemy', name: 'Мёртвый десантник', icon: 'skull', dc: 9, bite: true, armor: 1, dmgType: 'electric', flavor: 'Парашют зацепился за опору. Стропы перерезаны.' },
+  ]);
+  U('m6', [
+    { id: 'labtech', type: 'enemy', name: 'Лаборант', icon: 'vial', dc: 9, bite: true, dmgType: 'acid', inflict: 'vuln', flavor: 'Халат прожжён изнутри.' },
+    { id: 'quarantined', type: 'enemy', name: 'Карантинный', icon: 'biohazard', dc: 9, bite: true, infectOnFail: true, inflict: 'poison', flavor: 'Номер 2214 на запястье.' },
+  ]);
+  U('m7', [
+    { id: 'gasminer', type: 'enemy', name: 'Шахтёр в метане', icon: 'fire', dc: 10, bite: true, dmgType: 'fire', noiseOnEncounter: 1, weak: { 'Тихое': 'd6' }, flavor: 'Каска искрит о камень. Воздух вспыхивает.' },
+    { id: 'rockcrawler', type: 'enemy', name: 'Каменный ползун', icon: 'skull', dc: 9, bite: true, resist: { 'Ближнее': 2 }, inflict: 'numb', flavor: 'Сросся с породой. Почти.' },
+  ]);
+  U('m8', [
+    { id: 'bearz', type: 'enemy', name: 'Мёртвый медведь', icon: 'paw', dc: 12, bite: true, dmgAdd: 1, inflict: 'poison', weak: { 'Огонь': 'd6' }, flavor: 'Сколько он спал? Неважно. Проснулся голодным.' },
+    { id: 'counselorz', type: 'enemy', name: 'Вожатый', icon: 'skull', dc: 9, bite: true, inflict: 'terror', flavor: 'Свисток на шее. Он всё ещё зовёт детей.' },
+  ]);
+  U('m9', [
+    { id: 'studentz', type: 'enemy', name: 'Старшеклассник', icon: 'skull', dc: 8, bite: true, inflict: 'decay', flavor: 'Куртка команды. Номер 23. Выпускной был через месяц.' },
+    { id: 'coach', type: 'enemy', name: 'Тренер', icon: 'skull', dc: 11, bite: true, armor: 1, dmgAdd: 1, flavor: 'Свисток. Ещё один свисток. Последний.' },
+  ]);
+  U('m10', [
+    { id: 'subject', type: 'enemy', name: 'Подопытный', icon: 'biohazard', dc: 11, bite: true, dmgType: 'acid', inflict: 'poison', weak: { 'Электричество': 'd6' }, flavor: 'Бирка: «Серия 7-Б, отказ».' },
+    { id: 'liquidator', type: 'enemy', living: true, name: 'Ликвидатор', icon: 'raider', dc: 11, dmgType: 'electric', inflict: 'numb', before: { damage: 1 }, theft: true, flavor: 'Нанят зачищать свидетелей. Вы — свидетели.' },
+  ]);
+
   /* ============================== ДОПОЛНЕНИЯ К КАРТАМ ==============================
    * Тяжёлая броня, выложенные карты, состояния, уязвимости, стойкость, иммунитеты врагов. */
   const AUG = {
@@ -700,22 +850,28 @@
     rex: { displayed: { check: { kind: ['evade', 'acquire'], dice: ['d4'] } } },
     nvg: { displayed: { check: { kind: 'any', night: true, dice: ['d6'] } } },
     minerlamp: { displayed: { check: { kind: 'noncombat', dice: ['d4'] } } },
-    // состояния от врагов
-    runner: { inflict: 'bleed', resist: { 'Тяжёлое': 2 } },
-    deaddog: { inflict: 'bleed', resist: { 'Тяжёлое': 2 } },
-    wolfz: { inflict: 'bleed', resist: { 'Тяжёлое': 2 } },
-    swarm: { inflict: 'bleed', weak: { 'Огонь': 'd8' }, resist: { 'Огнестрел': 2 } },
-    stalker: { inflict: 'bleed' },
-    drhale: { inflict: 'bleed' },
-    brute: { inflict: 'fracture', resist: { 'Тихое': 2 } },
-    mutant: { inflict: 'fracture', weak: { 'Огонь': 'd6' } },
-    colossus: { inflict: 'fracture', weak: { 'Огонь': 'd10' }, resist: { 'Огнестрел': 2 } },
-    holt: { inflict: 'fracture', weak: { 'Огонь': 'd6' } },
-    screamer: { inflict: 'panic', weak: { 'Тихое': 'd6' } },
-    echo: { inflict: 'panic', weak: { 'Тихое': 'd6' } },
-    matriarch: { inflict: 'panic', weak: { 'Тихое': 'd8' } },
-    principal: { inflict: 'panic', weak: { 'Тихое': 'd6' } },
-    spitter: { inflict: 'exhausted', weak: { 'Дальнее': 'd6' } },
+    // состояния и типы урона врагов
+    runner: { inflict: 'poison', resist: { 'Тяжёлое': 2 } },
+    deaddog: { inflict: 'poison', resist: { 'Тяжёлое': 2 } },
+    wolfz: { inflict: 'poison', resist: { 'Тяжёлое': 2 } },
+    swarm: { inflict: 'decay', weak: { 'Огонь': 'd8' }, resist: { 'Огнестрел': 2 } },
+    stalker: { inflict: 'terror' },
+    drhale: { inflict: 'poison', dmgType: 'acid' },
+    brute: { inflict: 'numb', resist: { 'Тихое': 2 } },
+    mutant: { inflict: 'vuln', dmgType: 'acid', weak: { 'Огонь': 'd6' } },
+    colossus: { inflict: 'numb', weak: { 'Огонь': 'd10' }, resist: { 'Огнестрел': 2 } },
+    holt: { inflict: 'doom', dmgType: 'fire', weak: { 'Огонь': 'd6' } },
+    screamer: { inflict: 'terror', weak: { 'Тихое': 'd6' } },
+    echo: { inflict: 'terror', weak: { 'Тихое': 'd6' } },
+    matriarch: { inflict: 'decay', weak: { 'Тихое': 'd8' } },
+    principal: { inflict: 'doom', weak: { 'Тихое': 'd6' } },
+    spitter: { inflict: 'vuln', dmgType: 'acid', weak: { 'Дальнее': 'd6' } },
+    burnt: { inflict: 'vuln', dmgType: 'fire' },
+    patientzero: { inflict: 'decay', dmgType: 'acid' },
+    soldierz: { dmgType: 'electric' },
+    hazmat: { dmgType: 'acid' },
+    kane: { inflict: 'doom' },
+    alpha: { inflict: 'terror' },
     // уязвимости и стойкость
     shambler: { weak: { 'Тяжёлое': 'd4' } },
     bloater: { weak: { 'Огонь': 'd8' }, resist: { 'Ближнее': 2 } },
@@ -732,12 +888,13 @@
     if (C[id] && !C[id].plays.some((p) => p.mode === 'display')) C[id].plays.push({ on: 'action', mode: 'display' });
   });
   // состояния от препятствий
-  const evFail = { glass: [{ damage: 1 }, { cond: 'bleed' }], smokefill: [{ damage: 1 }, { cond: 'exhausted' }], nursery: [{ cond: 'panic' }, { shock: 1 }], tripwire: [{ damage: 'd4' }, { cond: 'fracture' }, { noise: 2 }], fire: [{ damage: 1 }, { cond: 'exhausted' }, { noise: 2 }], rubble: [{ clock: 1 }, { cond: 'fracture' }] };
-  const evText = { glass: 'Провал: 1 урон и Кровотечение.', smokefill: 'Провал: 1 урон и Истощение.', nursery: 'Успех: найдите Решимость. Провал: Паника, сбросьте 1 случайную карту из руки.', tripwire: 'Провал: 1к4 урона, Перелом, шум +2.', fire: 'Провал: 1 урон, Истощение, шум +2.', rubble: 'Провал: сбросьте карту Часов и получите Перелом.' };
+  const evFail = { glass: [{ damage: 1 }, { cond: 'poison' }], smokefill: [{ damage: 1, dmgType: 'fire' }, { cond: 'vuln' }], nursery: [{ cond: 'decay' }, { shock: 1 }], tripwire: [{ damage: 'd4', dmgType: 'fire' }, { cond: 'numb' }, { noise: 2 }], fire: [{ damage: 2, dmgType: 'fire' }, { cond: 'vuln' }, { noise: 2 }], rubble: [{ clock: 1 }, { cond: 'numb' }], quarantine: [{ infect: 1 }, { cond: 'poison' }], silence: [{ summon: true }, { cond: 'terror' }] };
+  const evText = { glass: 'Провал: 1 урон и Отравление (грязная рана).', smokefill: 'Провал: 1 урон огнём и Уязвимость.', nursery: 'Успех: найдите Решимость. Провал: Распад, сбросьте 1 случайную карту из руки.', tripwire: 'Провал: 1к4 урона огнём, Онемение, шум +2.', fire: 'Провал: 2 урона огнём, Уязвимость, шум +2.', rubble: 'Провал: сбросьте карту Часов и получите Онемение.', quarantine: 'Успех: случайный Расходник. Провал: Инфекция и Отравление.', silence: 'Провал: встреча с мертвецом из темноты и Ночной ужас.' };
   Object.keys(evFail).forEach((id) => { if (C[id]) { C[id].fail = evFail[id]; C[id].text = evText[id]; } });
   // консервы снимают истощение, бинты — кровотечение
-  if (C.cannedfood) C.cannedfood.plays[0].clearCond = 'exhausted';
-  if (C.bandage) C.bandage.plays[0].clearCond = 'bleed';
+  if (C.cannedfood) C.cannedfood.plays[0].clearCond = 'doom';
+  if (C.antibiotics) C.antibiotics.plays[0].clearCond = 'poison';
+  if (C.serum) C.serum.plays[0].clearConds = true;
 
   /* ============================== ПОМОЩНИКИ ============================== */
   ZG.CARDS = C;
@@ -762,15 +919,18 @@
   ZG.isBoon = (d) => d && ZG.CARD_TYPES.includes(d.type);
 
   /** Случайная карта из коробки по типу и уровню миссии */
-  ZG.boxPick = function (type, tier) {
+  ZG.boxPick = function (type, tier, missionId) {
+    const cur = ZG.Save && ZG.Save.current && ZG.Save.current.mission;
+    const mid = missionId || (cur ? ZG.MISSIONS[cur.idx].id : null);
     const pool = Object.values(C).filter((c) => {
-      if (c.type !== type || c.reward || c.eventOnly || c.tier > 3) return false;
-      if (c.type === 'event' && c.tier > tier) return false;
+      if (c.type !== type || c.reward || c.eventOnly) return false;
+      if (c.mission) return c.mission === mid;
+      if (c.tier > 3) return false;
       return c.tier <= tier;
     });
     const weighted = [];
     pool.forEach((c) => {
-      const w = c.tier === tier ? 3 : 1;
+      const w = c.mission ? 3 : c.tier === tier ? 3 : 1;
       for (let i = 0; i < w; i++) weighted.push(c.id);
     });
     return ZG.rng.pick(weighted);

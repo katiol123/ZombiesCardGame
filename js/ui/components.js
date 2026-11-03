@@ -191,6 +191,7 @@
   };
 
   UI.gain = async function (inst, title) {
+    ZG.Audio.synth('loot');
     const ov = UI.overlay(`<div style="display:flex;flex-direction:column;align-items:center;gap:14px;pointer-events:none"><div class="result-banner ok" style="font-size:38px">${esc(title || 'Находка!')}</div>${UI.cardHTML(inst, { size: 'mid', cls: 'new' })}</div>`);
     ov.style.background = 'rgba(4,4,6,.55)';
     await ZG.sleep(150);

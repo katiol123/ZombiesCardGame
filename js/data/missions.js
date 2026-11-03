@@ -227,6 +227,62 @@
   };
   Object.keys(ON_CLOSE).forEach((id) => { if (L[id]) L[id].onClose = ON_CLOSE[id]; });
 
+
+  /* Особые правила локаций:
+   * closeFail[fx] — штраф за провал баррикады; closeTwice — нужны 2 успешные проверки; closeCost — для попытки сбросьте карту типа;
+   * undeadDc/livingDc — сложность мертвецов/людей; enemyDmgType — тип урона врагов здесь; exploreNoise — шум за исследование;
+   * nightExtra — ночью первое исследование здесь даёт +1 исследование; hordeTop — орда кладётся наверх колоды;
+   * findsStay — проваленная находка уходит под низ колоды, а не теряется; firearmNoise — доп. шум огнестрела;
+   * stealthBonus — бонус к уклонению и Скрытности; noGive — нельзя передавать карты;
+   * endTurn{skills,dc,fail} — проверка героя здесь в конце хода; enterCheck{skills,dc,fail} — проверка при входе. */
+  const RULES = {
+    lobby: { exploreNoise: 1 },
+    wards: { nightExtra: true },
+    morgue: { enemyDmgType: 'cold' },
+    pharmacy: { findsStay: true, closeFail: [{ damage: 1 }] },
+    boiler: { enemyDmgType: 'fire', stealthBonus: 2 },
+    ambulance: { closeCost: 'item' },
+    salesfloor: { hordeTop: true },
+    storage: { closeTwice: true },
+    butchery: { endTurn: { skills: ['end', 'survival'], dc: 5, fail: [{ cond: 'poison' }] } },
+    security: { closeFail: [{ noise: 3 }] },
+    parking: { enterCheck: { skills: ['stealth', 'dex'], dc: 5, fail: [{ damage: 1 }] } },
+    generator: { enemyDmgType: 'electric', closeFail: [{ damage: 2, dmgType: 'electric' }] },
+    transformer: { enemyDmgType: 'electric', endTurn: { skills: ['tech', 'dex'], dc: 6, fail: [{ damage: 1, dmgType: 'electric' }] } },
+    trail: { stealthBonus: 2, nightExtra: true },
+    mastbase: { closeTwice: true },
+    gasstation: { firearmNoise: 2, closeFail: [{ damage: 2, dmgType: 'fire' }, { noise: 2 }] },
+    gangcamp: { livingDc: 2, noGive: true },
+    junkyard: { findsStay: true },
+    motel: { endTurn: { skills: ['will'], dc: 5, fail: [{ cond: 'terror' }] } },
+    pylons: { closeCost: 'item', closeFail: [{ damage: 'd4', dmgType: 'fire' }] },
+    embankment: { enemyDmgType: 'cold', enterCheck: { skills: ['end', 'survival'], dc: 5, fail: [{ cond: 'numb' }] } },
+    jam: { hordeTop: true },
+    evac: { closeTwice: true },
+    lab: { enemyDmgType: 'acid', endTurn: { skills: ['end', 'medicine'], dc: 6, fail: [{ cond: 'poison' }] } },
+    isolation: { undeadDc: 2, closeFail: [{ summon: true }] },
+    armory: { findsStay: true, livingDc: 1 },
+    gate: { enterCheck: { skills: ['stealth', 'persuasion'], dc: 6, fail: [{ damage: 1 }, { noise: 2 }] } },
+    cage: { closeTwice: true, closeFail: [{ damage: 2 }] },
+    drift: { exploreNoise: 1, hordeTop: true },
+    pumproom: { enemyDmgType: 'cold', enterCheck: { skills: ['end', 'str'], dc: 6, fail: [{ cond: 'numb' }] } },
+    deepface: { enemyDmgType: 'fire', firearmNoise: 3 },
+    lake: { enemyDmgType: 'cold' },
+    ravine: { enterCheck: { skills: ['dex', 'survival'], dc: 6, fail: [{ damage: 'd4' }] } },
+    den: { undeadDc: 1, closeCost: 'resolve' },
+    ranger: { findsStay: true },
+    gym: { hordeTop: true, exploreNoise: 1 },
+    chemlab: { enemyDmgType: 'acid', closeFail: [{ damage: 1, dmgType: 'acid' }, { cond: 'vuln' }] },
+    library: { stealthBonus: 2, firearmNoise: 2 },
+    boilerroom: { closeCost: 'item' },
+    cleanroom: { enemyDmgType: 'acid', endTurn: { skills: ['end', 'medicine'], dc: 7, fail: [{ cond: 'decay' }] } },
+    server: { enemyDmgType: 'electric', closeTwice: true },
+    vivarium: { hordeTop: true, undeadDc: 1 },
+    sublevel: { endTurn: { skills: ['will'], dc: 7, fail: [{ cond: 'doom' }] }, closeFail: [{ summon: true }] },
+    lobbyhb: { enterCheck: { skills: ['stealth', 'wit'], dc: 7, fail: [{ noise: 3 }] } },
+  };
+  Object.keys(RULES).forEach((id) => { if (L[id]) L[id].rules = RULES[id]; });
+
   ZG.LOCATIONS = L;
 
   /* ============================== КАРТЫ ЧАСОВ ============================== */

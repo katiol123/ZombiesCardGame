@@ -67,7 +67,9 @@
       if (p.mode === 'display') return 'Выложите в свой ход перед собой (не больше 2 выложенных карт).';
       const fx = [];
       if (p.craft) fx.push(`смастерите базовое ${TYPE_GEN[p.craft] || p.craft} в руку`);
-      if (p.clearConds) fx.push('снимите все состояния героя на вашей локации');
+      if (p.clearConds) fx.push(`снимите все состояния ${p.target === 'self' ? 'с себя' : 'героя на вашей локации'}`);
+      if (p.gain) fx.push(`найдите случайного ${TYPE_GEN[p.gain] || p.gain}`);
+      if (p.time) fx.push(`Часы +${p.time}`);
       if (p.clearCond) fx.push(`снимите «${ZG.CONDS[p.clearCond].name}»`);
       if (p.heal) fx.push(`${p.target === 'here' ? 'герой на вашей локации перетасовывает' : 'перетасуйте'} ${healText(p.heal)} из сброса в колоду`);
       if (p.cure) fx.push(`${tgt === 'вы' ? 'изгоните' : 'герой на вашей локации изгоняет'} ${p.cure === 'all' ? 'все Инфекции' : '1 Инфекцию'}`);
@@ -83,12 +85,14 @@
   ZG.cardRules = function (def) {
     const lines = [];
     if (def.text) lines.push(def.text);
+    if (ZG.isEnemy(def) && def.dmgType) lines.push(`Урон: ${ZG.DMG_TYPES[def.dmgType]}.`);
     if (ZG.isEnemy(def)) lines.push(`Провал: урон = разница (макс. ${ZG.Game.dmgCap(def)}${def.dmgAdd ? `, +${def.dmgAdd}` : ''})${def.bite ? '. Укус → Инфекция' : ''}${def.inflict ? `. Рана → ${ZG.CONDS[def.inflict].name}` : ''}.`);
     if (def.plays && def.plays.length) def.plays.forEach((p) => lines.push(ZG.playText(p)));
     if (def.displayed) {
       const dd = def.displayed;
       const ef = [];
       if (dd.reduce) ef.push(`блок ${dd.reduce} урона${dd.combatOnly ? ' в бою' : ''} каждый раз`);
+      if (dd.hand) ef.push(`размер руки +${dd.hand}`);
       if (dd.check) ef.push(`+${ZG.diceStr(dd.check.dice)} к ${kindText(dd.check.kind === 'noncombat' ? 'noncombat' : dd.check.kind)}${dd.check.night ? ' ночью' : ''}`);
       lines.push(`Пока выложена: ${ef.join(', ')}.`);
     }
@@ -123,6 +127,30 @@
     if (m.acquireDc) {
       Object.keys(m.acquireDc).forEach((t) => out.push(`Искать ${TYPE_GEN[t]} здесь проще (${m.acquireDc[t]}).`));
     }
+    const r = ldef.rules || {};
+    const fxs = (list) => (list || []).map((f) => {
+      if (f.damage) return `${f.damage === 'd4' ? '1к4' : f.damage} урона${f.dmgType ? ' (' + ZG.DMG_TYPES[f.dmgType] + ')' : ''}`;
+      if (f.noise) return `шум +${f.noise}`;
+      if (f.cond) return `«${ZG.CONDS[f.cond].name}»`;
+      if (f.summon) return 'приходит мертвец';
+      if (f.clock) return `−${f.clock} Часы`;
+      return '';
+    }).filter(Boolean).join(', ');
+    if (r.undeadDc) out.push(`Мертвецы здесь +${r.undeadDc}.`);
+    if (r.livingDc) out.push(`Люди здесь +${r.livingDc}.`);
+    if (r.enemyDmgType) out.push(`Враги здесь бьют: ${ZG.DMG_TYPES[r.enemyDmgType]}.`);
+    if (r.exploreNoise) out.push(`Каждое исследование: шум +${r.exploreNoise}.`);
+    if (r.nightExtra) out.push('Ночью первое исследование за ход даёт +1 исследование.');
+    if (r.hordeTop) out.push('Орда кладётся на верх колоды.');
+    if (r.findsStay) out.push('Проваленная находка не теряется — уходит под низ колоды.');
+    if (r.firearmNoise) out.push(`Огнестрел здесь: шум +${r.firearmNoise}.`);
+    if (r.stealthBonus) out.push(`Уклонение и Скрытность +${r.stealthBonus}.`);
+    if (r.noGive) out.push('Здесь нельзя передавать карты.');
+    if (r.enterCheck) out.push(`При входе: ${r.enterCheck.skills.map(ZG.skillName).join(' / ')} ${r.enterCheck.dc}, провал — ${fxs(r.enterCheck.fail)}.`);
+    if (r.endTurn) out.push(`В конце хода здесь: ${r.endTurn.skills.map(ZG.skillName).join(' / ')} ${r.endTurn.dc}, провал — ${fxs(r.endTurn.fail)}.`);
+    if (r.closeCost) out.push(`Чтобы заколотить, сбросьте ${TYPE_GEN[r.closeCost] || r.closeCost}.`);
+    if (r.closeTwice) out.push('Заколотить: нужны 2 успешные проверки подряд.');
+    if (r.closeFail) out.push(`Провал баррикады: ${fxs(r.closeFail)}.`);
     return out;
   };
 
