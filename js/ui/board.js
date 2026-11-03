@@ -100,7 +100,7 @@
         ${l.closed ? '<div class="planks"><div class="plank p1"></div><div class="plank p2"></div></div>' : ''}
         <div class="lbody">
           <h3>${esc(ld.name)}</h3>
-          ${l.closed ? `<span class="shelter-tag">${ZG.icon('tent')} ${T('barricaded')} · ${T('shelter')}</span>` : `
+          ${l.closed ? `<span class="shelter-tag">${ZG.icon('tent')} ${T('barricaded')}</span>` : `
           <div class="noise-meter" data-noise="${i}" title="Шум ${l.noise} из ${l.limit}. При пороге приходит орда.">${ZG.icon('noise')}<div class="segs">${segs}</div><span>${l.noise}/${l.limit}</span></div>
           ${rules}
           <div class="lclose">${ZG.icon('hammer')} ${esc(ZG.cardCheckLineClose(l))}</div>
@@ -160,7 +160,6 @@
     if (w) {
       if (w.explore) hint = 'Исследуйте локацию или сыграйте карту действия.';
       else if (w.close) hint = G().loc(mh).deck.length ? 'Вожак повержен — можно заколотить локацию.' : 'Локация обыскана — заколотите её!';
-      else if (w.rest) hint = 'Вы в убежище: можно отдохнуть.';
       else hint = 'Можно завершить ход.';
     }
     tray.innerHTML = `
@@ -184,7 +183,6 @@
         <button class="btn" data-act="move" ${dis('move')}>${ZG.icon('footprints')} ${T('act_move')}</button>
         <button class="btn primary ${w && w.explore ? 'pulse' : ''}" data-act="explore" ${dis('explore')}>${ZG.icon('search')} ${T('act_explore')}${ts.explores > 1 ? ' ×' + ts.explores : ''}</button>
         ${w && w.close ? `<button class="btn primary pulse wide" data-act="close">${ZG.icon('hammer')} ${T('act_close')}</button>` : ''}
-        ${w && w.rest ? `<button class="btn good wide" data-act="rest">${ZG.icon('tent')} ${T('act_rest')} (+3)</button>` : ''}
         ${mh.id === 'ten' ? `<button class="btn" data-act="scout" ${dis('scout')}>${ZG.icon('eye')} ${T('act_scout')}</button>` : ''}
         ${mh.id === 'marina' ? `<button class="btn" data-act="fieldmed" ${dis('fieldmed')}>${ZG.icon('cross')} Медицина</button>` : ''}
         <button class="btn" data-act="give" ${dis('give')}>${ZG.icon('swap')} ${T('act_give')}</button>

@@ -448,7 +448,6 @@
       move: !ts.explored && !ts.moved && m.locations.length > 1,
       explore: ts.explores > 0 && !loc.closed && loc.deck.length > 0,
       close: !loc.closed && (loc.deck.length === 0 || loc.henchDown) && !ts.closeTried && (!G.lrule(loc).closeCost || mh.hand.some((c) => ZG.card(c.id).type === G.lrule(loc).closeCost)),
-      rest: loc.closed && !ts.rested && !ts.explored && (mh.discard.length > 0 || Object.keys(G.conds(mh)).length > 0),
       give: !ts.gave && !G.lrule(loc).noGive && others.length > 0 && mh.hand.some((c) => c.id !== 'infection'),
       scout: mh.id === 'ten' && !ts.scouted && G.openLocs().some((l) => l.deck.length),
       fieldmed: mh.id === 'marina' && !ts.med && mh.hand.length > 0 && G.heroesAt(mh.loc).some((h) => h.discard.length || G.infCount(h) || Object.keys(G.conds(h)).length),
@@ -508,16 +507,6 @@
         case 'close':
           r = await G.tryClose(mh, loc, false);
           break;
-        case 'rest': {
-          m.ts.rested = true;
-          m.ts.moved = true;
-          m.ts.explores = 0;
-          const n = G.heal(mh, 3);
-          G.clearConds(mh);
-          G.log(`${G.hname(mh)} отдыхает в убежище и восстанавливает ${n} карт.`, 'good');
-          await ui.banner('Отдых', `Перетасовано в колоду: ${n}`, 'good');
-          break;
-        }
         case 'give':
           await G.give(mh);
           break;
