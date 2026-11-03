@@ -540,7 +540,7 @@
   UI.doRoll = async function (panel, ctx, finish) {
     UI.keyRoll = null;
     const res = G().rollCheck(ctx);
-    ZG.Audio.synth('dice');
+    ZG.Audio.sfx('dice');
     panel.querySelectorAll('[data-skill],[data-unplay]').forEach((el) => (el.style.pointerEvents = 'none'));
     const bottom = panel.querySelector('#check-bottom');
     bottom.innerHTML = `<div class="total-line">${T('rolling')}</div>`;

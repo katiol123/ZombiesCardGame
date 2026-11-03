@@ -5,8 +5,8 @@
   const ZG = window.ZG;
   const BASE = 'assets/audio/';
   const MUSIC = { missions: 'missions.mp3', shelter: 'shelter.mp3' };
-  const SFX = { braam: 'braam.mp3', growl: 'growl.mp3', psychedelic: 'psychedelic.mp3', tension: 'tension.mp3' };
-  const SFX_GAP = { growl: 900, braam: 1200, psychedelic: 1500, tension: 1500 };
+  const SFX = { braam: 'braam.mp3', growl: 'growl.mp3', psychedelic: 'psychedelic.mp3', tension: 'tension.mp3', dice: 'dice.mp3' };
+  const SFX_GAP = { growl: 900, braam: 1200, psychedelic: 1500, tension: 1500, dice: 200 };
 
   const A = (ZG.Audio = {
     unlocked: false,
