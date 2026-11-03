@@ -195,6 +195,14 @@
       l.deck.push(G.inst(villains[i]));
       R.shuffle(l.deck);
     });
+    // особое правило: дополнительные вожаки (несколько в одной локации)
+    if (special.extraHench) {
+      const targets = special.extraHench === 'all' ? m.locations.slice() : R.shuffle(m.locations.slice()).slice(0, Math.min(special.extraHench, m.locations.length));
+      targets.forEach((l) => {
+        l.deck.push(G.inst(def.henchman));
+        R.shuffle(l.deck);
+      });
+    }
 
     // Часы
     const len = G.CLOCK_BY_PARTY[Math.min(4, party.length) - 1] - (S.difficulty === 'hard' ? 4 : 0) + (special.clockMod || 0) + (def.act === 2 && party.length >= 3 ? 3 : 0);
