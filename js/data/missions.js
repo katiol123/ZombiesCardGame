@@ -209,6 +209,24 @@
     close: { skills: ['str', 'end', 'tech'], dc: 11 }, noise: 4, mods: { enemyDc: 1 },
     flavor: 'Камера с табличкой «Объект 0». Дверь открыта изнутри.' });
 
+
+  /* Награда «Когда заколочено»: time — +карты Часов, healHere — лечение героев на локации,
+   * gain — закрывший берёт случайную карту, quiet — шум всех локаций −N, cureHere — изгнать Инфекции,
+   * condsHere — снять состояния героев на локации */
+  const ON_CLOSE = {
+    lobby: [{ time: 1 }], wards: [{ healHere: 3 }], morgue: [{ gain: 'weapon' }], pharmacy: [{ cureHere: 1 }], boiler: [{ quiet: 2 }], ambulance: [{ gain: 'ally' }],
+    salesfloor: [{ gain: 'consumable' }], storage: [{ gain: 'item' }], butchery: [{ gain: 'weapon' }], security: [{ time: 1 }], loading: [{ gain: 'ally' }], parking: [{ quiet: 2 }],
+    hillfoot: [{ healHere: 2 }], rangerhut: [{ gain: 'weapon' }], generator: [{ time: 1 }], trail: [{ quiet: 2 }], transformer: [{ gain: 'item' }], mastbase: [{ condsHere: true }, { healHere: 2 }],
+    gasstation: [{ gain: 'consumable' }], junkyard: [{ gain: 'item' }], gangcamp: [{ gain: 'ally' }], motel: [{ healHere: 3 }], highway: [{ time: 1 }], diner: [{ condsHere: true }, { healHere: 1 }],
+    checkpoint: [{ gain: 'weapon' }], jam: [{ time: 1 }], pylons: [{ quiet: 3 }], fieldhospital: [{ cureHere: 1 }, { healHere: 2 }], embankment: [{ gain: 'resolve' }], evac: [{ time: 2 }],
+    gate: [{ gain: 'weapon' }], tents: [{ healHere: 2 }], lab: [{ cureHere: 2 }], armory: [{ gain: 'weapon' }], isolation: [{ quiet: 2 }], helipad: [{ time: 1 }],
+    shaftentry: [{ time: 1 }], cage: [{ gain: 'item' }], drift: [{ quiet: 2 }], pumproom: [{ gain: 'technique' }], shelterroom: [{ healHere: 3 }, { condsHere: true }], deepface: [{ gain: 'weapon' }],
+    campfire: [{ healHere: 2 }], cabins: [{ gain: 'ally' }], lake: [{ quiet: 2 }], ranger: [{ gain: 'weapon' }], ravine: [{ time: 1 }], den: [{ condsHere: true }],
+    busyard: [{ time: 1 }], gym: [{ gain: 'technique' }], cafeteria: [{ healHere: 2 }], chemlab: [{ gain: 'consumable' }], library: [{ gain: 'resolve' }], boilerroom: [{ quiet: 2 }],
+    lobbyhb: [{ time: 1 }], offices: [{ gain: 'item' }], vivarium: [{ quiet: 2 }], cleanroom: [{ cureHere: 2 }], server: [{ time: 1 }], sublevel: [{ gain: 'weapon' }],
+  };
+  Object.keys(ON_CLOSE).forEach((id) => { if (L[id]) L[id].onClose = ON_CLOSE[id]; });
+
   ZG.LOCATIONS = L;
 
   /* ============================== КАРТЫ ЧАСОВ ============================== */

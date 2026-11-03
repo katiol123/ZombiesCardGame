@@ -597,6 +597,143 @@
       flavor: 'Объект 0. Доброволец. С него всё началось.' },
   ]);
 
+
+  /* ============================== ПРИЁМЫ ==============================
+   * mode: 'technique' — после розыгрыша проверка перезарядки (recharge):
+   * герой с бонусом в одном из навыков бросает его кубик: успех — под низ колоды, провал — в сброс.
+   * Герой без такого навыка — карта сгорает навсегда. */
+  add([
+    { id: 'focus', type: 'technique', name: 'Собраться', tier: 0, basic: true, icon: 'eye', traits: ['Приём'],
+      acquire: { skills: ['will', 'survival'], dc: 4 },
+      recharge: { skills: ['survival', 'persuasion', 'stealth', 'melee', 'shooting', 'tech', 'medicine'], dc: 5 },
+      plays: [{ on: 'check', mode: 'technique', kind: 'any', dice: ['d4'], bonus: 1 }],
+      flavor: 'Вдох. Выдох. Руки не дрожат.' },
+    { id: 'headshot', type: 'technique', name: 'Удар в висок', tier: 0, icon: 'skull', traits: ['Приём', 'Рукопашный'],
+      acquire: { skills: ['melee', 'str'], dc: 5 },
+      recharge: { skills: ['melee'], dc: 6 },
+      plays: [{ on: 'check', mode: 'technique', kind: COMBAT, skills: ['melee', 'str'], dice: ['d8'] }],
+      flavor: 'Мозг. Всегда мозг.' },
+    { id: 'doubletap', type: 'technique', name: 'Двойной выстрел', tier: 0, icon: 'crosshair', traits: ['Приём', 'Стрелковый'],
+      acquire: { skills: ['shooting', 'dex'], dc: 5 },
+      recharge: { skills: ['shooting'], dc: 6 },
+      plays: [{ on: 'check', mode: 'technique', kind: COMBAT, trait: 'Огнестрел', dice: ['d10'], noise: 1 }],
+      flavor: 'Корпус. Голова. Без паузы.' },
+    { id: 'triage', type: 'technique', name: 'Сортировка раненых', tier: 0, icon: 'cross', traits: ['Приём', 'Медицина'],
+      acquire: { skills: ['medicine'], dc: 5 },
+      recharge: { skills: ['medicine'], dc: 6 },
+      plays: [{ on: 'action', mode: 'technique', heal: { dice: ['d4'], bonus: 1 }, target: 'here' }],
+      flavor: 'Красный, жёлтый, зелёный. Чёрный — не трогать.' },
+    { id: 'suture', type: 'technique', name: 'Шов на ходу', tier: 0, icon: 'syringe', traits: ['Приём', 'Медицина'],
+      acquire: { skills: ['medicine'], dc: 6 },
+      recharge: { skills: ['medicine'], dc: 7 },
+      plays: [{ on: 'action', mode: 'technique', cure: 1, clearConds: true, target: 'here' }],
+      flavor: 'Без анестезии. Кусай ремень.' },
+    { id: 'shadowstep', type: 'technique', name: 'Слиться с тенью', tier: 0, icon: 'eye', traits: ['Приём', 'Скрытный'],
+      acquire: { skills: ['stealth', 'dex'], dc: 5 },
+      recharge: { skills: ['stealth'], dc: 6 },
+      plays: [{ on: 'evade', mode: 'technique' }],
+      flavor: 'Ты — часть стены. Ты не дышишь.' },
+    { id: 'sprint', type: 'technique', name: 'Рывок по крышам', tier: 0, icon: 'wind', traits: ['Приём', 'Скрытный'],
+      acquire: { skills: ['stealth', 'dex'], dc: 6 },
+      recharge: { skills: ['stealth'], dc: 7 },
+      plays: [{ on: 'action', mode: 'technique', explore: true }],
+      flavor: 'Через гараж, по водостоку, на соседнюю крышу.' },
+    { id: 'brace', type: 'technique', name: 'Распорка', tier: 0, icon: 'planks', traits: ['Приём', 'Мастеровой'],
+      acquire: { skills: ['tech'], dc: 5 },
+      recharge: { skills: ['tech'], dc: 5 },
+      plays: [{ on: 'check', mode: 'technique', kind: ['close'], dice: ['d8'] }],
+      flavor: 'Доска, гвоздь, упор в пол. Дверь держит.' },
+    { id: 'jury', type: 'technique', name: 'Самоделка на коленке', tier: 0, icon: 'wrench', traits: ['Приём', 'Мастеровой'],
+      acquire: { skills: ['tech'], dc: 6 },
+      recharge: { skills: ['tech'], dc: 8 },
+      plays: [{ on: 'action', mode: 'technique', craft: 'item' }],
+      flavor: 'Из того, что было. А было немного.' },
+    { id: 'warcry', type: 'technique', name: 'Боевой клич', tier: 1, icon: 'noise', traits: ['Приём'],
+      acquire: { skills: ['persuasion', 'melee'], dc: 6 },
+      recharge: { skills: ['persuasion', 'melee'], dc: 7 },
+      plays: [{ on: 'check', mode: 'technique', kind: COMBAT, skillDie: 1, help: true, noise: 2 }],
+      flavor: '«Ко мне, твари!»' },
+    { id: 'tourniquet', type: 'technique', name: 'Жгут', tier: 1, icon: 'bandage', traits: ['Приём', 'Медицина'],
+      acquire: { skills: ['medicine', 'survival'], dc: 6 },
+      recharge: { skills: ['medicine', 'survival'], dc: 6 },
+      plays: [{ on: 'damage', mode: 'technique', reduce: 2 }],
+      flavor: 'Выше раны. Туже. Запиши время.' },
+    { id: 'ambush', type: 'technique', name: 'Засада', tier: 1, icon: 'eye', traits: ['Приём', 'Скрытный'],
+      acquire: { skills: ['stealth'], dc: 6 },
+      recharge: { skills: ['stealth'], dc: 7 },
+      plays: [{ on: 'check', mode: 'technique', kind: COMBAT, dice: ['d10'], noiseMod: -2 }],
+      flavor: 'Он даже не обернулся.' },
+    { id: 'execute', type: 'technique', name: 'Добивание', tier: 2, icon: 'axe', traits: ['Приём', 'Рукопашный'],
+      acquire: { skills: ['melee', 'str'], dc: 7 },
+      recharge: { skills: ['melee'], dc: 8 },
+      plays: [{ on: 'check', mode: 'technique', kind: COMBAT, skills: ['melee', 'str'], dice: ['d6', 'd6'] }],
+      flavor: 'Без злости. Просто работа.' },
+    { id: 'surgery', type: 'technique', name: 'Полевая хирургия', tier: 2, icon: 'medkit', traits: ['Приём', 'Медицина'],
+      acquire: { skills: ['medicine'], dc: 7 },
+      recharge: { skills: ['medicine'], dc: 8 },
+      plays: [{ on: 'action', mode: 'technique', heal: { dice: ['d6'], bonus: 2 }, clearConds: true, target: 'here' }],
+      flavor: 'Кухонный стол, налобный фонарь, водка. Пациент выжил.' },
+    { id: 'shepherd', type: 'ally', name: 'Овчарка Найда', tier: 1, icon: 'paw', traits: ['Животное'],
+      acquire: { skills: ['persuasion', 'survival'], dc: 6 },
+      plays: [{ on: 'action', mode: 'display' }, { on: 'check', mode: 'discard', kind: COMBAT, dice: ['d8'] }],
+      displayed: { check: { kind: ['combat'], dice: ['d4'] } },
+      flavor: 'Служебная собака. Служит до сих пор.' },
+    { id: 'burnt', type: 'enemy', name: 'Обгоревший', tier: 1, icon: 'fire', dc: 7, bite: true,
+      immune: ['Огонь'], weak: { 'Тяжёлое': 'd6' },
+      flavor: 'Он уже горел. Второй раз не боится.' },
+  ]);
+
+  /* ============================== ДОПОЛНЕНИЯ К КАРТАМ ==============================
+   * Тяжёлая броня, выложенные карты, состояния, уязвимости, стойкость, иммунитеты врагов. */
+  const AUG = {
+    // тяжёлая броня (требует владения)
+    riotgear: { traits: ['Броня', 'Тяжёлая броня'] },
+    vest: { traits: ['Броня', 'Тяжёлая броня'], displayed: { reduce: 1, combatOnly: true } },
+    tacshield: { traits: ['Броня', 'Щит', 'Тяжёлая броня'] },
+    helmet: { displayed: { reduce: 1, combatOnly: true } },
+    // выложенные карты
+    rex: { displayed: { check: { kind: ['evade', 'acquire'], dice: ['d4'] } } },
+    nvg: { displayed: { check: { kind: 'any', night: true, dice: ['d6'] } } },
+    minerlamp: { displayed: { check: { kind: 'noncombat', dice: ['d4'] } } },
+    // состояния от врагов
+    runner: { inflict: 'bleed', resist: { 'Тяжёлое': 2 } },
+    deaddog: { inflict: 'bleed', resist: { 'Тяжёлое': 2 } },
+    wolfz: { inflict: 'bleed', resist: { 'Тяжёлое': 2 } },
+    swarm: { inflict: 'bleed', weak: { 'Огонь': 'd8' }, resist: { 'Огнестрел': 2 } },
+    stalker: { inflict: 'bleed' },
+    drhale: { inflict: 'bleed' },
+    brute: { inflict: 'fracture', resist: { 'Тихое': 2 } },
+    mutant: { inflict: 'fracture', weak: { 'Огонь': 'd6' } },
+    colossus: { inflict: 'fracture', weak: { 'Огонь': 'd10' }, resist: { 'Огнестрел': 2 } },
+    holt: { inflict: 'fracture', weak: { 'Огонь': 'd6' } },
+    screamer: { inflict: 'panic', weak: { 'Тихое': 'd6' } },
+    echo: { inflict: 'panic', weak: { 'Тихое': 'd6' } },
+    matriarch: { inflict: 'panic', weak: { 'Тихое': 'd8' } },
+    principal: { inflict: 'panic', weak: { 'Тихое': 'd6' } },
+    spitter: { inflict: 'exhausted', weak: { 'Дальнее': 'd6' } },
+    // уязвимости и стойкость
+    shambler: { weak: { 'Тяжёлое': 'd4' } },
+    bloater: { weak: { 'Огонь': 'd8' }, resist: { 'Ближнее': 2 } },
+    blindminer: { weak: { 'Тихое': 'd6' } },
+    soldierz: { weak: { 'Огонь': 'd4' } },
+    burke: { weak: { 'Огнестрел': 'd6' } },
+    hazmat: { immune: ['Огонь'] },
+    alpha: { resist: { 'Тяжёлое': 3 } },
+    patientzero: { immune: ['Огонь'], resist: { 'Тихое': 2 } },
+  };
+  Object.keys(AUG).forEach((id) => { if (C[id]) Object.assign(C[id], AUG[id]); });
+  // карты, которые можно выложить
+  ['rex', 'vest', 'helmet', 'nvg', 'minerlamp'].forEach((id) => {
+    if (C[id] && !C[id].plays.some((p) => p.mode === 'display')) C[id].plays.push({ on: 'action', mode: 'display' });
+  });
+  // состояния от препятствий
+  const evFail = { glass: [{ damage: 1 }, { cond: 'bleed' }], smokefill: [{ damage: 1 }, { cond: 'exhausted' }], nursery: [{ cond: 'panic' }, { shock: 1 }], tripwire: [{ damage: 'd4' }, { cond: 'fracture' }, { noise: 2 }], fire: [{ damage: 1 }, { cond: 'exhausted' }, { noise: 2 }], rubble: [{ clock: 1 }, { cond: 'exhausted' }] };
+  const evText = { glass: 'Провал: 1 урон и Кровотечение.', smokefill: 'Провал: 1 урон и Истощение.', nursery: 'Успех: найдите Решимость. Провал: Паника, сбросьте 1 случайную карту из руки.', tripwire: 'Провал: 1к4 урона, Перелом, шум +2.', fire: 'Провал: 1 урон, Истощение, шум +2.', rubble: 'Провал: сбросьте карту Часов и получите Истощение.' };
+  Object.keys(evFail).forEach((id) => { if (C[id]) { C[id].fail = evFail[id]; C[id].text = evText[id]; } });
+  // консервы снимают истощение, бинты — кровотечение
+  if (C.cannedfood) C.cannedfood.plays[0].clearCond = 'exhausted';
+  if (C.bandage) C.bandage.plays[0].clearCond = 'bleed';
+
   /* ============================== ПОМОЩНИКИ ============================== */
   ZG.CARDS = C;
 

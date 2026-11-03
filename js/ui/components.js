@@ -23,7 +23,7 @@
     else if (d.tier === 9) corner = '★';
     else if (d.tier != null && d.type !== 'event') corner = ROMAN[d.tier] || '';
     const art = d.heroArt ? ZG.art('heroes', d.heroArt, ZG.HEROES[d.heroArt].icon) : ZG.art('cards', d.id, d.icon || 'alert');
-    const traits = (d.traits || []).filter(Boolean);
+    const traits = (d.traits || []).filter((t) => t && t !== ZG.cardTypeLabel(d));
     const typeLine = ZG.cardTypeLabel(d) + (traits.length ? ' · ' + traits.join(', ') : '');
     const check = ZG.cardCheckLine(d);
     const rules = ZG.cardRules(d).map((t) => `<p>${esc(t)}</p>`).join('');
@@ -32,6 +32,7 @@
         <div class="cart">${art}</div>
         <div class="ctype">${esc(typeLine)}</div>
         ${check ? `<div class="ccheck">${esc(check)}</div>` : ''}
+        ${d.recharge ? `<div class="ccheck rc" title="Без навыка — сгорает">↻ ${esc(d.recharge.skills.length > 4 ? 'любой навык' : d.recharge.skills.map(ZG.skillName).join(' / '))} ${d.recharge.dc}</div>` : ''}
         <div class="ctext">${rules}</div>
         ${d.flavor ? `<div class="cflavor">${esc(d.flavor)}</div>` : ''}
       </div>`;

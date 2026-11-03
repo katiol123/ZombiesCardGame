@@ -4,14 +4,15 @@
   const ZG = window.ZG;
   const T = ZG.T;
 
-  const VERB = { reveal: 'Покажите', discard: 'Сбросьте', recharge: 'Перезарядите', banish: 'Изгоните', burn: 'Сожгите' };
+  const VERB = { reveal: 'Покажите', discard: 'Сбросьте', recharge: 'Перезарядите', banish: 'Изгоните', burn: 'Сожгите', technique: 'Примените', display: 'Выложите' };
   const KIND = {
     combat: 'боевой проверки',
     acquire: 'проверки поиска',
     event: 'проверки препятствия',
     close: 'проверки баррикады',
+    evade: 'уклонения',
   };
-  const TYPE_GEN = { weapon: 'Оружие', item: 'Снаряжение', consumable: 'Расходник', ally: 'Союзника', resolve: 'Решимость' };
+  const TYPE_GEN = { weapon: 'Оружие', item: 'Снаряжение', consumable: 'Расходник', ally: 'Союзника', resolve: 'Решимость', technique: 'Приём' };
 
   const skillsList = (arr) => arr.map(ZG.skillName).join(' / ');
 
@@ -63,7 +64,11 @@
     if (p.on === 'evade') return `${v} при встрече с врагом (не Угрозой): уклонитесь от него.`;
     if (p.on === 'infect') return `${v}, получая Инфекцию: отмените её.`;
     if (p.on === 'action') {
+      if (p.mode === 'display') return 'Выложите в свой ход перед собой (не больше 2 выложенных карт).';
       const fx = [];
+      if (p.craft) fx.push(`смастерите случайное ${TYPE_GEN[p.craft] || p.craft} в руку`);
+      if (p.clearConds) fx.push('снимите все состояния героя на вашей локации');
+      if (p.clearCond) fx.push(`снимите «${ZG.CONDS[p.clearCond].name}»`);
       if (p.heal) fx.push(`${p.target === 'here' ? 'герой на вашей локации перетасовывает' : 'перетасуйте'} ${healText(p.heal)} из сброса в колоду`);
       if (p.cure) fx.push(`${tgt === 'вы' ? 'изгоните' : 'герой на вашей локации изгоняет'} ${p.cure === 'all' ? 'все Инфекции' : '1 Инфекцию'}`);
       if (p.explore) fx.push('исследуйте ещё раз');
@@ -78,8 +83,25 @@
   ZG.cardRules = function (def) {
     const lines = [];
     if (def.text) lines.push(def.text);
-    if (ZG.isEnemy(def)) lines.push(`Провал: урон = разница, но не больше ${ZG.Game.dmgCap(def)}${def.dmgAdd ? ` (+${def.dmgAdd})` : ''}${def.bite ? '. Укус: Инфекция, если урон прошёл' : ''}.`);
+    if (ZG.isEnemy(def)) lines.push(`Провал: урон = разница (макс. ${ZG.Game.dmgCap(def)}${def.dmgAdd ? `, +${def.dmgAdd}` : ''})${def.bite ? '. Укус → Инфекция' : ''}${def.inflict ? `. Рана → ${ZG.CONDS[def.inflict].name}` : ''}.`);
     if (def.plays && def.plays.length) def.plays.forEach((p) => lines.push(ZG.playText(p)));
+    if (def.displayed) {
+      const dd = def.displayed;
+      const ef = [];
+      if (dd.reduce) ef.push(`блок ${dd.reduce} урона${dd.combatOnly ? ' в бою' : ''} каждый раз`);
+      if (dd.check) ef.push(`+${ZG.diceStr(dd.check.dice)} к ${kindText(dd.check.kind === 'noncombat' ? 'noncombat' : dd.check.kind)}${dd.check.night ? ' ночью' : ''}`);
+      lines.push(`Пока выложена: ${ef.join(', ')}.`);
+    }
+    const tr = def.traits || [];
+    if (tr.includes('Огнестрел') || tr.includes('Тяжёлое')) lines.push('Без владения: −4.');
+    if (tr.includes('Тяжёлая броня')) lines.push('Без владения: сгорает после блока.');
+    if (ZG.isEnemy(def)) {
+      const tt = [];
+      if (def.weak) Object.keys(def.weak).forEach((t) => tt.push(`уязвим: ${t} +${ZG.diceStr([def.weak[t]])}`));
+      if (def.resist) Object.keys(def.resist).forEach((t) => tt.push(`стойкий: ${t} −${def.resist[t]}`));
+      if (def.immune) def.immune.forEach((t) => tt.push(`иммунитет: ${t}`));
+      if (tt.length) { const x = tt.join(' · '); lines.push(x[0].toUpperCase() + x.slice(1) + '.'); }
+    }
     return lines;
   };
 
@@ -102,6 +124,20 @@
       Object.keys(m.acquireDc).forEach((t) => out.push(`Искать ${TYPE_GEN[t]} здесь проще (${m.acquireDc[t]}).`));
     }
     return out;
+  };
+
+  ZG.closeRewardText = function (ldef) {
+    const fx = ldef.onClose || [];
+    const parts = [];
+    fx.forEach((f) => {
+      if (f.time) parts.push(`Часы +${f.time}`);
+      if (f.healHere) parts.push(`герои здесь лечат ${f.healHere}`);
+      if (f.cureHere) parts.push(`герои здесь изгоняют ${f.cureHere} Инфекц.`);
+      if (f.condsHere) parts.push('снять состояния героев здесь');
+      if (f.quiet) parts.push(`шум всех локаций −${f.quiet}`);
+      if (f.gain) parts.push(`случайное ${TYPE_GEN[f.gain] || f.gain}`);
+    });
+    return parts.join(', ');
   };
 
   ZG.cardTypeLabel = function (def) {

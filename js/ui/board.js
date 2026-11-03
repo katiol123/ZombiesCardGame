@@ -44,6 +44,13 @@
         }
         return;
       }
+      const dc = e.target.closest('[data-disp]');
+      if (dc) {
+        const m = G().M();
+        const owner = m.heroes.find((h) => (h.displayed || []).some((c) => c.u === +dc.dataset.disp));
+        if (owner) UI.inspect(owner.displayed.find((c) => c.u === +dc.dataset.disp));
+        return;
+      }
       const hc = e.target.closest('#tray .hand .card');
       if (hc) UI.onHandCard(+hc.dataset.u, hc);
     });
@@ -96,6 +103,7 @@
           <div class="noise-meter" data-noise="${i}" title="Шум ${l.noise} из ${l.limit}. При пороге приходит орда.">${ZG.icon('noise')}<div class="segs">${segs}</div><span>${l.noise}/${l.limit}</span></div>
           ${rules}
           <div class="lclose">${ZG.icon('hammer')} ${esc(ZG.cardCheckLineClose(l))}</div>
+          ${ZG.closeRewardText(ld) ? `<div class="lreward" title="Награда, когда локация заколочена">${ZG.icon('trophy')} ${esc(ZG.closeRewardText(ld))}</div>` : ''}
           ${l.deck.length === 0 ? `<div class="lrule" style="color:var(--amber)">${T('empty_loc')} — можно заколотить</div>` : l.henchDown ? `<div class="lrule" style="color:var(--amber)">Вожак повержен — можно заколотить</div>` : ''}`}
           <div class="ltokens">${heroes.map((h) => UI.avatar(h.id, (h === active ? 'active ' : '') + (h.dead ? 'dead' : ''))).join('')}</div>
         </div>
@@ -113,7 +121,7 @@
       return `<div class="pmini ${i === m.active ? 'active' : ''} ${h.dead ? 'dead' : ''}" data-hero="${i}">
         ${UI.avatar(h.id, h.dead ? 'dead' : '')}
         <div class="pinfo"><div class="pname">${esc(UI.shortName(h.id))}</div>
-        <div class="pstats">${h.dead ? (h.turned ? 'Обращение' : 'Гибель') : `<span title="${T('deck')}">${ZG.icon('cards')} ${h.deck.length}</span><span title="${T('hand')}">${ZG.icon('hand')} ${h.hand.length}</span><span class="inf-pips" title="${T('infection')} ${inf}/3">${[0, 1, 2].map((k) => `<i class="${k < inf ? 'on' : ''}"></i>`).join('')}</span><span title="Локация">${ZG.icon('mappin')} ${esc(loc.name)}</span>`}</div></div>
+        <div class="pstats">${h.dead ? (h.turned ? 'Обращение' : 'Гибель') : `<span title="${T('deck')}">${ZG.icon('cards')} ${h.deck.length}</span><span title="${T('hand')}">${ZG.icon('hand')} ${h.hand.length}</span><span class="inf-pips" title="${T('infection')} ${inf}/3">${[0, 1, 2].map((k) => `<i class="${k < inf ? 'on' : ''}"></i>`).join('')}</span><span title="Локация">${ZG.icon('mappin')} ${esc(loc.name)}</span>${Object.keys(h.conds || {}).map((k) => `<span title="${esc(ZG.CONDS[k].name + ': ' + ZG.CONDS[k].text)}" style="color:#ff9c86">${ZG.icon(ZG.CONDS[k].icon)}</span>`).join('')}${(h.displayed || []).length ? `<span title="Выложено: ${esc(h.displayed.map((c) => ZG.card(c.id).name).join(', '))}" style="color:#9fe0e0">${ZG.icon('star')}${h.displayed.length}</span>` : ''}`}</div></div>
       </div>`;
     }).join('');
   };
@@ -144,7 +152,7 @@
       const usable = actCards.has(c.u);
       return UI.cardHTML(c, { u: c.u, cls: `${isNew ? 'new' : ''} ${usable ? 'playable' : ''}`, badge: usable ? 'Действие' : '' });
     }).join('');
-    const hs = G().handSize(ph);
+    const hs = G().handSizeMh(mh);
     const dis = (k) => (!w || !w[k] ? 'disabled' : '');
     const ts = m.ts || {};
     let hint = '';
@@ -158,6 +166,8 @@
       <div class="hero-panel" style="--hc:${hd.color}">
         <div class="hp-top">${UI.avatar(mh.id)}<div><div class="hp-name">${esc(hd.name)}</div><div class="hp-role">${esc(hd.role)}</div></div><button class="btn small ghost tray-toggle" data-act="traytoggle">${UI.trayCollapsed ? 'Рука ▴' : 'Свернуть ▾'}</button></div>
         ${UI.statsHTML(ph)}
+        ${Object.keys(mh.conds || {}).length ? `<div class="cond-row">${Object.keys(mh.conds).map((k) => `<span class="cond" title="${esc(ZG.CONDS[k].text)}">${ZG.icon(ZG.CONDS[k].icon)} ${esc(ZG.CONDS[k].name)}</span>`).join('')}</div>` : ''}
+        ${(mh.displayed || []).length ? `<div class="disp-row">${mh.displayed.map((c) => `<span class="disp" data-disp="${c.u}" title="${esc(ZG.cardRules(ZG.card(c.id)).join(' '))}">${ZG.icon('star')} ${esc(ZG.card(c.id).name)}</span>`).join('')}</div>` : ''}
         <div class="piles">
           <div class="pile ${mh.deck.length <= 2 ? 'warn' : ''}" title="Колода — это здоровье"><b>${mh.deck.length}</b>${T('deck')}</div>
           <div class="pile"><b>${mh.discard.length}</b>${T('discard')}</div>
@@ -443,7 +453,7 @@
       const v = g.skillValue(ph, s);
       return `<span class="chip ${s === pool.skill ? 'on' : ''}" data-skill="${s}">${esc(ZG.skillName(s))} <b>${T('die')}${ZG.sides(v.die)}${v.bonus ? (v.bonus > 0 ? '+' : '') + v.bonus : ''}</b></span>`;
     }).join('');
-    const slotTypes = ['weapon', 'item', 'consumable', 'ally', 'resolve'];
+    const slotTypes = ['weapon', 'item', 'consumable', 'ally', 'resolve', 'technique'];
     const slots = slotTypes.map((t) => {
       const p = ctx.played.find((x) => ZG.card(x.id).type === t);
       if (!p) return `<div class="slotbox">${T('slot_' + t)}</div>`;
@@ -596,7 +606,8 @@
           const d = ZG.card(c.id);
           const red = (d.plays || []).map((p, pi) => (isRed(p) && !usedU.has(c.u) && !plays.some((x) => ZG.card(x.id).type === d.type) ? pi : -1)).filter((x) => x >= 0);
           const used = usedU.has(c.u);
-          const badge = used ? 'блок' : sel.has(c.u) ? 'в сброс' : red.length ? 'Блок' : '';
+          const burnArmor = red.length && G().missingProf(mh, c.id).includes('heavyarmor');
+          const badge = used ? 'блок' : sel.has(c.u) ? 'в сброс' : red.length ? (burnArmor ? 'Блок · сгорит' : 'Блок') : '';
           return UI.cardHTML(c, { u: c.u, cls: `${used ? 'inpool' : ''} ${red.length ? 'playable' : ''} ${sel.has(c.u) ? 'selected' : ''}`, badge });
         }).join('');
         const reduced = plays.length ? `<div class="muted">Защита: ${plays.map((p) => esc(ZG.card(p.id).name)).join(', ')}</div>` : '';
@@ -741,4 +752,16 @@
     const pop = document.querySelector('.mode-pop');
     if (pop) pop.remove();
   });
+})();
+
+(function () {
+  const ZG = window.ZG;
+  const UI = ZG.UI;
+  UI.fxCond = async function (mh, key) {
+    const c = ZG.CONDS[key];
+    ZG.FX.flash(key === 'panic' ? 'toxic' : 'red');
+    UI.toast(`${ZG.icon(c.icon)} ${ZG.esc(ZG.Game.hname(mh))}: ${ZG.esc(c.name)}`, 'bad');
+    UI.renderBoard();
+    await ZG.sleep(500);
+  };
 })();

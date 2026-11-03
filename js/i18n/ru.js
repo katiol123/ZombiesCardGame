@@ -118,12 +118,14 @@
     slot_consumable: 'Расходник',
     slot_ally: 'Союзник',
     slot_resolve: 'Решимость',
+    slot_technique: 'Приём',
 
     type_weapon: 'Оружие',
     type_item: 'Снаряжение',
     type_consumable: 'Расходник',
     type_ally: 'Союзник',
     type_resolve: 'Решимость',
+    type_technique: 'Приём',
     type_enemy: 'Мертвец',
     type_living: 'Человек',
     type_henchman: 'Вожак',
@@ -144,6 +146,8 @@
     mode_recharge: 'Перезарядить',
     mode_banish: 'Изгнать',
     mode_burn: 'Сжечь',
+    mode_technique: 'Применить',
+    mode_display: 'Выложить',
     burned: 'Сожжено',
 
     dmg_title: 'Урон',
