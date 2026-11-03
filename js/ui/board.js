@@ -95,7 +95,7 @@
           <div class="noise-meter" data-noise="${i}" title="Шум ${l.noise} из ${l.limit}. При пороге приходит орда.">${ZG.icon('noise')}<div class="segs">${segs}</div><span>${l.noise}/${l.limit}</span></div>
           ${rules}
           <div class="lclose">${ZG.icon('hammer')} ${esc(ZG.cardCheckLineClose(l))}</div>
-          ${l.deck.length === 0 ? `<div class="lrule" style="color:var(--amber)">${T('empty_loc')} — можно заколотить</div>` : ''}`}
+          ${l.deck.length === 0 ? `<div class="lrule" style="color:var(--amber)">${T('empty_loc')} — можно заколотить</div>` : l.henchDown ? `<div class="lrule" style="color:var(--amber)">Вожак повержен — можно заколотить</div>` : ''}`}
           <div class="ltokens">${heroes.map((h) => UI.avatar(h.id, (h === active ? 'active ' : '') + (h.dead ? 'dead' : ''))).join('')}</div>
         </div>
       </div>`;
@@ -149,7 +149,7 @@
     let hint = '';
     if (w) {
       if (w.explore) hint = 'Исследуйте локацию или сыграйте карту действия.';
-      else if (w.close) hint = 'Локация обыскана — заколотите её!';
+      else if (w.close) hint = G().loc(mh).deck.length ? 'Вожак повержен — можно заколотить локацию.' : 'Локация обыскана — заколотите её!';
       else if (w.rest) hint = 'Вы в убежище: можно отдохнуть.';
       else hint = 'Можно завершить ход.';
     }
@@ -381,7 +381,7 @@
   };
 
   /* ============================== Проверка ============================== */
-  const KIND_LABEL = { combat: 'check_combat', acquire: 'check_acquire', event: 'check_event', close: 'check_close', evade: 'act_scout' };
+  const KIND_LABEL = { combat: 'check_combat', acquire: 'check_acquire', event: 'check_event', close: 'check_close', evade: 'check_evade' };
 
   UI.check = function (ctx) {
     return new Promise((resolve) => {

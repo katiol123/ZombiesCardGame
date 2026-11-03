@@ -78,6 +78,7 @@
 
   /* ============================== Создание миссии ============================== */
   G.LOC_SIZE = 7;
+  G.CLOCK_BY_PARTY = [24, 30, 34, 36];
   G.dmgCap = (def) => def.maxDmg || (def.type === 'boss' ? 5 : def.type === 'henchman' ? 4 : 3);
   G.newMission = function (idx) {
     const S = G.S();
@@ -129,7 +130,7 @@
     });
 
     // Часы
-    const len = (S.difficulty === 'hard' ? 26 : 30) + (special.clockMod || 0);
+    const len = G.CLOCK_BY_PARTY[Math.min(4, party.length) - 1] - (S.difficulty === 'hard' ? 4 : 0) + (special.clockMod || 0);
     const evCount = Math.round(len * 0.3);
     const evs = [];
     for (let i = 0; i < evCount; i++) evs.push(def.clockEvents[i % def.clockEvents.length]);
@@ -262,6 +263,10 @@
     m.phase = G.phaseAt(m.clockPos);
     m.turnMods = {};
     await UI().clockFlip(c, old !== m.phase && m.turn > 1);
+    if (old === 'night' && m.phase === 'day') {
+      m.locations.forEach((l) => (l.noise = Math.max(0, l.noise - 1)));
+      G.log('Рассвет: шум всех локаций −1.', 'clock');
+    }
     const cd = ZG.CLOCK[c.id];
     if (c.id !== 'calm') G.log(`Часы: ${cd.name}. ${cd.text}`, 'clock');
     switch (c.id) {
@@ -286,7 +291,7 @@
         break;
       }
       case 'broadcast':
-        if (mh.deck.length) mh.hand.push(mh.deck.shift());
+        G.heal(mh, 1);
         break;
       case 'dawn':
         m.heroes.filter((h) => !h.dead).forEach((h) => G.heal(h, 1));
@@ -310,7 +315,7 @@
     const a = {
       move: !ts.explored && !ts.moved && m.locations.length > 1,
       explore: ts.explores > 0 && !loc.closed && loc.deck.length > 0,
-      close: !loc.closed && loc.deck.length === 0 && !ts.closeTried,
+      close: !loc.closed && (loc.deck.length === 0 || loc.henchDown) && !ts.closeTried,
       rest: loc.closed && !ts.rested && !ts.explored && mh.discard.length > 0,
       give: !ts.gave && others.length > 0 && mh.hand.some((c) => c.id !== 'infection'),
       scout: mh.id === 'ten' && !ts.scouted && G.openLocs().some((l) => l.deck.length),
@@ -365,6 +370,7 @@
           break;
         case 'rest': {
           m.ts.rested = true;
+          m.ts.moved = true;
           m.ts.explores = 0;
           const n = G.heal(mh, 3);
           G.log(`${G.hname(mh)} отдыхает в убежище и восстанавливает ${n} карт.`, 'good');
@@ -493,6 +499,10 @@
     }
     if (p.draw) {
       for (let i = 0; i < p.draw && mh.deck.length; i++) mh.hand.push(mh.deck.shift());
+      if (p.putBack && mh.hand.length) {
+        const us = await ui.pickCards(mh, Math.min(p.putBack, mh.hand.length), 'Уложить рюкзак', 'Положите карту под низ колоды (перезарядите).');
+        us.forEach((u) => G.moveByMode(mh, u, 'recharge'));
+      }
     }
     if (p.lure) {
       const from = G.loc(mh);
@@ -638,9 +648,9 @@
         }
         if (evaded) {
           loc.deck.push(inst);
-          R.shuffle(loc.deck);
+          if (o.key === 'power') m.ts.explores++;
           G.log(`${G.hname(mh)} уклоняется от встречи: ${def.name}.`, 'move');
-          await ui.banner('Ушли незамеченными', `${def.name} возвращается в колоду локации`, 'good');
+          await ui.banner('Ушли незамеченными', `${def.name} уходит под низ колоды локации${o.key === 'power' ? '. +1 исследование' : ''}`, 'good');
           return null;
         }
       }
@@ -655,7 +665,10 @@
       const res = await G.doCheck(mh, G.eventCheck(ic, loc, `${def.name}: увернуться`, def));
       if (!res.success) await G.infect(mh);
     }
-    if (mh.dead) return null;
+    if (mh.dead) {
+      if (!loc.closed) { loc.deck.push(inst); R.shuffle(loc.deck); }
+      return null;
+    }
     // проверки боя
     const hits = def.hits || 1;
     let ok = true;
@@ -676,6 +689,7 @@
         const tr = await G.doCheck(mh, G.eventCheck(def.toxic, loc, `${def.name}: брызги заразы`, def));
         if (!tr.success) await G.infect(mh);
       }
+      if (def.type === 'henchman' && !loc.closed) loc.henchDown = true;
       if (def.type === 'henchman' && !loc.closed && !mh.dead) {
         const c = await ui.choose({
           title: 'Вожак повержен',
@@ -868,9 +882,10 @@
       if (ck.kind === 'combat' && wp) dice.push({ d: 'd4', src: 'Боевой опыт' });
       if (wp && (G.playDef(wp).noise || 0) > 0) noise += 1;
     }
-    if (mh.id === 'marina' && skill === 'medicine') dice.push({ d: 'd4', src: 'Твёрдая рука' });
+    if (mh.id === 'marina' && skill === 'medicine' && ck.kind !== 'combat') dice.push({ d: 'd4', src: 'Твёрдая рука' });
     if (mh.id === 'palych') {
       if (ck.kind === 'close') dice.push({ d: 'd6', src: 'Золотые руки' });
+      if (ck.kind === 'combat' && wp && ZG.card(wp.id).traits.includes('Инструмент')) dice.push({ d: 'd4', src: 'Золотые руки' });
       if (ck.kind === 'acquire' && ck.card && (ck.card.type === 'weapon' || ck.card.type === 'item')) { bonus += 2; parts.push({ label: 'Барахольщик', v: 2 }); }
     }
     if (ck.enemy && ck.enemy.armor && (skill === 'melee' || ZG.attrOf(skill) === 'str')) {
@@ -997,7 +1012,7 @@
       G.moveByMode(mh, p.u, pl.mode);
     });
     r.discards.forEach((u) => G.moveByMode(mh, u, 'discard'));
-    const taken = Math.max(0, n - reduce);
+    const taken = Math.min(Math.max(0, n - reduce), r.discards.length);
     G.log(`${G.hname(mh)} получает ${taken} урона${opts.source ? ` (${opts.source})` : ''}.`, taken ? 'bad' : '');
     return taken;
   };
@@ -1096,7 +1111,7 @@
     const m = G.M();
     const def = ZG.card(inst.id);
     const ui = UI();
-    if (!loc.closed) await G.closeLoc(loc);
+    if (!loc.closed && loc.deck.length === 0) await G.closeLoc(loc);
     const open = G.openLocs();
     const guarded = new Set();
     for (const l of open) {
@@ -1118,7 +1133,8 @@
       await ui.banner(T('boss_cornered'), `${def.name} уничтожен`, 'win');
       return 'win';
     }
-    const dest = R.pick(remaining);
+    const away = remaining.filter((l) => l !== loc);
+    const dest = R.pick(away.length ? away : remaining);
     dest.deck.push(inst);
     R.shuffle(dest.deck);
     G.log(T('boss_flee', { boss: def.name, loc: G.ldef(dest).name }), 'bad');
@@ -1136,12 +1152,13 @@
     // пересчёт склада
     const vault = m.reserve.slice();
     const loot = [];
+    const keptOne = new Set();
     m.heroes.forEach((mh) => {
       G.allPiles(mh).forEach((c) => {
         const d = ZG.card(c.id);
         if (!ZG.isBoon(d)) return;
         if (c.v) vault.push(c.id);
-        else if (c.l && !mh.dead) { vault.push(c.id); loot.push(c.id); }
+        else if (c.l && !mh.dead && (win || !keptOne.has(mh.id))) { vault.push(c.id); loot.push(c.id); if (!win) keptOne.add(mh.id); }
       });
     });
     const scars = [];
