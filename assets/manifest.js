@@ -14,6 +14,12 @@
  * ===================================================================== */
 window.ZG_ART = {
   cards: {
+    canary: 'assets/cards/canary.webp',
+    counselor: 'assets/cards/counselor.webp',
+    deserter: 'assets/cards/deserter.webp',
+    fieldmedic: 'assets/cards/fieldmedic.webp',
+    prisoner: 'assets/cards/prisoner.webp',
+    sniper: 'assets/cards/sniper.webp',
     busdriver: 'assets/cards/busdriver.webp',
     hamoperator: 'assets/cards/hamoperator.webp',
     janitor: 'assets/cards/janitor.webp',
