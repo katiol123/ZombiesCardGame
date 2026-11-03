@@ -388,8 +388,8 @@
         const to = R.pick(others);
         to.deck.push(b);
         R.shuffle(to.deck);
-        G.log(`${ZG.card(b.id).name} меняет логово. Где он теперь — неизвестно.`, 'bad');
-        await UI().banner('Стая сменила логово', `${ZG.card(b.id).name} ушёл из прежней локации`, 'bad');
+        G.log(`${ZG.card(b.id).name} меняет укрытие. Где он теперь — неизвестно.`, 'bad');
+        await UI().banner('Охотник сменил укрытие', `${ZG.card(b.id).name} ушёл из прежней локации`, 'bad');
       }
     }
     if (old === 'night' && m.phase === 'day') {

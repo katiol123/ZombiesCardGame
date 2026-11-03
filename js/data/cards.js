@@ -543,10 +543,10 @@
         { on: 'action', mode: 'recharge', scout: true },
       ],
       flavor: 'Светит сорок лет. Видела всё.' },
-    { id: 'alphafang', type: 'resolve', name: 'Клык вожака', tier: 9, reward: true, icon: 'paw', traits: ['Трофей'],
+    { id: 'alphafang', type: 'resolve', name: 'Свисток егеря', tier: 9, reward: true, icon: 'noise', traits: ['Трофей'],
       acquire: { skills: ['will'], dc: 4 },
       plays: [{ on: 'check', mode: 'recharge', kind: COMBAT, skillDie: 2, help: true }],
-      flavor: 'Носишь на шее — и стая обходит стороной.' },
+      flavor: 'Один свист — и волки замирают. Пока что.' },
     { id: 'busdriver', type: 'ally', name: 'Водитель Глория', tier: 9, reward: true, icon: 'truck', traits: ['Трофей'],
       acquire: { skills: ['persuasion'], dc: 4 },
       plays: [
@@ -584,8 +584,8 @@
       text: 'Угроза. При встрече: шум +2. Урон от него +1.', flavor: 'Сорок лет под землёй. Теперь он и есть шахта.' },
     { id: 'packwolf', type: 'henchman', name: 'Волк стаи', tier: 3, icon: 'paw', dc: 11, bite: true, before: { damage: 1 },
       text: 'Вожак. До проверки: 1 урон. Победив его, можно сразу попытаться заколотить локацию.', flavor: 'Глаза светятся в темноте. Все двенадцать пар.' },
-    { id: 'alpha', type: 'boss', name: 'Вожак стаи', tier: 3, icon: 'bossskull', dc: 18, bite: true, before: { damage: 1 }, roams: true,
-      text: 'Угроза. До проверки: 1 урон. Каждые 3 хода меняет логово — уходит в случайную открытую локацию.', flavor: 'Белая шерсть, чёрная пасть. Он помнит запах каждого.' },
+    { id: 'alpha', type: 'boss', name: 'Егерь Кроули', tier: 3, icon: 'bossskull', dc: 18, bite: true, before: { damage: 1 }, roams: true,
+      text: 'Угроза. До проверки: 1 урон (капкан). Каждые 3 хода меняет укрытие — уходит в случайную открытую локацию.', flavor: 'Лесничий, который открыл вольеры. Теперь стая слушается только его.' },
     { id: 'hallmonitor', type: 'henchman', name: 'Школьный сторож', tier: 3, icon: 'ghost', dc: 11, bite: true, dmgAdd: 1,
       text: 'Вожак. Урон от него +1. Победив его, можно сразу попытаться заколотить локацию.', flavor: 'Связка ключей звенит в каждом коридоре.' },
     { id: 'principal', type: 'boss', name: 'Директор Брэдшоу', tier: 3, icon: 'bossskull', dc: 16, bite: true, noiseOnEncounter: 3,
@@ -879,7 +879,7 @@
     soldierz: { weak: { 'Огонь': 'd4' } },
     burke: { weak: { 'Огнестрел': 'd6' } },
     hazmat: { immune: ['Огонь'] },
-    alpha: { resist: { 'Тяжёлое': 3 } },
+    alpha: { resist: { 'Тяжёлое': 3 }, weak: { 'Огонь': 'd6' } },
     patientzero: { immune: ['Огонь'], resist: { 'Тихое': 2 } },
   };
   Object.keys(AUG).forEach((id) => { if (C[id]) Object.assign(C[id], AUG[id]); });
