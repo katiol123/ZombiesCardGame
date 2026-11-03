@@ -476,7 +476,7 @@
       return UI.cardHTML(c, { u: c.u, size: 'sm', cls: inPool ? 'inpool' : okPis.length ? 'playable' : 'unplayable', badge: inPool ? 'в проверке' : badge });
     }).join('');
     const helpers = m.heroes.filter((h) => h !== mh && !h.dead && h.loc === mh.loc && h.hand.some((c) => (ZG.card(c.id).plays || []).some((p, pi) => g.canPlay(ctx, h, c, pi) || ctx.played.some((x) => x.u === c.u))));
-    const helpHtml = helpers.map((h) => `<div class="sec-label">${UI.avatar(h.id)} ${T('help_cards')}: ${esc(g.hname(h))}</div><div class="mini-hand" data-owner="${h.id}">${handCards(h)}</div>`).join('');
+    const helpHtml = helpers.map((h) => `<div class="sec-label help-head">${UI.avatar(h.id)} ${T('help_cards')}: ${esc(g.hname(h))} — можно сыграть в эту проверку</div><div class="mini-hand" data-owner="${h.id}">${handCards(h)}</div>`).join('');
 
     panel.innerHTML = `
       <div class="sub">${esc(hd.name)} · ${T(KIND_LABEL[ck.kind] || 'check')}</div>
@@ -493,7 +493,7 @@
         <div class="sec-label">${T('your_cards')}</div>
         <div class="mini-hand" data-owner="${mh.id}">${handCards(mh) || `<span class="muted">${T('no_cards')}</span>`}</div>
         ${helpHtml}
-        <div class="enc-actions">${helpers.length ? `<span class="more-below">↓ Ниже — помощь соседей</span>` : ''}<button class="btn primary pulse" data-roll>${ZG.icon('dice')} ${T('roll')}</button></div>
+        <div class="enc-actions"><button class="btn primary pulse" data-roll>${ZG.icon('dice')} ${T('roll')}</button></div>
       </div>`;
 
     panel.querySelectorAll('[data-skill]').forEach((el) => el.addEventListener('click', () => {
@@ -781,5 +781,100 @@
     UI.toast(`${ZG.icon(c.icon)} ${ZG.esc(ZG.Game.hname(mh))}: ${ZG.esc(c.name)}`, 'bad');
     UI.renderBoard();
     await ZG.sleep(500);
+  };
+})();
+
+/* ============================== Анимации карт ============================== */
+(function () {
+  const ZG = window.ZG;
+  const UI = ZG.UI;
+  const sleep = ZG.sleep;
+  const fast = () => ZG.speed < 0.2;
+
+  const locEl = (i) => document.querySelector(`.loc[data-i="${i}"]`);
+  const rectOf = (el) => {
+    if (!el) return { x: window.innerWidth / 2, y: window.innerHeight / 2 };
+    const t = el.querySelector('.lstack') || el.querySelector('.lart') || el;
+    const r = t.getBoundingClientRect();
+    return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
+  };
+
+  /** Перелёт одной карты из точки в точку */
+  UI.fly = function (from, to, o) {
+    o = o || {};
+    if (fast() || document.documentElement.classList.contains('no-fx')) return Promise.resolve();
+    const el = document.createElement('div');
+    el.className = 'fly-card ' + (o.cls || '');
+    el.innerHTML = o.html || ZG.icon(o.icon || 'biohazard');
+    document.body.appendChild(el);
+    const dur = (o.dur || 700) * Math.max(ZG.speed, 0.4);
+    const rot = o.rot != null ? o.rot : (Math.random() * 40 - 20);
+    const mid = { x: (from.x + to.x) / 2 + (o.arc || 0), y: Math.min(from.y, to.y) - (o.lift != null ? o.lift : 90) };
+    const kf = [
+      { transform: `translate(${from.x - 27}px, ${from.y - 38}px) rotate(0deg) scale(${o.s0 || 0.6})`, opacity: 0 },
+      { transform: `translate(${mid.x - 27}px, ${mid.y - 38}px) rotate(${rot / 2}deg) scale(1)`, opacity: 1, offset: 0.45 },
+      { transform: `translate(${to.x - 27}px, ${to.y - 38}px) rotate(${rot}deg) scale(${o.s1 || 0.5})`, opacity: o.fadeEnd ? 0 : 0.9 },
+    ];
+    const a = el.animate(kf, { duration: dur, delay: (o.delay || 0) * Math.max(ZG.speed, 0.4), easing: 'cubic-bezier(.3,.7,.3,1)', fill: 'both' });
+    return a.finished.then(() => el.remove()).catch(() => el.remove());
+  };
+
+  const peek = async (on) => {
+    const ov = document.querySelector('.enc-ov');
+    if (ov) ov.classList.toggle('peek', on);
+    if (on) { UI.renderBoard(); await sleep(250); }
+  };
+
+  /** Бегство Угрозы: одинаковые рубашки разлетаются по неперекрытым локациям */
+  UI.escapeAnim = async function (fromIdx, toIdxs) {
+    await peek(true);
+    const from = rectOf(locEl(fromIdx));
+    ZG.Audio.synth && ZG.Audio.synth('flip');
+    await Promise.all(toIdxs.map((t, k) => UI.fly(from, rectOf(locEl(t)), { delay: k * 160, icon: 'skull', dur: 900, lift: 140 })
+      .then(() => { const e = locEl(t); if (e) { e.classList.remove('receive'); void e.offsetWidth; e.classList.add('receive'); ZG.Audio.synth && ZG.Audio.synth('click'); } })));
+    await sleep(300);
+    await peek(false);
+  };
+
+  /** Зачистка локации: карты вылетают из колоды и сгорают */
+  UI.purgeAnim = async function (idx, n) {
+    if (!n) return;
+    await peek(true);
+    const el = locEl(idx);
+    const from = rectOf(el);
+    if (el) el.classList.add('purge');
+    ZG.Audio.synth && ZG.Audio.synth('curse');
+    const jobs = [];
+    for (let k = 0; k < Math.min(n, 10); k++) {
+      const ang = (k / Math.min(n, 10)) * Math.PI * 2;
+      const to = { x: from.x + Math.cos(ang) * 140, y: from.y - 60 - Math.abs(Math.sin(ang)) * 90 };
+      jobs.push(UI.fly(from, to, { delay: k * 70, cls: 'burn', icon: 'fire', dur: 650, lift: 40, fadeEnd: true, s0: 0.5, s1: 0.3 })
+        .then(() => ZG.FX.burst(to.x, to.y, 'spark', 12)));
+    }
+    await Promise.all(jobs);
+    if (el) el.classList.remove('purge');
+    await peek(false);
+  };
+
+  /** Карты прилетают в локацию из-за края экрана (орда, вой) */
+  UI.flyIn = async function (idx, n, icon) {
+    const to = rectOf(locEl(idx));
+    const jobs = [];
+    for (let k = 0; k < n; k++) {
+      const side = Math.random() < 0.5 ? -60 : window.innerWidth + 60;
+      jobs.push(UI.fly({ x: side, y: Math.random() * window.innerHeight * 0.6 + 80 }, to, { delay: k * 150, icon: icon || 'skull', dur: 800, lift: 30 }));
+    }
+    await Promise.all(jobs);
+    const e = locEl(idx);
+    if (e) { e.classList.remove('receive'); void e.offsetWidth; e.classList.add('receive'); }
+  };
+
+  /** Карта переходит из одной локации в другую */
+  UI.flyBetween = async function (fromIdx, toIdx, icon) {
+    await peek(true);
+    await UI.fly(rectOf(locEl(fromIdx)), rectOf(locEl(toIdx)), { icon: icon || 'ghost', dur: 900, lift: 120 });
+    const e = locEl(toIdx);
+    if (e) { e.classList.remove('receive'); void e.offsetWidth; e.classList.add('receive'); }
+    await peek(false);
   };
 })();

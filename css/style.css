@@ -752,6 +752,7 @@ h1, h2, h3 { font-family: var(--font-head); font-weight: 600; letter-spacing: 0.
 }
 
 .tray-toggle { display: none; margin-left: auto; }
+.help-head { color: var(--amber) !important; font-size: 12px !important; margin-top: 12px !important; }
 .more-below { font-size: 12px; color: var(--amber); margin-right: auto; align-self: center; }
 .act-head { grid-column: 1 / -1; font-family: var(--font-head); letter-spacing: .3em; text-transform: uppercase; color: var(--amber); font-size: 13px; margin: 10px 0 -4px; border-bottom: 1px solid var(--edge); padding-bottom: 6px; }
 
@@ -765,3 +766,15 @@ h1, h2, h3 { font-family: var(--font-head); font-weight: 600; letter-spacing: 0.
 .card .ccheck.rc { color: #9fe0e0; padding-top: 0; font-weight: 600; }
 .card.t-decoy { --cc: #5b5f68; }
 .mnode .micon img { width: 72px; height: 72px; object-fit: cover; border-radius: 12px; }
+
+/* ---------- Летящие карты ---------- */
+.fly-card { position: fixed; left: 0; top: 0; z-index: 1700; width: 54px; height: 76px; border-radius: 6px; pointer-events: none; will-change: transform, opacity;
+  background: repeating-linear-gradient(45deg, rgba(255,255,255,.03) 0 5px, transparent 5px 10px), radial-gradient(circle at 50% 45%, #5a1712, #1a0606 75%);
+  border: 1px solid #7a2a22; box-shadow: 0 8px 18px rgba(0,0,0,.7); display: flex; align-items: center; justify-content: center; color: rgba(240,140,120,.45); font-size: 26px; }
+.fly-card.burn { background: radial-gradient(circle at 50% 60%, #ffb347, #c2410c 45%, #3b0a04 80%); border-color: #ffb347; box-shadow: 0 0 22px rgba(255,140,40,.9); color: #fff3c4; }
+.fly-card.gold { border-color: var(--amber); box-shadow: 0 0 18px rgba(224,166,66,.7); }
+.enc-ov.peek { opacity: .1 !important; transition: opacity .35s ease; pointer-events: none; }
+.loc.receive { animation: receive .6s var(--ease); }
+@keyframes receive { 0% { transform: scale(1.04); box-shadow: 0 0 0 2px var(--blood2), 0 0 40px rgba(214,60,47,.6); } 100% { transform: none; } }
+.loc.purge .lart { animation: purge 1s ease; }
+@keyframes purge { 30% { filter: brightness(2.2) sepia(1) hue-rotate(-20deg); } 100% { filter: none; } }

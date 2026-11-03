@@ -417,6 +417,7 @@
           l.deck.push(G.inst(ZG.boxPick('enemy', G.def().tier)));
           R.shuffle(l.deck);
           G.log(`В локацию «${G.ldef(l).name}» пришёл мертвец.`, 'bad');
+          await UI().flyIn(m.locations.indexOf(l), 1);
         }
         break;
       }
@@ -1413,6 +1414,7 @@
     to.deck.push(c);
     R.shuffle(to.deck);
     const name = ZG.card(hid).name;
+    await UI().flyBetween(G.M().locations.indexOf(from), G.M().locations.indexOf(to), 'ghost');
     G.log(`${why}: ${name} уходит из «${G.ldef(from).name}» в «${G.ldef(to).name}».`, 'bad');
     ZG.Audio.sfx('growl', 0.7);
     await UI().banner(`${why}: ${name}`, `Из «${G.ldef(from).name}» в «${G.ldef(to).name}»`, 'warn');
@@ -1430,6 +1432,8 @@
     }
     loc.noise = 0;
     G.M().stats.hordes++;
+    UI().renderBoard();
+    await UI().flyIn(G.M().locations.indexOf(loc), size);
     G.log(`ОРДА! +${size} мертвецов в «${G.ldef(loc).name}».`, 'bad');
     await UI().horde(loc, size);
     if ((G.def().special || {}).henchToHorde) {
@@ -1469,6 +1473,7 @@
     const villains = loc.deck.filter((i) => ZG.card(i.id).type === 'boss');
     if (villains.length) {
       const banished = loc.deck.length - villains.length;
+      await UI().purgeAnim(G.M().locations.indexOf(loc), banished);
       G.rescueObjectives(loc, loc.deck.filter((c) => ZG.card(c.id).type === 'objective'));
       loc.deck = R.shuffle(villains);
       loc.henchDown = false;
@@ -1501,6 +1506,8 @@
   };
 
   G.closeLoc = async function (loc) {
+    const purged = loc.deck.filter((c) => ZG.card(c.id).type !== 'objective').length;
+    if (purged) await UI().purgeAnim(G.M().locations.indexOf(loc), purged);
     G.rescueObjectives(loc, loc.deck.filter((c) => ZG.card(c.id).type === 'objective'));
     loc.closed = true;
     loc.deck = [];
@@ -1578,6 +1585,7 @@
       if (villains.length) {
         // в колоде есть ещё Угроза: локация не закрывается, всё остальное (включая вожаков) изгоняется
         const banished = loc.deck.length - villains.length;
+        await UI().purgeAnim(m.locations.indexOf(loc), banished);
         G.rescueObjectives(loc, loc.deck.filter((c) => ZG.card(c.id).type === 'objective'));
         loc.deck = R.shuffle(villains);
         loc.henchDown = false;
@@ -1614,6 +1622,7 @@
       ui.renderBoard();
     }
     // Бегство: Угроза и «Ложные следы» — по одной карте в каждую неперекрытую открытую локацию
+    await UI().escapeAnim(m.locations.indexOf(loc), remaining.map((l) => m.locations.indexOf(l)));
     const cards = R.shuffle([inst, ...Array(remaining.length - 1).fill(0).map(() => G.inst('falsetrail'))]);
     remaining.forEach((l, i) => {
       l.deck.push(cards[i]);
