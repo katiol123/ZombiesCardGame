@@ -801,6 +801,8 @@
         }
       }
     }
+    // Перед боем с Угрозой: герои в других открытых локациях могут временно перекрыть их
+    if (isBoss) m.guarded = await G.villainGuards(mh, loc);
     // до проверки
     if (def.before && def.before.damage) {
       G.log(`${def.name} атакует первым: ${def.before.damage} урона.`, 'bad');
@@ -848,6 +850,7 @@
       return null;
     }
     // поражение
+    if (isBoss) m.guarded = [];
     const dmg = Math.min(ck.dc - res.total, G.dmgCap(def)) + (def.dmgAdd || 0);
     const taken = await G.damage(mh, dmg, { source: def.name, bite: def.bite, combat: true });
     if ((def.bite && taken > 0) || def.infectOnFail) await G.infect(mh);
@@ -1356,41 +1359,45 @@
     }
   };
 
-  G.bossDefeated = async function (mh, inst, loc) {
+  /** Временное перекрытие путей перед боем с Угрозой (не в её локации) */
+  G.villainGuards = async function (mh, loc) {
     const m = G.M();
-    const def = ZG.card(inst.id);
     const ui = UI();
-    if (!loc.closed && loc.deck.length === 0) await G.closeLoc(loc);
-    if (!loc.closed && !mh.dead) {
-      loc.henchDown = true;
-      const c = await ui.choose({
-        title: 'Угроза отброшена',
-        text: `Попытаться заколотить «${G.ldef(loc).name}» прямо сейчас, пока она не вернулась? (${ZG.cardCheckLineClose(loc)})`,
-        options: [{ label: 'Заколотить', primary: true }, { label: 'Нет' }],
-      });
-      if (c === 0) {
-        const res = await G.doCheck(mh, G.closeCheck(loc));
-        if (res.success) await G.closeLoc(loc);
-      }
-    }
-    const soloOwn = !loc.closed ? loc : null; // свою локацию можно только заколотить, не перекрыть
-    const open = G.openLocs();
-    const guarded = new Set();
-    for (const l of open) {
-      if (l === soloOwn) continue;
-      const hs = G.heroesAt(m.locations.indexOf(l));
-      for (const h of hs) {
+    const guarded = [];
+    for (const l of G.openLocs()) {
+      if (l === loc) continue;
+      const li = m.locations.indexOf(l);
+      for (const h of G.heroesAt(li)) {
         const c = await ui.choose({
           title: 'Перекрыть путь',
-          text: T('corner_q', { hero: G.hname(h), loc: G.ldef(l).name }) + ` (${ZG.cardCheckLineClose(l)})`,
+          text: `${G.hname(h)}: перед боем с Угрозой перекрыть «${G.ldef(l).name}», чтобы ей некуда было бежать? (${ZG.cardCheckLineClose(l)}) Награда «Когда заколочено» при этом не срабатывает.`,
           options: [{ label: 'Перекрыть', primary: true }, { label: 'Нет' }],
         });
         if (c !== 0) continue;
         const res = await G.doCheck(h, G.closeCheck(l, `Перекрыть: ${G.ldef(l).name}`));
-        if (res.success) { guarded.add(l); break; }
+        if (res.success) {
+          guarded.push(li);
+          G.log(`«${G.ldef(l).name}» временно перекрыта.`, 'good');
+          break;
+        }
       }
     }
-    const remaining = open.filter((l) => !guarded.has(l));
+    return guarded;
+  };
+
+  G.bossDefeated = async function (mh, inst, loc) {
+    const m = G.M();
+    const def = ZG.card(inst.id);
+    const ui = UI();
+    const guarded = new Set((m.guarded || []).map((i) => m.locations[i]));
+    m.guarded = [];
+    // 1–3. Других злодеев в колоде нет — локация закрывается автоматически, карты изгоняются, срабатывает награда
+    if (!loc.closed) {
+      const villains = loc.deck.filter((c) => ZG.card(c.id).type === 'boss');
+      if (villains.length) loc.deck = villains;
+      else await G.closeLoc(loc);
+    }
+    const remaining = G.openLocs().filter((l) => !guarded.has(l));
     const ob = G.special().objective;
     if (!remaining.length && ob && (m.obj || 0) < ob.need) {
       m.bossDown = true;
@@ -1403,7 +1410,20 @@
       await ui.banner(T('boss_cornered'), `${def.name} уничтожен`, 'win');
       return 'win';
     }
-    // как в настольной игре: Угроза + «Ложные следы» — по одной карте в каждую неперекрытую локацию
+    // 4. Герои из закрытой локации уходят в другие локации
+    if (loc.closed) {
+      const li = m.locations.indexOf(loc);
+      const others = m.locations.map((_, i) => i).filter((i) => i !== li);
+      for (const h of G.heroesAt(li)) {
+        if (!others.length) break;
+        let to = await ui.pickLocation(`${G.hname(h)}: куда отступить из заколоченной локации?`, others);
+        if (to == null) to = R.pick(others);
+        h.loc = to;
+        G.log(`${G.hname(h)} уходит в «${G.ldef(m.locations[to]).name}».`, 'move');
+      }
+      ui.renderBoard();
+    }
+    // Бегство: Угроза и «Ложные следы» — по одной карте в каждую неперекрытую открытую локацию
     const cards = R.shuffle([inst, ...Array(remaining.length - 1).fill(0).map(() => G.inst('falsetrail'))]);
     remaining.forEach((l, i) => {
       l.deck.push(cards[i]);
@@ -1414,6 +1434,7 @@
     await ui.banner('Угроза скрылась', remaining.length > 1 ? `Где — неизвестно. В каждую неперекрытую локацию (${remaining.length}) ушла одна карта: Угроза или Ложный след.` : `Ей осталось только одно укрытие: «${G.ldef(remaining[0]).name}».`, 'bad', true);
     return null;
   };
+
 
   /* ============================== Итоги миссии ============================== */
   G.finish = async function (win, reason) {
