@@ -592,9 +592,9 @@
       text: 'Угроза. При встрече: шум +3 (школьный звонок).', flavor: '«Опоздавших не пускаем».' },
     { id: 'guardz', type: 'henchman', name: 'Охрана «Хейл Биомед»', tier: 3, icon: 'ghost', dc: 12, bite: true, armor: 2,
       text: 'Вожак. Броня: Сила и Рукопашная −2. Победив его, можно сразу попытаться заколотить локацию.', flavor: 'Пропуск уровня 4. Доступ куда угодно.' },
-    { id: 'patientzero', type: 'boss', name: 'Нулевой пациент', tier: 3, icon: 'bossskull', dc: 17, bite: true, hits: 2, mutates: true, infectOnFail: true,
-      text: 'Угроза. Нужно победить в двух проверках подряд. Каждый раз, когда его не победили, он мутирует: +1 к сложности до конца миссии. При поражении — Инфекция.',
-      flavor: 'Объект 0. Доброволец. С него всё началось.' },
+    { id: 'patientzero', type: 'boss', name: 'Чистильщик', tier: 3, icon: 'shield', dc: 17, hits: 2, mutates: true, mutateName: 'Адаптация', before: { damage: 1 },
+      text: 'Угроза, машина. Нужно победить в двух проверках подряд. До проверки: 1 урон. Каждый раз, когда его не победили, боевая система адаптируется: +1 к сложности до конца миссии.',
+      flavor: 'Экзоскелет зачистки «Хейл Биомед». Оператор внутри умер неделю назад. Протокол продолжает работу.' },
   ]);
 
 
@@ -867,7 +867,7 @@
     principal: { inflict: 'doom', weak: { 'Тихое': 'd6' } },
     spitter: { inflict: 'vuln', dmgType: 'acid', weak: { 'Дальнее': 'd6' } },
     burnt: { inflict: 'vuln', dmgType: 'fire' },
-    patientzero: { inflict: 'decay', dmgType: 'acid' },
+    patientzero: { inflict: 'numb', dmgType: 'electric' },
     soldierz: { dmgType: 'electric' },
     hazmat: { dmgType: 'acid' },
     kane: { inflict: 'doom' },
@@ -880,7 +880,7 @@
     burke: { weak: { 'Огнестрел': 'd6' } },
     hazmat: { immune: ['Огонь'] },
     alpha: { resist: { 'Тяжёлое': 3 }, weak: { 'Огонь': 'd6' } },
-    patientzero: { immune: ['Огонь'], resist: { 'Тихое': 2 } },
+    patientzero: { immune: ['Огонь'], resist: { 'Ближнее': 2 }, weak: { 'Электричество': 'd8' } },
   };
   Object.keys(AUG).forEach((id) => { if (C[id]) Object.assign(C[id], AUG[id]); });
   // карты, которые можно выложить

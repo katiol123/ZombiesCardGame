@@ -818,7 +818,7 @@
     const m = G.M();
     const mods = [];
     if (!def.living && m.phase === 'night') mods.push({ label: 'Ночь', v: G.nightBonus() });
-    if (def.mutates && m.bossMut) mods.push({ label: 'Мутация', v: m.bossMut });
+    if (def.mutates && m.bossMut) mods.push({ label: def.mutateName || 'Мутация', v: m.bossMut });
     const lr = G.lrule(loc);
     if (!def.living && lr.undeadDc) mods.push({ label: 'Локация: мертвецы', v: lr.undeadDc });
     if (def.living && lr.livingDc) mods.push({ label: 'Локация: люди', v: lr.livingDc });
@@ -964,8 +964,8 @@
     }
     if (def.mutates) {
       m.bossMut = (m.bossMut || 0) + 1;
-      G.log(`${def.name} мутирует: сложность +${m.bossMut}.`, 'bad');
-      await ui.banner('Мутация!', `${def.name} становится сильнее: +${m.bossMut} к сложности`, 'bad');
+      G.log(`${def.name}: ${(def.mutateName || 'Мутация').toLowerCase()}, сложность +${m.bossMut}.`, 'bad');
+      await ui.banner(`${def.mutateName || 'Мутация'}!`, `${def.name} становится сильнее: +${m.bossMut} к сложности`, 'bad');
     }
     if (def.failSummon) {
       G.openLocs().forEach((l) => {
