@@ -26,7 +26,11 @@
     const traits = (d.traits || []).filter((t) => t && t !== ZG.cardTypeLabel(d));
     const typeLine = ZG.cardTypeLabel(d) + (traits.length ? ' · ' + traits.join(', ') : '');
     const check = ZG.cardCheckLine(d);
-    const rules = ZG.cardRules(d).map((t) => `<p>${esc(t)}</p>`).join('');
+    const ruleLines = ZG.cardRules(d);
+    const rules = ruleLines.map((t) => `<p>${esc(t)}</p>`).join('');
+    const tlen = ruleLines.join(' ').length + (d.recharge ? 20 : 0) + (check.length > 28 ? 20 : 0);
+    if (tlen > 165) cls.push('xdense');
+    else if (tlen > 105) cls.push('dense');
     const face = `<div class="face">
         <div class="chead"><span class="cname">${esc(ZG.cardName(d))}</span>${corner ? `<span class="ctier">${corner}</span>` : ''}</div>
         <div class="cart">${art}</div>
@@ -229,4 +233,34 @@
       });
     });
   };
+})();
+
+/* Автоподгонка текста карт: сначала убирается художественная строка, затем уменьшается шрифт правил */
+(function () {
+  const ZG = window.ZG;
+  const fitCard = (el) => {
+    if (el.dataset.fit === '1') return;
+    const t = el.querySelector('.ctext');
+    if (!t || !t.clientHeight) return;
+    el.dataset.fit = '1';
+    if (t.scrollHeight <= t.clientHeight + 1) return;
+    const fl = el.querySelector('.cflavor');
+    if (fl) fl.style.display = 'none';
+    let fs = parseFloat(getComputedStyle(t).fontSize);
+    let guard = 0;
+    while (t.scrollHeight > t.clientHeight + 1 && fs > 6.5 && guard++ < 20) {
+      fs -= 0.4;
+      t.style.fontSize = fs + 'px';
+      t.style.lineHeight = '1.12';
+    }
+    if (t.scrollHeight > t.clientHeight + 1) el.classList.add('clipped');
+  };
+  ZG.UI.fitCards = (root) => (root || document).querySelectorAll('.card').forEach(fitCard);
+  let pending = false;
+  const mo = new MutationObserver(() => {
+    if (pending) return;
+    pending = true;
+    requestAnimationFrame(() => { pending = false; ZG.UI.fitCards(); });
+  });
+  window.addEventListener('DOMContentLoaded', () => mo.observe(document.body, { childList: true, subtree: true }));
 })();

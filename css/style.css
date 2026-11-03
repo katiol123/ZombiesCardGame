@@ -778,3 +778,10 @@ h1, h2, h3 { font-family: var(--font-head); font-weight: 600; letter-spacing: 0.
 @keyframes receive { 0% { transform: scale(1.04); box-shadow: 0 0 0 2px var(--blood2), 0 0 40px rgba(214,60,47,.6); } 100% { transform: none; } }
 .loc.purge .lart { animation: purge 1s ease; }
 @keyframes purge { 30% { filter: brightness(2.2) sepia(1) hue-rotate(-20deg); } 100% { filter: none; } }
+
+/* Плотный текст на длинных картах */
+.card.dense .ctext { font-size: .9em; line-height: 1.18; gap: 2px; }
+.card.xdense .ctext { font-size: .8em; line-height: 1.12; gap: 1px; }
+.card.dense:not(.big):not(.mid) .cflavor, .card.xdense:not(.big) .cflavor { display: none; }
+.card.xdense .ccheck { font-size: .9em; }
+.card.clipped .ctext { -webkit-mask-image: linear-gradient(180deg, #000 82%, transparent); mask-image: linear-gradient(180deg, #000 82%, transparent); }
