@@ -699,6 +699,10 @@
     if (ZG.isEnemy(def)) {
       await ui.tip(def.type === 'boss' ? 'boss' : def.type === 'henchman' ? 'henchman' : 'combat');
       r = await G.fight(mh, inst, loc, opts);
+    } else if (def.type === 'decoy') {
+      G.M().ts.explores++;
+      G.log(`${G.hname(mh)} находит лишь ложный след. +1 исследование.`, 'move');
+      await ui.banner('Ложный след', 'Здесь её нет. +1 исследование', 'warn');
     } else if (def.type === 'event') {
       await ui.tip('event');
       r = await G.event(mh, inst, loc);
@@ -1355,11 +1359,11 @@
     const def = ZG.card(inst.id);
     const ui = UI();
     if (!loc.closed && loc.deck.length === 0) await G.closeLoc(loc);
-    if (!loc.closed && m.heroes.length === 1 && !mh.dead) {
+    if (!loc.closed && !mh.dead) {
       loc.henchDown = true;
       const c = await ui.choose({
         title: 'Угроза отброшена',
-        text: `Соло: попытаться заколотить «${G.ldef(loc).name}» прямо сейчас? (${ZG.cardCheckLineClose(loc)})`,
+        text: `Попытаться заколотить «${G.ldef(loc).name}» прямо сейчас, пока она не вернулась? (${ZG.cardCheckLineClose(loc)})`,
         options: [{ label: 'Заколотить', primary: true }, { label: 'Нет' }],
       });
       if (c === 0) {
@@ -1367,7 +1371,7 @@
         if (res.success) await G.closeLoc(loc);
       }
     }
-    const soloOwn = m.heroes.length === 1 && !loc.closed ? loc : null;
+    const soloOwn = !loc.closed ? loc : null; // свою локацию можно только заколотить, не перекрыть
     const open = G.openLocs();
     const guarded = new Set();
     for (const l of open) {
@@ -1397,12 +1401,14 @@
       await ui.banner(T('boss_cornered'), `${def.name} уничтожен`, 'win');
       return 'win';
     }
-    const away = remaining.filter((l) => l !== loc);
-    const dest = R.pick(away.length ? away : remaining);
-    dest.deck.push(inst);
-    R.shuffle(dest.deck);
-    G.log(T('boss_flee', { boss: def.name, loc: G.ldef(dest).name }), 'bad');
-    await ui.banner('Угроза отступает!', `${def.name} уходит в «${G.ldef(dest).name}». Заколотите остальные локации, чтобы загнать её в угол.`, 'bad');
+    // как в настольной игре: Угроза + «Ложные следы» — по одной карте в каждую неперекрытую локацию
+    const cards = R.shuffle([inst, ...Array(remaining.length - 1).fill(0).map(() => G.inst('falsetrail'))]);
+    remaining.forEach((l, i) => {
+      l.deck.push(cards[i]);
+      R.shuffle(l.deck);
+    });
+    G.log(`Угроза («${def.name}») скрылась. В ${remaining.length} ${ZG.plural(remaining.length, 'локацию', 'локации', 'локаций')} замешано по карте: Угроза или Ложный след.`, 'bad');
+    await ui.banner('Угроза скрылась', remaining.length > 1 ? `Где — неизвестно. В каждую неперекрытую локацию (${remaining.length}) ушла одна карта: Угроза или Ложный след.` : `Ей осталось только одно укрытие: «${G.ldef(remaining[0]).name}».`, 'bad', true);
     return null;
   };
 
