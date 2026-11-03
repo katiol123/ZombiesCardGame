@@ -14,6 +14,13 @@
  * ===================================================================== */
 window.ZG_ART = {
   cards: {
+    busdriver: 'assets/cards/busdriver.webp',
+    hamoperator: 'assets/cards/hamoperator.webp',
+    janitor: 'assets/cards/janitor.webp',
+    managerburt: 'assets/cards/managerburt.webp',
+    nurseannie: 'assets/cards/nurseannie.webp',
+    sapper: 'assets/cards/sapper.webp',
+    shepherd: 'assets/cards/shepherd.webp',
     bouncer: 'assets/cards/bouncer.webp',
     deputy: 'assets/cards/deputy.webp',
     engineer: 'assets/cards/engineer.webp',
