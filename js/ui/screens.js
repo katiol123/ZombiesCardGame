@@ -122,7 +122,7 @@
           ${UI.statsHTML(ph)}
           <div class="stat-row"><span class="stat">Рука <b>${h.hand}</b></span><span class="stat">Колода <b>15</b></span></div>
           ${h.powers.map((p) => `<div class="power"><b>${esc(p.name)}.</b> ${esc(p.text)}</div>`).join('')}
-          <div class="prof">Владение: ${(h.prof || []).length ? h.prof.map((k) => esc(ZG.PROF[k].name)).join(', ') : 'нет (огнестрел и тяжёлое снаряжение со штрафом)'}</div>
+          <div class="prof">Владение: ${(h.prof || []).length ? h.prof.map((k) => esc(ZG.PROF[k].name)).join(', ') : 'нет'}</div>
           <p class="flavor" style="font-size:13px;margin:10px 0 0">${esc(h.bio)}</p></div></div>`;
       }).join('')}</div>
       <h2 style="margin-top:26px">${T('party_difficulty')}</h2>
