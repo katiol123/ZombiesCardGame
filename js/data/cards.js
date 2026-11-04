@@ -872,20 +872,16 @@
     principal: { inflict: 'doom', weak: { 'Тихое': 'd6' } },
     spitter: { inflict: 'vuln', dmgType: 'acid', weak: { 'Дальнее': 'd6' } },
     burnt: { inflict: 'vuln', dmgType: 'fire' },
-    patientzero: { inflict: 'numb', dmgType: 'electric' },
-    soldierz: { dmgType: 'electric' },
-    hazmat: { dmgType: 'acid' },
     kane: { inflict: 'doom' },
-    alpha: { inflict: 'terror' },
     // уязвимости и стойкость
     shambler: { weak: { 'Тяжёлое': 'd4' } },
     bloater: { weak: { 'Огонь': 'd8' }, resist: { 'Ближнее': 2 } },
     blindminer: { weak: { 'Тихое': 'd6' } },
-    soldierz: { weak: { 'Огонь': 'd4' } },
+    soldierz: { dmgType: 'electric', weak: { 'Огонь': 'd4' } },
     burke: { weak: { 'Огнестрел': 'd6' } },
-    hazmat: { immune: ['Огонь', 'Кислота'] },
-    alpha: { resist: { 'Тяжёлое': 3 }, weak: { 'Огонь': 'd6' } },
-    patientzero: { immune: ['Огонь'], resist: { 'Ближнее': 2 }, weak: { 'Электричество': 'd8' } },
+    hazmat: { dmgType: 'acid', immune: ['Огонь', 'Кислота'] },
+    alpha: { inflict: 'terror', resist: { 'Тяжёлое': 3 }, weak: { 'Огонь': 'd6' } },
+    patientzero: { inflict: 'numb', dmgType: 'electric', immune: ['Огонь'], resist: { 'Ближнее': 2 }, weak: { 'Электричество': 'd8' } },
   };
   Object.keys(AUG).forEach((id) => { if (C[id]) Object.assign(C[id], AUG[id]); });
   // грамматический род врагов (по умолчанию мужской): f — женский, n — средний
