@@ -502,7 +502,7 @@
         { on: 'check', mode: 'reveal', kind: COMBAT, weapon: ['tech', 'dex', 'shooting'], dice: ['d8', 'd8'], noise: 3 },
         { on: 'check', mode: 'recharge', kind: COMBAT, weapon: ['tech', 'dex', 'shooting'], dice: ['d8', 'd8', 'd8'], noise: 4 },
       ],
-      flavor: 'Баллон от барбекю и садовый распылитель. Палыч гордится.' },
+      flavor: 'Баллон от барбекю и садовый распылитель. Рэй гордится.' },
     { id: 'tacshield', type: 'item', name: 'Тактический щит', tier: 3, icon: 'shield', traits: ['Броня', 'Щит'],
       acquire: { skills: ['str', 'end'], dc: 9 },
       plays: [
@@ -673,7 +673,7 @@
       acquire: { skills: ['medicine'], dc: 7 },
       recharge: { skills: ['medicine'], dc: 8 },
       plays: [{ on: 'action', mode: 'technique', heal: { dice: ['d6'], bonus: 2 }, clearConds: true, target: 'here' }],
-      flavor: 'Кухонный стол, налобный фонарь, водка. Пациент выжил.' },
+      flavor: 'Кухонный стол, налобный фонарь, виски. Пациент выжил.' },
     { id: 'shepherd', type: 'ally', name: 'Ворон Отто', tier: 1, icon: 'eye', traits: ['Животное'],
       acquire: { skills: ['persuasion', 'survival'], dc: 6 },
       plays: [{ on: 'action', mode: 'display' }, { on: 'check', mode: 'discard', kind: COMBAT, dice: ['d8'] }],
