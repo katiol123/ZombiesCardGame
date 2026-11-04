@@ -1189,6 +1189,11 @@
       if (fx.noise) { G.addNoise(loc, fx.noise); ui.fxNoise(loc); G.log(`Шум +${fx.noise}.`, 'bad'); }
       if (fx.infect) await G.infect(mh);
       if (fx.cond) await G.addCond(mh, fx.cond);
+      if (fx.explore && G.M().ts) {
+        G.M().ts.explores += fx.explore;
+        G.log(`${G.hname(mh)}: +${fx.explore} исследование.`, 'good');
+        ui.toast(`${ZG.icon('search')} +${fx.explore} исследование`, 'loot');
+      }
       if (fx.clock) {
         const m = G.M();
         m.clockPos = Math.min(m.clock.length, m.clockPos + fx.clock);
