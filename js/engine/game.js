@@ -971,9 +971,9 @@
     }
     if (!loc.closed) {
       loc.deck.push(inst);
-      R.shuffle(loc.deck);
+      if (!def.toBottom) R.shuffle(loc.deck); // toBottom: враг уходит под низ колоды локации
     }
-    G.log(T('undefeated', { name: def.name }), 'bad');
+    G.log(def.toBottom && !loc.closed ? `${def.name} не повержена и уходит под низ колоды локации` : T('undefeated', { name: def.name }), 'bad');
     return null;
   };
 
