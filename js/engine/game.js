@@ -876,6 +876,17 @@
     return { kind: 'close', skills: ld.close.skills, dc: ld.close.dc, base: ld.close.dc, mods: [], locIdx: G.M().locations.indexOf(loc), title: title || `${T('check_close')}: ${ld.name}` };
   };
 
+  /** Удар по всем героям в локации: каждый проходит проверку, при провале — урон кубиком */
+  G.areaBlast = async function (def, loc, spec, title, sub, what) {
+    const m = G.M();
+    await UI().banner(title, sub, 'bad');
+    const li = m.locations.indexOf(loc);
+    for (const h of m.heroes.filter((x) => !x.dead && x.loc === li)) {
+      const br = await G.doCheck(h, { kind: 'event', skills: spec.skills, dc: spec.dc, base: spec.dc, mods: [], card: def, cardId: def.id, title: `${G.hname(h)}: в укрытие!` });
+      if (!br.success) await G.damage(h, ZG.rollDie(spec.die), { source: `${def.name}: ${what}`, dmgType: spec.dmgType || 'fire' });
+    }
+  };
+
   /* ---------- Бой ---------- */
   G.fight = async function (mh, inst, loc, opts) {
     const m = G.M();
@@ -931,6 +942,7 @@
       const res = await G.doCheck(mh, G.eventCheck(ic, loc, `${def.name}: увернуться`, def));
       if (!res.success) await G.infect(mh);
     }
+    if (def.before && def.before.flameAll) await G.areaBlast(def, loc, def.before.flameAll, 'Огнемёт!', 'Струя огня по всей локации — все в укрытие!', 'огнемёт');
     if (def.before && def.before.pullCheck && mh.hand.length) {
       // «Утянуть на дно»: при провале случайная карта из руки уходит под низ колоды
       const pc = def.before.pullCheck;
@@ -998,16 +1010,7 @@
         const lr = await G.doCheck(mh, { kind: 'event', skills: ls.skills, dc: ls.dc, base: ls.dc, mods: [], card: def, cardId: def.id, title: `Увернуться: ${def.name}` });
         if (!lr.success) await G.damage(mh, ls.damage, { source: `${def.name}: последний взмах`, combat: true });
       }
-      if (def.deathBlast) {
-        // «Граната на поясе»: все герои в локации проверяют Ловкость
-        const db = def.deathBlast;
-        await ui.banner('Граната!', 'Чека сорвана — все в локации, в укрытие!', 'bad');
-        const li = m.locations.indexOf(loc);
-        for (const h of m.heroes.filter((x) => !x.dead && x.loc === li)) {
-          const br = await G.doCheck(h, { kind: 'event', skills: db.skills, dc: db.dc, base: db.dc, mods: [], card: def, cardId: def.id, title: `${G.hname(h)}: в укрытие!` });
-          if (!br.success) await G.damage(h, ZG.rollDie(db.die), { source: `${def.name}: граната`, dmgType: 'fire' });
-        }
-      }
+      if (def.deathBlast) await G.areaBlast(def, loc, def.deathBlast, 'Граната!', 'Чека сорвана — все в локации, в укрытие!', 'граната');
       if (def.toxic) {
         const tr = await G.doCheck(mh, G.eventCheck(def.toxic, loc, `${def.name}: брызги заразы`, def));
         if (!tr.success) await G.infect(mh);

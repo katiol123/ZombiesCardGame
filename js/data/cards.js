@@ -572,8 +572,8 @@
     { id: 'blindminer', type: 'enemy', name: 'Слепой шахтёр', tier: 3, icon: 'skull', dc: 10, bite: true, noiseOnEncounter: 1,
       text: 'При встрече: шум +1 (каска звенит о камень).', flavor: 'Фонарь на каске давно погас. Ему всё равно.' },
 
-    { id: 'patrol', type: 'henchman', living: true, name: 'Санитарный патруль', tier: 3, icon: 'raider', dc: 11, theft: true,
-      text: 'Вожак, человек. Если вы не победили его, он изымает случайную карту. Победив его, можно сразу попытаться заколотить локацию.',
+    { id: 'patrol', type: 'henchman', living: true, name: 'Санитарный патруль', tier: 3, icon: 'raider', dc: 11, dmgType: 'fire', before: { flameAll: { skills: ['dex', 'survival'], dc: 7, die: 'd3' } },
+      text: 'Вожак, человек. Огнемёт: в начале боя каждый герой в локации проходит проверку Ловкость / Выживание 7 — при провале 1d3 урона огнём. Победив его, можно сразу попытаться заколотить локацию.',
       flavor: 'Огнемёты, противогазы, приказ: «Никого не выпускать».' },
     { id: 'ridge', type: 'boss', living: true, name: 'Полковник Ридж', tier: 3, icon: 'bossskull', dc: 16, before: { damage: 2 }, theft: true,
       text: 'Угроза, человек. До проверки: 2 урона. Если вы не победили его, он изымает случайную карту.',
