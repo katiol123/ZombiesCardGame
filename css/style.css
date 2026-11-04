@@ -830,3 +830,8 @@ h1, h2, h3 { font-family: var(--font-head); font-weight: 600; letter-spacing: 0.
 .art-img.hero-ten { object-position: 50% 30%; }
 .art-img.hero-palych { object-position: 50% 45%; }
 .card .cart img.art-img[class*="hero-"] { filter: sepia(.35) hue-rotate(55deg) saturate(.65) brightness(.78) contrast(1.15); } /* обращённый герой: мертвенный оттенок */
+.btn.not-ready { opacity: .55; filter: saturate(.5); }
+.warn-pulse { color: var(--amber) !important; animation: warnpulse .6s ease 2; }
+@keyframes warnpulse { 50% { transform: translateX(-4px); } }
+.hand.hint-pulse .card { animation: hintpulse .7s ease 1; }
+@keyframes hintpulse { 50% { box-shadow: 0 0 0 2px var(--amber), 0 0 18px rgba(230, 170, 60, .5); } }

@@ -161,13 +161,15 @@
     return new Promise((resolve) => {
       const sel = new Set();
       const cards = mh.hand.filter((c) => !filter || filter(c));
+      n = Math.min(n, cards.length); // нельзя требовать больше карт, чем есть — иначе кнопка не включится никогда
+      if (n <= 0 && !cancellable) return resolve([]);
       const ov = UI.overlay(`<div class="modal panel dmg-modal"><h2>${esc(title)}</h2><div class="mtext">${esc(text)}</div>
         <div class="hand">${cards.map((c) => UI.cardHTML(c, { u: c.u })).join('')}</div>
         <div class="enc-actions" style="margin-top:12px;align-items:center"><span class="muted cnt"></span>
-        ${cancellable ? `<button class="btn ghost" data-x>${T('act_cancel')}</button>` : ''}<button class="btn primary" data-ok disabled>${T('continue')}</button></div></div>`);
+        ${cancellable ? `<button class="btn ghost" data-x>${T('act_cancel')}</button>` : ''}<button class="btn primary" data-ok>${T('continue')}</button></div></div>`);
       const upd = () => {
         ov.querySelector('.cnt').textContent = `Выбрано: ${sel.size} из ${n}`;
-        ov.querySelector('[data-ok]').disabled = sel.size !== n;
+        ov.querySelector('[data-ok]').classList.toggle('not-ready', sel.size !== n);
         ov.querySelectorAll('.hand .card').forEach((el) => el.classList.toggle('selected', sel.has(+el.dataset.u)));
       };
       ov.querySelectorAll('.hand .card').forEach((el) => el.addEventListener('click', () => {
@@ -178,7 +180,21 @@
         upd();
       }));
       if (UI.fitHand) requestAnimationFrame(() => UI.fitHand(ov.querySelector('.hand')));
-      ov.querySelector('[data-ok]').addEventListener('click', async () => { await UI.closeOverlay(ov); resolve([...sel]); });
+      let closing = false;
+      ov.querySelector('[data-ok]').addEventListener('click', async () => {
+        if (closing) return;
+        if (sel.size !== n) {
+          // объяснить, почему не продолжаем, вместо молчаливой неактивной кнопки
+          const left = n - sel.size;
+          const cnt = ov.querySelector('.cnt');
+          cnt.textContent = `Сначала нажмите на ${left} ${ZG.plural(left, 'карту', 'карты', 'карт')} выше (выбрано ${sel.size} из ${n})`;
+          cnt.classList.remove('warn-pulse'); void cnt.offsetWidth; cnt.classList.add('warn-pulse');
+          ov.querySelector('.hand').classList.remove('hint-pulse'); void ov.offsetWidth; ov.querySelector('.hand').classList.add('hint-pulse');
+          return;
+        }
+        closing = true;
+        await UI.closeOverlay(ov); resolve([...sel]);
+      });
       const x = ov.querySelector('[data-x]');
       if (x) x.addEventListener('click', async () => { await UI.closeOverlay(ov); resolve([]); });
       upd();
