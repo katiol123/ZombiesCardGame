@@ -63,7 +63,7 @@
   };
   G.clearConds = function (mh, keys) {
     const c = G.conds(mh);
-    const had = Object.keys(c).filter((k) => !keys || keys.includes(k));
+    const had = Object.keys(c).filter((k) => (keys ? keys.includes(k) : k !== 'detained'));
     had.forEach((k) => delete c[k]);
     if (had.length) G.log(`${G.hname(mh)}: снято — ${had.map((k) => ZG.CONDS[k].name).join(', ')}.`, 'good');
     return had.length;
@@ -327,6 +327,17 @@
       await G.startTurnConds(mh);
       if (mh.dead) { G.advance(); continue; }
       ui.renderBoard();
+      if (G.conds(mh).detained) {
+        // задержанный герой пропускает ход; состояние снимается в конце этого хода
+        G.log(`${G.hname(mh)} задержан и пропускает ход.`, 'bad');
+        await ui.banner('Ход пропущен', `${G.hname(mh)} задержан`, 'bad');
+        await G.endTurn(mh);
+        G.clearConds(mh, ['detained']);
+        ui.renderBoard();
+        if (m.heroes.every((h) => h.dead)) return G.finish(false, 'dead');
+        G.advance();
+        continue;
+      }
       await G.tipsForTurn();
       const r = await G.turn(mh);
       if (r === 'win') return G.finish(true);
@@ -530,6 +541,7 @@
       }
       if (r === 'win') return 'win';
       if (m.heroes.every((h) => h.dead)) return null;
+      if (m.ts.forceEnd) return null; // например, героя задержали
     }
   };
 
@@ -819,6 +831,10 @@
     const lm = (G.ldef(loc).mods || {}).enemyDc;
     if (lm) mods.push({ label: 'Локация', v: lm });
     if (m.turnMods.fog) mods.push({ label: 'Туман', v: 1 });
+    if (def.filtration) {
+      const fh = m.heroes[m.active];
+      if (fh && G.infCount(fh) > 0) mods.push({ label: 'Фильтрация: есть Инфекция', v: def.filtration });
+    }
     const dc = def.dc + ZG.sum(mods.map((x) => x.v));
     return {
       kind: 'combat', skills: ['str', 'dex', 'melee'], dc, base: def.dc, mods, enemy: def, cardId: def.id,
@@ -963,6 +979,12 @@
       const c = mh.hand.splice(R.int(mh.hand.length), 1)[0];
       G.log(`${def.name} отбирает «${ZG.card(c.id).name}».`, 'bad');
       await ui.banner('Ограблен!', `${def.name} забирает «${ZG.card(c.id).name}»`, 'bad');
+    }
+    if (def.detain && !mh.dead) {
+      await G.addCond(mh, 'detained');
+      m.ts.forceEnd = true;
+      G.log(`${G.hname(mh)} задержан: ход окончен, следующий ход пропускается.`, 'bad');
+      await ui.banner('Задержан!', `${G.hname(mh)}: ход заканчивается, следующий ход будет пропущен`, 'bad');
     }
     if (def.mutates) {
       m.bossMut = (m.bossMut || 0) + 1;
@@ -1244,7 +1266,7 @@
     if (!pl || pl.on !== 'check') return false;
     const ck = ctx.check;
     if (owner !== ctx.mh) {
-      if (!pl.help || owner.dead || owner.loc !== ctx.mh.loc) return false;
+      if (!pl.help || owner.dead || owner.loc !== ctx.mh.loc || G.conds(owner).detained) return false;
     }
     if (pl.kind !== 'any') {
       if (pl.kind === 'noncombat') { if (ck.kind === 'combat') return false; }
@@ -1563,6 +1585,7 @@
       if (l === loc) continue;
       const li = m.locations.indexOf(l);
       for (const h of G.heroesAt(li)) {
+        if (G.conds(h).detained) { G.log(`${G.hname(h)} задержан и не может перекрыть «${G.ldef(l).name}».`, 'bad'); continue; }
         const c = await ui.choose({
           title: 'Перекрыть путь',
           text: `${G.hname(h)}: перед боем с Угрозой перекрыть «${G.ldef(l).name}», чтобы ей некуда было бежать? (${ZG.cardCheckLineClose(l)}) Награда «Когда заколочено» при этом не срабатывает.`,
