@@ -58,7 +58,11 @@
       if (p.noise && p.noiseOthers) s += ` Шум +${p.noise} в этой локации и +${p.noiseOthers} в остальных.`;
       else if (p.noise) s += ` Шум +${p.noise}.`;
       if (p.gainCard) s = s.replace(/\.$/, '') + ` и возьмите в руку карту «${ZG.card(p.gainCard).name}».`;
-      if (p.rechargeOnSuccess) s += ' При успехе перезарядите вместо сброса.';
+      if (p.ignoreArmor) s += ' Игнорирует броню врага.';
+      if (p.rechargeOnSuccess) s += ` При успехе перезарядите вместо ${p.mode === 'bury' ? 'захоронения' : 'сброса'}.`;
+      if (p.burnOnFail) s += ' При провале проверки сожгите.';
+      if (p.rechargeCheck) s += ` После проверки — ${skillsList(p.rechargeCheck.skills)} ${p.rechargeCheck.dc}: успех — перезарядите вместо сброса.`;
+      if (p.oneToFive) s += ` С навыком «${ZG.skillName(p.oneToFive)}» единица на этом кубике считается за 5.`;
       if (p.help) s += ' Можно сыграть в проверку соседа по локации.';
       return s;
     }

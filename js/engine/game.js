@@ -1311,7 +1311,9 @@
       const pl = G.playDef(p);
       const name = ZG.card(p.id).name;
       const ds = night && pl.nightDice ? pl.nightDice : pl.dice || [];
-      ds.forEach((d) => dice.push({ d, src: name }));
+      const owner = G.M().heroes.find((h) => h.id === p.owner) || mh;
+      const oneTo = pl.oneToFive && (ZG.HEROES[owner.id].skills[pl.oneToFive] || 0) > 0 ? 5 : 0;
+      ds.forEach((d) => dice.push(oneTo ? { d, src: name, oneTo } : { d, src: name }));
       const sd = night && pl.nightSkillDie ? pl.nightSkillDie : pl.skillDie || 0;
       for (let i = 0; i < sd; i++) dice.push({ d: sv.die, src: name });
       if (pl.bonus) { bonus += pl.bonus; parts.push({ label: name, v: pl.bonus }); }
@@ -1362,7 +1364,9 @@
       Object.keys(en.weak || {}).forEach((t) => { if (playedTraits.has(t)) dice.push({ d: en.weak[t], src: `Уязвим: ${t}` }); });
       Object.keys(en.resist || {}).forEach((t) => { if (playedTraits.has(t)) { bonus -= en.resist[t]; parts.push({ label: `Стойкость: ${t}`, v: -en.resist[t] }); } });
     }
-    if (ck.enemy && ck.enemy.armor && (skill === 'melee' || ZG.attrOf(skill) === 'str')) {
+    const ignoreArmor = ctx.played.some((p) => G.playDef(p).ignoreArmor);
+    if (ignoreArmor && ck.enemy && ck.enemy.armor) parts.push({ label: 'Броня врага не действует', v: 0 });
+    if (!ignoreArmor && ck.enemy && ck.enemy.armor && (skill === 'melee' || ZG.attrOf(skill) === 'str')) {
       bonus -= ck.enemy.armor;
       parts.push({ label: 'Броня врага', v: -ck.enemy.armor });
     }
@@ -1404,14 +1408,14 @@
     const ck = ctx.check;
     if (pl.helpOnly && owner === ctx.mh) return false; // только в проверку соседа
     if (owner !== ctx.mh) {
-      if (!pl.help || owner.dead || owner.loc !== ctx.mh.loc || G.conds(owner).detained) return false;
+      if (!pl.help || owner.dead || (owner.loc !== ctx.mh.loc && !pl.helpAnyLoc) || G.conds(owner).detained) return false;
     }
     if (pl.kind !== 'any') {
       if (pl.kind === 'noncombat') { if (ck.kind === 'combat') return false; }
       else if (!pl.kind.includes(ck.kind)) return false;
     }
     if (ctx.played.some((p) => p.u === inst.u)) return false;
-    if (ctx.played.some((p) => ZG.card(p.id).type === def.type)) return false;
+    if (ctx.played.some((p) => p.owner === owner.id && ZG.card(p.id).type === def.type)) return false; // по одной карте каждого типа от каждого героя
     if (pl.night && m.phase !== 'night') return false;
     // по типу искомой карты (поиск): cardTypes — только для них, notCardTypes — кроме них
     const ct = ck.kind === 'acquire' && ck.card ? ck.card.type : null;
@@ -1449,7 +1453,7 @@
 
   G.rollCheck = function (ctx) {
     const pool = G.pool(ctx);
-    const rolls = pool.dice.map((x) => ({ d: x.d, src: x.src, v: ZG.rollDie(x.d) }));
+    const rolls = pool.dice.map((x) => { let v = ZG.rollDie(x.d); if (x.oneTo && v === 1) v = x.oneTo; return { d: x.d, src: x.src, v }; });
     const total = ZG.sum(rolls.map((r) => r.v)) + pool.bonus;
     return { pool, rolls, total, dc: ctx.check.dc, success: total >= ctx.check.dc };
   };
@@ -1462,8 +1466,21 @@
       const owner = G.M().heroes.find((h) => h.id === p.owner);
       const pl = G.playDef(p);
       let mode = pl.mode;
-      if (pl.rechargeOnSuccess && res.success && mode === 'discard') mode = 'recharge';
+      if (pl.rechargeOnSuccess && res.success && (mode === 'discard' || mode === 'bury')) mode = 'recharge';
       if (pl.burnOnFail && !res.success) mode = 'burn';
+      if (pl.rechargeCheck) {
+        // проверка в конце: успех — перезарядить вместо сброса
+        const rc = pl.rechargeCheck;
+        const php = G.ph(owner);
+        const sk = rc.skills.slice().sort((a, b) => G.skillScore(php, b) - G.skillScore(php, a))[0];
+        const v = G.skillValue(php, sk);
+        const roll = ZG.rollDie(v.die) + v.bonus;
+        const okR = roll >= rc.dc;
+        mode = okR ? 'recharge' : mode;
+        G.log(`«${ZG.card(p.id).name}»: ${ZG.skillName(sk)} ${roll}/${rc.dc} — ${okR ? 'перезаряжен' : 'в сброс'}.`, okR ? 'good' : 'bad');
+        UI().toast(`«${ZG.esc(ZG.card(p.id).name)}» ${okR ? 'перезаряжен' : 'в сброс'} (${roll}/${rc.dc})`, okR ? 'loot' : 'bad');
+      }
+      if (pl.noiseAtOwner) { const ol = G.loc(owner); G.addNoise(ol, pl.noiseAtOwner); UI().fxNoise(ol); }
       G.moveByMode(owner, p.u, mode);
       if (pl.gainCard) {
         // например, Оружейник Хэнк: «возьмите в руку карту Патроны»

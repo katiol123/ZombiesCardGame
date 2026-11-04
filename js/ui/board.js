@@ -536,8 +536,8 @@
       if (owner !== mh && !inPool && !okPis.length) return '';
       return UI.cardHTML(c, { u: c.u, size: 'sm', cls: inPool ? 'inpool' : okPis.length ? 'playable' : 'unplayable', badge: inPool ? 'в проверке' : badge });
     }).join('');
-    const helpers = m.heroes.filter((h) => h !== mh && !h.dead && h.loc === mh.loc && h.hand.some((c) => (ZG.card(c.id).plays || []).some((p, pi) => g.canPlay(ctx, h, c, pi) || ctx.played.some((x) => x.u === c.u))));
-    const helpHtml = helpers.map((h) => `<div class="sec-label help-head">${UI.avatar(h.id)} ${T('help_cards')}: ${esc(g.hname(h))} — можно сыграть в эту проверку</div><div class="mini-hand" data-owner="${h.id}">${handCards(h)}</div>`).join('');
+    const helpers = m.heroes.filter((h) => h !== mh && !h.dead && h.hand.some((c) => (ZG.card(c.id).plays || []).some((p, pi) => g.canPlay(ctx, h, c, pi) || ctx.played.some((x) => x.u === c.u))));
+    const helpHtml = helpers.map((h) => `<div class="sec-label help-head">${UI.avatar(h.id)} ${T('help_cards')}: ${esc(g.hname(h))}${h.loc !== mh.loc ? ' (из другой локации)' : ''} — можно сыграть в эту проверку</div><div class="mini-hand" data-owner="${h.id}">${handCards(h)}</div>`).join('');
 
     panel.innerHTML = `
       <div class="sub">${esc(hd.name)} · ${T(KIND_LABEL[ck.kind] || 'check')}</div>
