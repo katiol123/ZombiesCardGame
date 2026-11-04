@@ -816,7 +816,8 @@
     { id: 'mechanicz', type: 'enemy', name: 'Сгоревший механик', icon: 'fire', dc: 7, bite: true, dmgType: 'fire', inflict: 'vuln', immune: ['Огонь'], flavor: 'Взорвался вместе с бензоколонкой. Встал.' },
   ]);
   U('m5', [
-    { id: 'drowned', type: 'enemy', name: 'Утопленник', icon: 'waves', dc: 8, bite: true, dmgType: 'cold', flavor: 'Река вернула его. Не до конца.' },
+    { id: 'drowned', type: 'enemy', name: 'Утопленник', icon: 'waves', dc: 8, bite: true, dmgType: 'cold', before: { pullCheck: { skills: ['dex'], dc: 6 } }, drift: true, immune: ['Огонь'], weak: { 'Электричество': 'd8' },
+      text: 'До проверки: проверка Ловкости 6 — при провале случайная карта из руки уходит под низ колоды. Течение: если вы не победили его, он уплывает в другую открытую локацию.', flavor: 'Река вернула его. Не до конца.' },
     { id: 'paratrooper', type: 'enemy', name: 'Мёртвый десантник', icon: 'skull', dc: 9, bite: true, armor: 1, dmgType: 'electric', flavor: 'Парашют зацепился за опору. Стропы перерезаны.' },
   ]);
   U('m6', [

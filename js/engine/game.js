@@ -921,6 +921,17 @@
       const res = await G.doCheck(mh, G.eventCheck(ic, loc, `${def.name}: увернуться`, def));
       if (!res.success) await G.infect(mh);
     }
+    if (def.before && def.before.pullCheck && mh.hand.length) {
+      // «Утянуть на дно»: при провале случайная карта из руки уходит под низ колоды
+      const pc = def.before.pullCheck;
+      const res = await G.doCheck(mh, { kind: 'event', skills: pc.skills, dc: pc.dc, base: pc.dc, mods: [], card: def, cardId: def.id, title: `${def.name}: вырваться из хватки` });
+      if (!res.success && mh.hand.length) {
+        const c = mh.hand.splice(R.int(mh.hand.length), 1)[0];
+        mh.deck.push(c);
+        G.log(`${def.name} утягивает на дно «${ZG.card(c.id).name}» — карта уходит под низ колоды.`, 'bad');
+        await ui.banner('Утянуто на дно', `«${ZG.card(c.id).name}» уходит под низ вашей колоды`, 'bad');
+      }
+    }
     if (mh.dead) {
       if (!loc.closed) { loc.deck.push(inst); R.shuffle(loc.deck); }
       return null;
@@ -1004,6 +1015,15 @@
       });
       G.log(`${def.name} зовёт мёртвых: в каждую открытую локацию пришёл мертвец.`, 'bad');
       await ui.banner('Зов Матриарх', 'В каждую открытую локацию пришёл мертвец', 'bad');
+    }
+    // «Течение»: непобеждённый враг уплывает в другую открытую локацию
+    const driftTo = def.drift && !loc.closed ? R.pick(G.openLocs().filter((l) => l !== loc)) : null;
+    if (driftTo) {
+      driftTo.deck.push(inst);
+      R.shuffle(driftTo.deck);
+      G.log(`${def.name} ${ZG.gf(def, 'не повержен', 'не повержена', 'не повержено')} — течение уносит ${ZG.gf(def, 'его', 'её', 'его')} в «${G.ldef(driftTo).name}».`, 'bad');
+      await ui.flyBetween(m.locations.indexOf(loc), m.locations.indexOf(driftTo), def.icon || 'waves');
+      return null;
     }
     if (!loc.closed) {
       loc.deck.push(inst);
