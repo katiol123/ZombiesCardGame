@@ -105,7 +105,7 @@
           ${rules}
           <div class="lclose">${ZG.icon('hammer')} ${esc(ZG.cardCheckLineClose(l))}</div>
           ${ZG.closeRewardText(ld) ? `<div class="lreward" title="Награда, когда локация заколочена">${ZG.icon('trophy')} ${esc(ZG.closeRewardText(ld))}</div>` : ''}
-          ${l.deck.length === 0 ? `<div class="lrule" style="color:var(--amber)">${T('empty_loc')} — можно заколотить</div>` : l.henchDown ? `<div class="lrule" style="color:var(--amber)">Вожак повержен — можно заколотить</div>` : ''}`}
+          ${l.deck.length === 0 ? `<div class="lrule" style="color:var(--amber)">${T('empty_loc')} — можно заколотить</div>` : ''}`}
           <div class="ltokens">${heroes.map((h) => UI.avatar(h.id, (h === active ? 'active ' : '') + (h.dead ? 'dead' : ''))).join('')}</div>
         </div>
       </div>`;

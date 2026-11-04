@@ -447,7 +447,7 @@
     const a = {
       move: !ts.explored && !ts.moved && m.locations.length > 1,
       explore: ts.explores > 0 && !loc.closed && loc.deck.length > 0,
-      close: !loc.closed && (loc.deck.length === 0 || loc.henchDown) && !ts.closeTried && (!G.lrule(loc).closeCost || mh.hand.some((c) => ZG.card(c.id).type === G.lrule(loc).closeCost)),
+      close: !loc.closed && loc.deck.length === 0 && !ts.closeTried && (!G.lrule(loc).closeCost || mh.hand.some((c) => ZG.card(c.id).type === G.lrule(loc).closeCost)),
       give: !ts.gave && !G.lrule(loc).noGive && others.length > 0 && mh.hand.some((c) => c.id !== 'infection'),
       scout: mh.id === 'ten' && !ts.scouted && G.openLocs().some((l) => l.deck.length),
       fieldmed: mh.id === 'marina' && !ts.med && mh.hand.length > 0 && G.heroesAt(mh.loc).some((h) => h.discard.length || G.infCount(h) || Object.keys(G.conds(h)).length),
@@ -924,12 +924,13 @@
         const tr = await G.doCheck(mh, G.eventCheck(def.toxic, loc, `${def.name}: брызги заразы`, def));
         if (!tr.success) await G.infect(mh);
       }
-      if (def.type === 'henchman' && !loc.closed) loc.henchDown = true;
-      if (def.type === 'henchman' && !loc.closed && !mh.dead) {
+      // Как в Pathfinder: заколотить можно только сразу после победы над вожаком.
+      // Отказ или провал — шанс упущен, локацию придётся вычищать до пустой колоды.
+      if (def.type === 'henchman' && !loc.closed && !mh.dead && !(loc.deck.length === 0 && m.ts.closeTried)) {
         const c = await ui.choose({
           title: 'Вожак повержен',
-          text: `Попытаться заколотить «${G.ldef(loc).name}» прямо сейчас? (${ZG.cardCheckLineClose(loc)})`,
-          options: [{ label: 'Заколотить', primary: true }, { label: 'Позже' }],
+          text: `Попытаться заколотить «${G.ldef(loc).name}» прямо сейчас? (${ZG.cardCheckLineClose(loc)}) Это единственный шанс: если отказаться или провалить проверку, локацию придётся вычищать до пустой колоды.`,
+          options: [{ label: 'Заколотить', primary: true }, { label: 'Не сейчас' }],
         });
         if (c === 0) return await G.tryClose(mh, loc, true);
       }
