@@ -462,7 +462,8 @@
       close: !loc.closed && loc.deck.length === 0 && !ts.closeTried && (!G.lrule(loc).closeCost || mh.hand.some((c) => ZG.card(c.id).type === G.lrule(loc).closeCost)),
       give: !ts.gave && !G.lrule(loc).noGive && others.length > 0 && mh.hand.some((c) => c.id !== 'infection'),
       scout: mh.id === 'ten' && !ts.scouted && G.openLocs().some((l) => l.deck.length),
-      fieldmed: mh.id === 'marina' && !ts.med && mh.hand.length > 0 && G.heroesAt(mh.loc).some((h) => h.discard.length || G.infCount(h) || Object.keys(G.conds(h)).length),
+      // «Полевая медицина»: вместо первого исследования хода, за карту с признаком «Медицина»
+      fieldmed: mh.id === 'marina' && !ts.med && !ts.explored && ts.explores > 0 && mh.hand.some(G.isMedCard) && G.heroesAt(mh.loc).some((h) => h.discard.length || G.infCount(h) || Object.keys(G.conds(h)).filter((k) => k !== 'detained').length),
     };
     a.cards = [];
     mh.hand.forEach((c) => {
@@ -638,26 +639,32 @@
     G.log(`${G.hname(mh)} разведывает «${G.ldef(l).name}».`, 'move');
   };
 
+  G.isMedCard = (c) => (ZG.card(c.id).traits || []).includes('Медицина');
   G.fieldMed = async function (mh) {
-    const us = await UI().pickCards(mh, 1, 'Полевая медицина', 'Сбросьте карту из руки.', true);
+    const us = await UI().pickCards(mh, 1, 'Полевая медицина', 'Вместо первого исследования: покажите карту с признаком «Медицина». После лечения она уйдёт в сброс.', true, G.isMedCard);
     if (!us.length) return;
-    const targets = G.heroesAt(mh.loc).filter((h) => h.discard.length || G.infCount(h) || Object.keys(G.conds(h)).length);
+    const targets = G.heroesAt(mh.loc).filter((h) => h.discard.length || G.infCount(h) || Object.keys(G.conds(h)).filter((k) => k !== 'detained').length);
     const t = targets.length === 1 ? targets[0] : await UI().pickHero('Кого лечить?', targets);
     if (!t) return;
     const opts = [];
-    if (t.discard.length) opts.push({ label: 'Перевязать', sub: '2 случайные карты из сброса — в колоду', key: 'heal' });
+    if (t.discard.length) opts.push({ label: 'Перевязать', sub: '1d4+1 случайных карт из сброса — в колоду', key: 'heal' });
     if (G.infCount(t)) opts.push({ label: 'Очистить рану', sub: 'Изгнать 1 Инфекцию', key: 'cure' });
-    if (Object.keys(G.conds(t)).length) opts.push({ label: 'Обработать и успокоить', sub: 'Снять все состояния', key: 'conds' });
+    if (Object.keys(G.conds(t)).filter((k) => k !== 'detained').length) opts.push({ label: 'Обработать и успокоить', sub: 'Снять все состояния', key: 'conds' });
     opts.push({ label: T('act_cancel'), key: 'x' });
     const k = opts[await UI().choose({ title: 'Полевая медицина', text: `Пациент: ${G.hname(t)}`, options: opts })].key;
     if (k === 'x') return;
+    const shown = mh.hand.find((c) => c.u === us[0]);
     G.moveByMode(mh, us[0], 'discard');
-    G.M().ts.med = true;
+    const ts = G.M().ts;
+    ts.med = true;
+    ts.explored = true; // лечение заменяет первое исследование
+    ts.explores = Math.max(0, ts.explores - 1);
+    if (shown) G.log(`Марина показывает «${ZG.card(shown.id).name}» и тратит исследование на лечение.`, 'card');
     if (k === 'conds') {
       G.clearConds(t);
       UI().fxHeal(t);
     } else if (k === 'heal') {
-      const n = G.heal(t, 2);
+      const n = G.heal(t, ZG.rollDie('d4') + 1);
       G.log(`Марина лечит: ${G.hname(t)} восстанавливает ${n}.`, 'good');
       UI().fxHeal(t);
     } else {
