@@ -651,7 +651,7 @@
       const g = G();
       const plays = [];
       const sel = new Set();
-      const isRed = (p) => p.on === 'damage' && !opts.noReduce && (!p.combatOnly || opts.combat) && (!p.onlyType || p.onlyType.includes(opts.dmgType));
+      const isRed = (p, d) => p.on === 'damage' && !opts.noReduce && !(opts.pierceLight && G().lightArmor(d)) && (!p.combatOnly || opts.combat) && (!p.onlyType || p.onlyType.includes(opts.dmgType));
       ZG.FX.flash('red');
       ZG.FX.shake();
       ZG.Audio.synth('hit');
@@ -673,7 +673,7 @@
         const usedU = new Set(plays.map((p) => p.u));
         const cards = mh.hand.map((c) => {
           const d = ZG.card(c.id);
-          const red = (d.plays || []).map((p, pi) => (isRed(p) && !usedU.has(c.u) && !plays.some((x) => ZG.card(x.id).type === d.type) ? pi : -1)).filter((x) => x >= 0);
+          const red = (d.plays || []).map((p, pi) => (isRed(p, d) && !usedU.has(c.u) && !plays.some((x) => ZG.card(x.id).type === d.type) ? pi : -1)).filter((x) => x >= 0);
           const used = usedU.has(c.u);
           const burnArmor = red.length && G().missingProf(mh, c.id).includes('heavyarmor');
           const inf = c.id === 'infection';
@@ -681,7 +681,7 @@
           return UI.cardHTML(c, { u: c.u, cls: `${used ? 'inpool' : ''} ${red.length ? 'playable' : ''} ${sel.has(c.u) ? 'selected' : ''} ${inf ? 'disabled' : ''}`, badge });
         }).join('');
         const reduced = plays.length ? `<div class="muted">Защита: ${plays.map((p) => esc(ZG.card(p.id).name)).join(', ')}</div>` : '';
-        panel.innerHTML = `<div class="dmg-head"><div class="dmg-num">−${n}</div><div><h2>${T('dmg_title')}: ${esc(hd.name.split(' ')[0])}</h2><div class="mtext" style="margin:0">${opts.source ? esc(opts.source) + '. ' : ''}${opts.dmgType ? `<span style="color:var(--amber)">Тип урона: ${ZG.DMG_TYPES[opts.dmgType]}.</span> ` : ''}${opts.noReduce ? '<span style="color:var(--blood2)">Уязвимость: этот урон нельзя уменьшить.</span> ' : ''}${opts.bite ? '<span style="color:var(--toxic)">Укус: если урон пройдёт — Инфекция.</span> ' : ''}</div>${reduced}</div></div>
+        panel.innerHTML = `<div class="dmg-head"><div class="dmg-num">−${n}</div><div><h2>${T('dmg_title')}: ${esc(hd.name.split(' ')[0])}</h2><div class="mtext" style="margin:0">${opts.source ? esc(opts.source) + '. ' : ''}${opts.dmgType ? `<span style="color:var(--amber)">Тип урона: ${ZG.DMG_TYPES[opts.dmgType]}.</span> ` : ''}${opts.noReduce ? '<span style="color:var(--blood2)">Уязвимость: этот урон нельзя уменьшить.</span> ' : ''}${opts.pierceLight ? '<span style="color:var(--blood2)">Пробивает лёгкую броню: из брони помогает только тяжёлая.</span> ' : ''}${opts.bite ? '<span style="color:var(--toxic)">Укус: если урон пройдёт — Инфекция.</span> ' : ''}</div>${reduced}</div></div>
           <div class="mtext" style="margin-top:10px">${need ? `Выберите ${need} ${ZG.plural(need, 'карту', 'карты', 'карт')} для сброса. Карты с защитой можно сыграть, нажав на них.` : T('dmg_none')}</div>
           <div class="hand">${cards || '<span class="muted">Рука пуста</span>'}</div>
           <div class="enc-actions" style="align-items:center;margin-top:8px"><span class="muted">${T('dmg_choose', { a: sel.size, b: need })}</span><button class="btn primary" data-ok ${sel.size === need ? '' : 'disabled'}>${T('dmg_accept')}</button></div>`;
@@ -695,7 +695,7 @@
             plays.splice(i, 1);
             return render();
           }
-          const red = (d.plays || []).map((p, pi) => (isRed(p) ? pi : -1)).filter((x) => x >= 0);
+          const red = (d.plays || []).map((p, pi) => (isRed(p, d) ? pi : -1)).filter((x) => x >= 0);
           if (red.length && !plays.some((x) => ZG.card(x.id).type === d.type) && !sel.has(u)) {
             const opts2 = red.map((pi) => ({ label: T('mode_' + d.plays[pi].mode), sub: ZG.playText(d.plays[pi]), pi }));
             opts2.push({ label: 'Сбросить как урон', sub: '', pi: -2 });
@@ -716,7 +716,7 @@
       };
       ZG.FX.burstAt(document.querySelector('.hero-panel .avatar'), 'blood', 50);
       // если защититься нечем и выбора нет — авто
-      const anyRed = mh.hand.some((c) => (ZG.card(c.id).plays || []).some(isRed));
+      const anyRed = mh.hand.some((c) => (ZG.card(c.id).plays || []).some((p) => isRed(p, ZG.card(c.id))));
       const discardable = mh.hand.filter((c) => c.id !== 'infection');
       if (!anyRed && discardable.length <= n) {
         discardable.forEach((c) => sel.add(c.u));

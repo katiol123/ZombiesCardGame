@@ -954,6 +954,17 @@
       await ui.banner(`${def.name} разбегается`, `Нужен перевес ${def.scatterMargin}+, чтобы добить. Уходит под низ колоды локации`, 'warn');
       return null;
     }
+    // finishCheck: после победы в бою — небоевая проверка, чтобы добить; провал — враг замешивается обратно
+    if (ok && def.finishCheck) {
+      const fc = def.finishCheck;
+      await ui.banner(`${def.name}: ещё ${ZG.gf(def, 'дышит', 'дышит', 'дышит')}!`, `Добить: ${fc.skills.map(ZG.skillName).join(' / ')} ${fc.dc}`, 'warn');
+      const fr = await G.doCheck(mh, { kind: 'event', skills: fc.skills, dc: fc.dc, base: fc.dc, mods: [], card: def, cardId: def.id, title: `Добить: ${def.name}` });
+      if (!fr.success) {
+        if (!loc.closed) { loc.deck.push(inst); R.shuffle(loc.deck); }
+        G.log(`${def.name} ${ZG.gf(def, 'выжил', 'выжила', 'выжило')} и уходит обратно в колоду локации.`, 'bad');
+        return null;
+      }
+    }
     if (ok) {
       m.stats.kills++;
       G.S().campaign.stats.kills++;
@@ -979,7 +990,7 @@
     // поражение
     if (isBoss) m.guarded = [];
     const dmg = Math.min(ck.dc - res.total, G.dmgCap(def)) + (def.dmgAdd || 0);
-    const taken = await G.damage(mh, dmg, { source: def.name, bite: def.bite, combat: true, dmgType: G.enemyDmgType(def, loc) });
+    const taken = await G.damage(mh, dmg, { source: def.name, bite: def.bite, combat: true, dmgType: G.enemyDmgType(def, loc), pierceLight: !!def.pierceLight });
     if ((def.bite && taken > 0) || def.infectOnFail) await G.infect(mh);
     if (def.inflict && taken > 0 && !mh.dead) {
       // inflictCheck: сначала проверка, состояние — только при провале
@@ -1358,16 +1369,19 @@
 
   /* ============================== Урон, инфекция, смерть ============================== */
   G.passiveReduce = (mh, opts) => ZG.sum((mh.displayed || []).map((c) => {
+    if (opts && opts.pierceLight && G.lightArmor(ZG.card(c.id))) return 0;
     const dd = ZG.card(c.id).displayed;
     return dd && dd.reduce && (!dd.combatOnly || (opts && opts.combat)) ? dd.reduce : 0;
   }));
-  G.playBlocks = (pl, opts) => !(opts && opts.noReduce) && (!pl.onlyType || pl.onlyType.includes(opts && opts.dmgType)) && (!pl.combatOnly || (opts && opts.combat));
+  /** Лёгкая броня: «Броня» без «Тяжёлой брони» */
+  G.lightArmor = (def) => !!def && (def.traits || []).includes('Броня') && !(def.traits || []).includes('Тяжёлая броня');
+  G.playBlocks = (pl, opts, def) => !(opts && opts.noReduce) && !(opts && opts.pierceLight && G.lightArmor(def)) && (!pl.onlyType || pl.onlyType.includes(opts && opts.dmgType)) && (!pl.combatOnly || (opts && opts.combat));
   G.damageNeeded = function (mh, n, plays, opts) {
     let reduce = 0;
     let removed = 0;
     plays.forEach((p) => {
       const pl = G.playDef(p);
-      if (!G.playBlocks(pl, opts)) return;
+      if (!G.playBlocks(pl, opts, ZG.card(p.id))) return;
       reduce = pl.reduce === 'all' ? Infinity : reduce + pl.reduce;
       if (G.effMode(mh, p.id, pl) !== 'reveal') removed++;
     });
@@ -1393,7 +1407,7 @@
     const r = await UI().damage(mh, n, opts);
     let reduce = 0;
     if (opts.noReduce) r.plays = [];
-    r.plays = r.plays.filter((p) => G.playBlocks(G.playDef(p), opts));
+    r.plays = r.plays.filter((p) => G.playBlocks(G.playDef(p), opts, ZG.card(p.id)));
     r.plays.forEach((p) => {
       const pl = G.playDef(p);
       reduce = pl.reduce === 'all' ? Infinity : reduce + pl.reduce;
