@@ -86,7 +86,7 @@
     const lines = [];
     if (def.text) lines.push(def.text);
     if (ZG.isEnemy(def) && def.dmgType) lines.push(`Урон: ${ZG.DMG_TYPES[def.dmgType]}.`);
-    if (ZG.isEnemy(def)) lines.push(`Провал: урон = разница (макс. ${ZG.Game.dmgCap(def)}${def.dmgAdd ? `, +${def.dmgAdd}` : ''})${def.bite ? '. Укус → Инфекция' : ''}${def.inflict ? `. Рана → ${ZG.CONDS[def.inflict].name}` : ''}.`);
+    if (ZG.isEnemy(def)) lines.push(`Провал: урон = разница (макс. ${ZG.Game.dmgCap(def)}${def.dmgAdd ? `, +${def.dmgAdd}` : ''})${def.bite ? '. Укус → Инфекция' : ''}${def.inflict ? (def.inflictCheck ? `. Рана → проверка ${skillsList(def.inflictCheck.skills)} ${def.inflictCheck.dc}, при провале — ${ZG.CONDS[def.inflict].name}` : `. Рана → ${ZG.CONDS[def.inflict].name}`) : ''}.`);
     if (def.plays && def.plays.length) def.plays.forEach((p) => lines.push(ZG.playText(p)));
     if (def.displayed) {
       const dd = def.displayed;

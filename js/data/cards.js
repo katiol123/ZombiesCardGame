@@ -567,8 +567,8 @@
       text: 'До проверки: 2 урона. От него нельзя уклониться.', flavor: 'Он шёл за вами от самого моста.' },
     { id: 'soldier', type: 'enemy', living: true, name: 'Солдат карантина', tier: 3, icon: 'raider', dc: 10, filtration: 2, detain: true,
       text: 'Человек. Фильтрация: если у героя есть Инфекция (в руке, колоде или сбросе), сложность +2. Если вы не победили его, вы получаете урон и состояние «Задержан».', flavor: '«Предъявите руки. Медленно».' },
-    { id: 'wolfz', type: 'enemy', name: 'Мёртвый волк', tier: 3, icon: 'paw', dc: 9, bite: true, before: { damage: 1 }, noEvade: true,
-      text: 'До проверки: 1 урон. От него нельзя уклониться.', flavor: 'Стая не ест. Стая охотится.' },
+    { id: 'wolfz', type: 'enemy', name: 'Мёртвый волк', tier: 3, icon: 'paw', dc: 9, bite: true, noEvade: true,
+      text: 'От него нельзя уклониться.', flavor: 'Стая не ест. Стая охотится.' },
     { id: 'blindminer', type: 'enemy', name: 'Слепой шахтёр', tier: 3, icon: 'skull', dc: 10, bite: true, noiseOnEncounter: 1,
       text: 'При встрече: шум +1 (каска звенит о камень).', flavor: 'Фонарь на каске давно погас. Ему всё равно.' },
 
@@ -853,7 +853,7 @@
     // состояния и типы урона врагов
     runner: { inflict: 'poison', resist: { 'Тяжёлое': 2 } },
     deaddog: { inflict: 'poison', resist: { 'Тяжёлое': 2 } },
-    wolfz: { inflict: 'poison', resist: { 'Тяжёлое': 2 } },
+    wolfz: { inflict: 'poison', inflictCheck: { skills: ['survival'], dc: 7 }, resist: { 'Тяжёлое': 2 } },
     swarm: { inflict: 'decay', weak: { 'Огонь': 'd8' }, resist: { 'Огнестрел': 2 } },
     stalker: { inflict: 'terror' },
     drhale: { inflict: 'poison', dmgType: 'acid' },

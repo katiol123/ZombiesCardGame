@@ -970,7 +970,13 @@
     const dmg = Math.min(ck.dc - res.total, G.dmgCap(def)) + (def.dmgAdd || 0);
     const taken = await G.damage(mh, dmg, { source: def.name, bite: def.bite, combat: true, dmgType: G.enemyDmgType(def, loc) });
     if ((def.bite && taken > 0) || def.infectOnFail) await G.infect(mh);
-    if (def.inflict && taken > 0) await G.addCond(mh, def.inflict);
+    if (def.inflict && taken > 0 && !mh.dead) {
+      // inflictCheck: сначала проверка, состояние — только при провале
+      const ic = def.inflictCheck;
+      const avoid = ic ? (await G.doCheck(mh, { kind: 'event', skills: ic.skills, dc: ic.dc, base: ic.dc, mods: [], card: def, cardId: def.id, title: `${def.name}: рана — ${ZG.CONDS[def.inflict].name}?` })).success : false;
+      if (!avoid) await G.addCond(mh, def.inflict);
+      else G.log(`${G.hname(mh)}: рана чистая — без состояния «${ZG.CONDS[def.inflict].name}».`, 'good');
+    }
     if (def.theft && !mh.dead && (mh.displayed || []).length) {
       const c = mh.displayed.splice(R.int(mh.displayed.length), 1)[0];
       G.log(`${def.name} срывает выложенную «${ZG.card(c.id).name}».`, 'bad');
