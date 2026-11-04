@@ -389,19 +389,16 @@
         await G.moveHench(from, to, 'Обход');
       }
     }
-    if (sp.roamEvery && m.turn > 1 && m.turn % sp.roamEvery === 0) {
+    if (sp.trapEvery && m.turn > 1 && m.turn % sp.trapEvery === 0) {
+      // Капканы Угрозы: в случайную открытую локацию замешивается препятствие
       const open = G.openLocs();
-      const from = open.find((l) => l.deck.some((c) => ZG.card(c.id).type === 'boss'));
-      const others = open.filter((l) => l !== from);
-      if (from && others.length) {
-        const bi = from.deck.findIndex((c) => ZG.card(c.id).type === 'boss');
-        const b = from.deck.splice(bi, 1)[0];
-        const to = R.pick(others);
-        to.deck.push(b);
+      if (open.length) {
+        const to = R.pick(open);
+        to.deck.push(G.inst(sp.trapCard));
         R.shuffle(to.deck);
-        const bd = ZG.card(b.id);
-        G.log(`${bd.name} меняет укрытие. Где ${ZG.gf(bd, 'он', 'она', 'оно')} теперь — неизвестно.`, 'bad');
-        await UI().banner('Угроза сменила укрытие', `${bd.name} ${ZG.gf(bd, 'ушёл', 'ушла', 'ушло')} из прежней локации`, 'bad');
+        G.log(`${ZG.card(G.def().boss).name} ставит капкан: в «${G.ldef(to).name}» теперь «${ZG.card(sp.trapCard).name}».`, 'bad');
+        await UI().flyIn(m.locations.indexOf(to), 1, 'alert');
+        await UI().banner('Капкан', `В «${G.ldef(to).name}» появился «${ZG.card(sp.trapCard).name}»`, 'bad');
       }
     }
     if (old === 'night' && m.phase === 'day') {
