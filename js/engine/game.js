@@ -1617,15 +1617,18 @@
     // При событии Часов в начале хода ходящим считается герой, чей ход начинается.
     const mh = m.heroes[m.active];
     const here = mh && !mh.dead && mh.loc === m.locations.indexOf(loc);
-    if (!here) {
-      if (G.lrule(loc).hordeTop) zs.forEach((z) => loc.deck.unshift(z));
-      else { zs.forEach((z) => loc.deck.push(z)); R.shuffle(loc.deck); }
+    // если ходящий здесь — нападает только первый мертвец, остальные уходят в колоду
+    const attacker = here ? zs[0] : null;
+    const rest = here ? zs.slice(1) : zs;
+    if (rest.length) {
+      if (G.lrule(loc).hordeTop) rest.forEach((z) => loc.deck.unshift(z));
+      else { rest.forEach((z) => loc.deck.push(z)); R.shuffle(loc.deck); }
     }
     loc.noise = 0;
     m.stats.hordes++;
     UI().renderBoard();
     await UI().flyIn(m.locations.indexOf(loc), size);
-    G.log(here ? `ОРДА! ${size} мертвецов нападают на ${G.hname(mh)} в «${G.ldef(loc).name}».` : `ОРДА! +${size} мертвецов в «${G.ldef(loc).name}».`, 'bad');
+    G.log(here ? `ОРДА! +${size} мертвецов в «${G.ldef(loc).name}»: один сразу нападает на ${G.hname(mh)}${rest.length ? `, ${rest.length} — в колоду локации` : ''}.` : `ОРДА! +${size} мертвецов в «${G.ldef(loc).name}».`, 'bad');
     await UI().horde(loc, size, here ? mh : null);
     if ((G.def().special || {}).henchToHorde) {
       const hid = G.def().henchman;
@@ -1635,10 +1638,7 @@
     if (here) {
       m.hordeBusy = true;
       try {
-        for (const z of zs) {
-          if (mh.dead || m.over) break;
-          await G.encounter(mh, z, loc, { horde: true });
-        }
+        if (!mh.dead && !m.over) await G.encounter(mh, attacker, loc, { horde: true });
       } finally { m.hordeBusy = false; }
       // шум, накопленный в боях с ордой, проверяется только после всех её боёв
       if (!mh.dead && !m.over) for (const l of G.openLocs()) await G.checkHorde(l);
