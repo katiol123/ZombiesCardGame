@@ -74,7 +74,7 @@
       start: ['pistol', 'pistol', 'bat', 'knife', 'jacket', 'jacket', 'flashlight', 'ammo', 'ammo', 'bandage', 'trucker', 'hope', 'hope', 'doubletap', 'headshot'],
       powers: [
         { id: 'veteran', name: 'Боевой опыт', text: 'Ваши боевые проверки с оружием получают +1d4.' },
-        { id: 'loud', name: 'Громкий', text: 'Если ваше оружие шумит, шум этой проверки +1.' },
+        { id: 'loud', name: 'Громкий', text: 'Если ваше оружие шумит, шум этой проверки +1, но и боевая проверка получает +1d4.' },
       ],
       bio: 'Вернулся домой за тишиной. Тишины больше не будет.',
     },

@@ -1063,7 +1063,7 @@
     const diff = ck.dc - res.total;
     const dmg = Math.min(def.halfDmg ? Math.floor(diff / 2) : diff, G.dmgCap(def)) + (def.dmgAdd || 0);
     const taken = await G.damage(mh, dmg, { source: def.name, bite: def.bite, combat: true, dmgType: G.enemyDmgType(def, loc), pierceLight: !!def.pierceLight });
-    if ((def.bite && taken > 0) || def.infectOnFail) await G.infect(mh);
+    if ((def.bite && taken >= 2) || def.infectOnFail) await G.infect(mh); // укус заражает, только если прошло 2+ урона
     if (def.inflict && taken > 0 && !mh.dead) {
       // inflictCheck: сначала проверка, состояние — только при провале
       const ic = def.inflictCheck;
@@ -1330,7 +1330,7 @@
     if (plr.stealthBonus && (ck.kind === 'evade' || skill === 'stealth')) { bonus += plr.stealthBonus; parts.push({ label: 'Локация: укрытие', v: plr.stealthBonus }); }
     if (mh.id === 'grom') {
       if (ck.kind === 'combat' && wp) dice.push({ d: 'd4', src: 'Боевой опыт' });
-      if (wp && (G.playDef(wp).noise || 0) > 0) noise += 1;
+      if (wp && (G.playDef(wp).noise || 0) > 0) { noise += 1; if (ck.kind === 'combat') dice.push({ d: 'd4', src: 'Громкий' }); } // «Громкий»: шум +1, но и +1d4
     }
     if (mh.id === 'marina' && skill === 'medicine' && ck.kind !== 'combat') dice.push({ d: 'd4', src: 'Твёрдая рука' });
     if (mh.id === 'palych') {
