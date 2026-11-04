@@ -241,7 +241,7 @@
   add([
     { id: 'rex', type: 'ally', name: 'Пёс Рекс', tier: 0, icon: 'paw', traits: ['Животное'],
       acquire: { skills: ['persuasion', 'survival'], dc: 4 },
-      plays: [{ on: 'action', mode: 'recharge', explore: true }],
+      plays: [{ on: 'action', mode: 'recharge', explore: true }, { on: 'check', mode: 'reveal', kind: ['evade', 'acquire'], dice: ['d4'] }],
       flavor: 'Чует мертвецов за квартал. И молчит.' },
     { id: 'neighbor', type: 'ally', name: 'Миссис Хэлли', tier: 0, basic: true, icon: 'user', traits: ['Горожанин'],
       acquire: { skills: ['persuasion'], dc: 4 },
@@ -253,12 +253,12 @@
       flavor: 'Двести сорок фунтов и монтировка.' },
     { id: 'nurse', type: 'ally', name: 'Медсестра Джун', tier: 1, icon: 'cross', traits: ['Медик'],
       acquire: { skills: ['persuasion', 'medicine'], dc: 6 },
-      plays: [{ on: 'action', mode: 'recharge', heal: { dice: ['d4'], bonus: 1 }, target: 'here' }],
+      plays: [{ on: 'action', mode: 'burn', heal: { dice: ['d4'], bonus: 1 }, target: 'here' }],
       flavor: 'Последняя смена длится уже четвёртые сутки.' },
     { id: 'deputy', type: 'ally', name: 'Помощник шерифа Риз', tier: 1, icon: 'badge', traits: ['Закон'],
       acquire: { skills: ['persuasion'], dc: 6 },
       plays: [
-        { on: 'check', mode: 'recharge', kind: COMBAT, dice: ['d8'], noise: 2 },
+        { on: 'check', mode: 'recharge', kind: COMBAT, dice: ['d8'], noise: 2, noiseOthers: 1 },
         { on: 'action', mode: 'discard', explore: true },
       ],
       flavor: 'Значок ещё блестит. Руки уже не дрожат.' },
@@ -286,7 +286,10 @@
       flavor: 'Семьдесят два года, лук и ни капли жалости.' },
     { id: 'priest', type: 'ally', name: 'Отец Дуглас', tier: 2, icon: 'church', traits: ['Вера'],
       acquire: { skills: ['persuasion', 'will'], dc: 7 },
-      plays: [{ on: 'check', mode: 'recharge', kind: 'any', skillDie: 1 }],
+      plays: [
+        { on: 'check', mode: 'recharge', kind: 'any', skillDie: 1, notCardTypes: ['resolve'] },
+        { on: 'check', mode: 'reveal', kind: ['acquire'], cardTypes: ['resolve'], skillDie: 3, text: 'Если это проверка на получение карты Решимости, то вместо этого покажите карту: +3 кубика навыка.' },
+      ],
       flavor: '«Господь оставил этот город. Я — нет».' },
     { id: 'stranger', type: 'ally', name: 'Незнакомец', tier: 9, eventOnly: true, icon: 'user', traits: ['Чужак'],
       acquire: { skills: ['persuasion'], dc: 4 },
@@ -520,13 +523,13 @@
     { id: 'fieldmedic', type: 'ally', name: 'Ветеринар Нора', tier: 3, icon: 'paw', traits: ['Медик'],
       acquire: { skills: ['persuasion', 'medicine'], dc: 9 },
       plays: [
-        { on: 'action', mode: 'recharge', heal: { dice: ['d6'], bonus: 1 }, target: 'here' },
-        { on: 'action', mode: 'discard', cure: 1, target: 'here' },
+        { on: 'action', mode: 'recharge', heal: { dice: ['d3'] }, target: 'here' },
+        { on: 'action', mode: 'burn', cure: 'all', target: 'here' },
       ],
       flavor: '«Собак, коров, людей — какая разница. Шей ровно и не дрожи».' },
     { id: 'sniper', type: 'ally', name: 'Оружейник Хэнк', tier: 3, icon: 'gun', traits: ['Горожанин'],
       acquire: { skills: ['persuasion'], dc: 9 },
-      plays: [{ on: 'check', mode: 'recharge', kind: COMBAT, dice: ['d12'], noise: 1 }],
+      plays: [{ on: 'check', mode: 'burn', kind: COMBAT, dice: ['d12'], noise: 1, gainCard: 'ammo' }],
       flavor: 'Владелец магазина «Хэнк и сыновья». Сыновей больше нет. Патроны есть.' },
     { id: 'oath', type: 'resolve', name: 'Клятва', tier: 3, icon: 'flame', traits: [],
       acquire: { skills: ['will'], dc: 7 },
@@ -552,10 +555,7 @@
       flavor: 'Один свист — и волки замирают. Пока что.' },
     { id: 'busdriver', type: 'ally', name: 'Водитель Глория', tier: 9, reward: true, icon: 'truck', traits: ['Трофей'],
       acquire: { skills: ['persuasion'], dc: 4 },
-      plays: [
-        { on: 'action', mode: 'recharge', explore: true },
-        { on: 'damage', mode: 'discard', reduce: 3 },
-      ],
+      plays: [{ on: 'action', mode: 'recharge', explore: true }],
       flavor: '«Дети, пристегнитесь. Будет трясти».' },
     { id: 'fuelcan', type: 'objective', name: 'Канистра с топливом', tier: 9, eventOnly: true, icon: 'fuel', traits: ['Цель'],
       acquire: { skills: ['str', 'survival', 'tech'], dc: 5 },
@@ -679,8 +679,8 @@
       flavor: 'Нож — в огонь, пока не побелеет. Зараза боится жара. Ты — тоже.' },
     { id: 'shepherd', type: 'ally', name: 'Ворон Отто', tier: 1, icon: 'eye', traits: ['Животное'],
       acquire: { skills: ['persuasion', 'survival'], dc: 6 },
-      plays: [{ on: 'action', mode: 'display' }, { on: 'check', mode: 'discard', kind: COMBAT, dice: ['d8'] }],
-      displayed: { check: { kind: ['combat'], dice: ['d4'] } },
+      plays: [{ on: 'check', mode: 'discard', kind: COMBAT, dice: ['d6'], bonus: 1 }, { on: 'check', mode: 'reveal', kind: COMBAT, dice: ['d4'], bonus: -1 }],
+      
       flavor: 'Сидит на плече. Клюёт в глаза. Иногда говорит «Беги».' },
     { id: 'burnt', type: 'enemy', name: 'Обгоревший', tier: 1, icon: 'fire', dc: 7, bite: true,
       immune: ['Огонь'], weak: { 'Тяжёлое': 'd6' },
@@ -716,7 +716,7 @@
     { id: 'cleaver', type: 'weapon', name: 'Тесак мясника', icon: 'knife', traits: ['Ближнее'], acquire: { skills: ['str', 'melee'], dc: 6 },
       plays: [{ on: 'check', mode: 'reveal', kind: COMBAT, weapon: ['str', 'melee'], dice: ['d8'], bonus: 1, noise: 1 }], flavor: 'Рубит кости. Любые.' },
     { id: 'managerburt', type: 'ally', name: 'Управляющий Берт', icon: 'user', traits: ['Горожанин'], acquire: { skills: ['persuasion'], dc: 6 },
-      plays: [{ on: 'action', mode: 'recharge', draw: 1 }, { on: 'check', mode: 'discard', kind: ['acquire'], dice: ['d8'] }], flavor: '«Склад? Я покажу. Только не стреляйте».' },
+      plays: [{ on: 'action', mode: 'recharge', draw: 2 }, { on: 'check', mode: 'burn', kind: ['acquire'], cardTypes: ['weapon', 'consumable'], dice: ['d8', 'd8'] }], flavor: '«Склад? Я покажу. Только не стреляйте».' },
   ]);
   U('m3', [
     { id: 'flaregun', type: 'weapon', name: 'Ракетница', icon: 'flare', traits: ['Дальнее', 'Огонь'], acquire: { skills: ['dex', 'survival'], dc: 6 },
@@ -726,7 +726,7 @@
     { id: 'batterypack', type: 'consumable', name: 'Аккумулятор вышки', icon: 'bolt', traits: ['Электричество'], acquire: { skills: ['tech'], dc: 6 },
       plays: [{ on: 'check', mode: 'burn', kind: COMBAT, dice: ['d10'], noise: 1 }, { on: 'action', mode: 'burn', explore: true }], flavor: '12 вольт ярости.' },
     { id: 'hamoperator', type: 'ally', name: 'Радиолюбитель Эд', icon: 'radio', traits: ['Горожанин'], acquire: { skills: ['persuasion', 'tech'], dc: 6 },
-      plays: [{ on: 'action', mode: 'recharge', scout: true }, { on: 'action', mode: 'discard', time: 1 }], flavor: '«Я слышу их переговоры. Они идут с севера».' },
+      plays: [{ on: 'action', mode: 'recharge', scout: true }, { on: 'action', mode: 'burn', draw: 1, time: 1 }], flavor: '«Я слышу их переговоры. Они идут с севера».' },
   ]);
   U('m4', [
     { id: 'tireiron', type: 'weapon', name: 'Баллонный ключ', icon: 'wrench', traits: ['Ближнее', 'Инструмент'], acquire: { skills: ['str', 'tech'], dc: 6 },
@@ -736,7 +736,7 @@
     { id: 'cagekey', type: 'item', name: 'Ключ от клетки', icon: 'lock', traits: [], acquire: { skills: ['stealth', 'dex'], dc: 7 },
       plays: [{ on: 'action', mode: 'burn', gain: 'ally' }], flavor: 'В клетке ещё живые.' },
     { id: 'prisoner', type: 'ally', name: 'Официантка Мэгги', icon: 'coffee', traits: ['Горожанин'], acquire: { skills: ['persuasion'], dc: 6 },
-      plays: [{ on: 'check', mode: 'recharge', kind: COMBAT, dice: ['d6'] }, { on: 'damage', mode: 'discard', reduce: 2 }], flavor: '«Кофе? Нет, милый, это я им по голове. Кофе — после».' },
+      plays: [{ on: 'check', mode: 'recharge', kind: 'noncombat', dice: ['d6'] }], flavor: '«Кофе? Нет, милый, это я им по голове. Кофе — после».' },
   ]);
   U('m5', [
     { id: 'detonator', type: 'item', name: 'Детонатор сапёров', icon: 'bomb', traits: ['Огонь'], acquire: { skills: ['tech'], dc: 7 },
@@ -756,7 +756,10 @@
     { id: 'serum7b', type: 'consumable', name: 'Сыворотка 7-Б', icon: 'vial', traits: ['Медицина'], acquire: { skills: ['medicine'], dc: 8 },
       plays: [{ on: 'action', mode: 'burn', cure: 'all', clearConds: true, target: 'here' }], flavor: 'Та самая. Работает. Иногда.' },
     { id: 'deserter', type: 'ally', name: 'Заключённый Брукс', icon: 'lock', traits: ['Чужак'], acquire: { skills: ['persuasion'], dc: 7 },
-      plays: [{ on: 'check', mode: 'recharge', kind: COMBAT, dice: ['d8'], noise: 2 }], flavor: 'Оранжевая роба, сорванные наручники. Из изолятора вышел только он.' },
+      plays: [
+        { on: 'check', mode: 'recharge', kind: COMBAT, dice: ['d8'], noise: 2, enemyLiving: false },
+        { on: 'check', mode: 'reveal', kind: COMBAT, dice: ['d8'], noise: 2, enemyLiving: true, text: 'Если враг — живой человек, вместо этого покажите карту.' },
+      ], flavor: 'Оранжевая роба, сорванные наручники. Из изолятора вышел только он.' },
   ]);
   U('m7', [
     { id: 'dynamite', type: 'consumable', name: 'Динамит', icon: 'bomb', traits: ['Огонь'], acquire: { skills: ['tech', 'survival'], dc: 7 },
@@ -764,7 +767,7 @@
     { id: 'pickaxe', type: 'weapon', name: 'Кирка', icon: 'hammer', traits: ['Ближнее', 'Тяжёлое', 'Инструмент'], acquire: { skills: ['str'], dc: 8 },
       plays: [{ on: 'check', mode: 'reveal', kind: COMBAT, weapon: ['str', 'melee'], dice: ['d10'], bonus: 1, noise: 2 }], flavor: 'Сорок лет била породу.' },
     { id: 'canary', type: 'ally', name: 'Сторожиха Агата', icon: 'flashlight', traits: ['Горожанин'], acquire: { skills: ['survival', 'persuasion'], dc: 6 },
-      plays: [{ on: 'action', mode: 'display' }], displayed: { check: { kind: ['acquire', 'event'], dice: ['d4'] } }, flavor: 'Тридцать лет сторожила контору шахты. Помнит каждый вход и каждый провал.' },
+      plays: [{ on: 'check', mode: 'reveal', kind: ['acquire', 'event'], dice: ['d4'] }], flavor: 'Тридцать лет сторожила контору шахты. Помнит каждый вход и каждый провал.' },
     { id: 'selfrescuer', type: 'item', name: 'Самоспасатель', icon: 'mask', traits: [], acquire: { skills: ['end', 'survival'], dc: 6 },
       plays: [{ on: 'damage', mode: 'burn', reduce: 'all' }], flavor: 'Сорок минут воздуха.' },
   ]);
@@ -774,7 +777,7 @@
     { id: 'beartrap', type: 'item', name: 'Медвежий капкан', icon: 'lock', traits: [], acquire: { skills: ['survival', 'str'], dc: 7 },
       plays: [{ on: 'check', mode: 'discard', kind: COMBAT, dice: ['d6', 'd6'] }, { on: 'evade', mode: 'discard' }], flavor: 'Щёлк.' },
     { id: 'counselor', type: 'ally', name: 'Рыбак Эрл', icon: 'waves', traits: ['Горожанин'], acquire: { skills: ['persuasion'], dc: 7 },
-      plays: [{ on: 'action', mode: 'recharge', heal: { dice: ['d4'] }, target: 'here' }], flavor: 'Живёт в трейлере у озера. Уха лечит всё. Почти.' },
+      plays: [{ on: 'action', mode: 'bury', heal: { dice: ['d4', 'd4'], bonus: -1 }, target: 'here' }], flavor: 'Живёт в трейлере у озера. Уха лечит всё. Почти.' },
     { id: 'campsong', type: 'resolve', name: 'Песня у костра', icon: 'fire', traits: [], acquire: { skills: ['will', 'persuasion'], dc: 6 },
       plays: [{ on: 'check', mode: 'discard', kind: 'any', skillDie: 1, nightSkillDie: 2, help: true, rechargeOnSuccess: true }], flavor: 'Ночью громче. Ночью нужнее.' },
   ]);
@@ -855,7 +858,6 @@
     tacshield: { traits: ['Броня', 'Щит', 'Тяжёлая броня'] },
     helmet: { displayed: { reduce: 1, combatOnly: true } },
     // выложенные карты
-    rex: { displayed: { check: { kind: ['evade', 'acquire'], dice: ['d4'] } } },
     nvg: { displayed: { check: { kind: 'any', night: true, dice: ['d6'] } } },
     minerlamp: { displayed: { check: { kind: 'noncombat', dice: ['d4'] } } },
     // состояния и типы урона врагов
@@ -891,7 +893,7 @@
   const GENDER = { swarm: 'f', matriarch: 'f', holt: 'f', guardz: 'f', shopper: 'f', echo: 'n', coldbody: 'n' };
   Object.keys(GENDER).forEach((id) => { if (C[id]) C[id].g = GENDER[id]; });
   // карты, которые можно выложить
-  ['rex', 'vest', 'helmet', 'nvg', 'minerlamp'].forEach((id) => {
+  ['vest', 'helmet', 'nvg', 'minerlamp'].forEach((id) => {
     if (C[id] && !C[id].plays.some((p) => p.mode === 'display')) C[id].plays.push({ on: 'action', mode: 'display' });
   });
   // состояния от препятствий

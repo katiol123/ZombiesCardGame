@@ -147,6 +147,7 @@
     mode_recharge: 'Перезарядить',
     mode_banish: 'Изгнать',
     mode_burn: 'Сжечь',
+    mode_bury: 'Захоронить',
     mode_technique: 'Применить',
     mode_display: 'Выложить',
     burned: 'Сожжено',

@@ -133,6 +133,7 @@
     else if (mode === 'technique') G.techRecharge(owner, c);
     else if (mode === 'display') { (owner.displayed = owner.displayed || []).push(c); }
     else if (mode === 'banish') { /* карта уходит в коробку навсегда */ }
+    else if (mode === 'bury') { (owner.buried = owner.buried || []).push(c); } // до конца миссии
   };
 
   /* ============================== Создание миссии ============================== */
@@ -836,7 +837,10 @@
       r = await G.acquire(mh, inst, loc);
     }
     await ui.encounterClose();
-    if (r !== 'win') await G.checkHorde(loc);
+    if (r !== 'win') {
+      await G.checkHorde(loc);
+      for (const l of G.openLocs()) if (l !== loc) await G.checkHorde(l);
+    }
     ui.renderBoard();
     return r;
   };
@@ -1300,6 +1304,7 @@
     const parts = [];
     if (sv.bonus) parts.push({ label: ZG.skillName(skill), v: sv.bonus });
     let noise = 0;
+    let noiseOthers = 0;
     let noiseMod = 0;
     ctx.played.forEach((p) => {
       const pl = G.playDef(p);
@@ -1310,6 +1315,7 @@
       for (let i = 0; i < sd; i++) dice.push({ d: sv.die, src: name });
       if (pl.bonus) { bonus += pl.bonus; parts.push({ label: name, v: pl.bonus }); }
       noise += pl.noise || 0;
+      noiseOthers += pl.noiseOthers || 0;
       noiseMod += pl.noiseMod || 0;
     });
     if (mh.id === 'ten' && ck.kind === 'combat' && wp && ZG.card(wp.id).traits.includes('Тихое')) dice.push({ d: 'd4', src: 'Бесшумная' });
@@ -1369,7 +1375,7 @@
     noise = Math.max(0, noise + noiseMod);
     const avg = ZG.sum(dice.map((x) => ZG.dieAvg(x.d))) + bonus;
     const chance = G.chance(dice.map((x) => x.d), bonus, ck.dc);
-    return { skill, opts, dice, bonus, parts, noise, avg, chance };
+    return { skill, opts, dice, bonus, parts, noise, noiseOthers, avg, chance };
   };
 
   /** Вероятность успеха (точная свёртка распределений) */
@@ -1405,6 +1411,12 @@
     if (ctx.played.some((p) => p.u === inst.u)) return false;
     if (ctx.played.some((p) => ZG.card(p.id).type === def.type)) return false;
     if (pl.night && m.phase !== 'night') return false;
+    // по типу искомой карты (поиск): cardTypes — только для них, notCardTypes — кроме них
+    const ct = ck.kind === 'acquire' && ck.card ? ck.card.type : null;
+    if (pl.cardTypes && !(ct && pl.cardTypes.includes(ct))) return false;
+    if (pl.notCardTypes && ct && pl.notCardTypes.includes(ct)) return false;
+    // против живого человека / против мертвеца
+    if (pl.enemyLiving != null && (!ck.enemy || !!ck.enemy.living !== pl.enemyLiving)) return false;
     if (pl.trait) {
       const wp = G.weaponPlay(ctx);
       if (!wp || !ZG.card(wp.id).traits.includes(pl.trait)) return false;
@@ -1450,11 +1462,21 @@
       let mode = pl.mode;
       if (pl.rechargeOnSuccess && res.success && mode === 'discard') mode = 'recharge';
       G.moveByMode(owner, p.u, mode);
+      if (pl.gainCard) {
+        // например, Оружейник Хэнк: «возьмите в руку карту Патроны»
+        owner.hand.push(G.inst(pl.gainCard, { l: 1 }));
+        G.log(`${G.hname(owner)} получает «${ZG.card(pl.gainCard).name}».`, 'loot');
+      }
     });
     if (res.pool.noise > 0) {
       const loc = G.loc(mh);
       G.addNoise(loc, res.pool.noise);
       UI().fxNoise(loc);
+    }
+    if (res.pool.noiseOthers > 0) {
+      const loc = G.loc(mh);
+      G.openLocs().filter((l) => l !== loc).forEach((l) => { G.addNoise(l, res.pool.noiseOthers); UI().fxNoise(l); });
+      G.log(`Шум +${res.pool.noiseOthers} во всех остальных локациях.`, 'bad');
     }
     G.log(`${G.hname(mh)}: ${check.title} — ${res.total} против ${check.dc}: ${res.success ? 'успех' : 'провал'}.`, res.success ? 'good' : 'bad');
     return res;

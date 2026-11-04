@@ -43,7 +43,8 @@
   ZG.diceStr = (dice, bonus) => {
     const cnt = {};
     (dice || []).forEach((d) => (cnt[d] = (cnt[d] || 0) + 1));
-    const parts = ZG.DIE_ORDER.filter((d) => cnt[d]).reverse().map((d) => `${cnt[d]}${ZG.T('die')}${ZG.sides(d)}`);
+    // все кубики, включая нестандартные (d3), по убыванию граней
+    const parts = Object.keys(cnt).sort((a, b) => ZG.sides(b) - ZG.sides(a)).map((d) => `${cnt[d]}${ZG.T('die')}${ZG.sides(d)}`);
     let s = parts.join('+');
     if (bonus) s += (bonus > 0 ? (s ? '+' : '+') : '−') + Math.abs(bonus);
     return s || '0';

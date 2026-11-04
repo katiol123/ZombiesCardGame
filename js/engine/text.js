@@ -4,7 +4,7 @@
   const ZG = window.ZG;
   const T = ZG.T;
 
-  const VERB = { reveal: 'Покажите', discard: 'Сбросьте', recharge: 'Перезарядите', banish: 'Изгоните', burn: 'Сожгите', technique: 'Примените', display: 'Выложите' };
+  const VERB = { reveal: 'Покажите', discard: 'Сбросьте', recharge: 'Перезарядите', banish: 'Изгоните', burn: 'Сожгите', technique: 'Примените', display: 'Выложите', bury: 'Захороните' };
   const KIND = {
     combat: 'боевой проверки',
     acquire: 'проверки поиска',
@@ -39,11 +39,13 @@
     return `${ZG.diceStr(h.dice, h.bonus)} карт`;
   }
 
+  const TYPE_SRCH = { weapon: 'оружия', item: 'снаряжения', consumable: 'расходника', ally: 'союзника', resolve: 'Решимости', technique: 'приёма' };
   ZG.playText = function (p) {
+    if (p.text) return p.text; // особая формулировка
     const v = VERB[p.mode];
     const tgt = p.target === 'here' ? 'герой на вашей локации' : 'вы';
     if (p.on === 'check') {
-      let s = `${v} для ${kindText(p.kind)}`;
+      let s = `${v} для ${p.cardTypes ? 'проверки поиска ' + p.cardTypes.map((t) => TYPE_SRCH[t] || t).join(' или ') : kindText(p.kind)}`;
       if (p.weapon) s += ` (${skillsList(p.weapon)})`;
       if (p.skills && !p.weapon) s += ` навыком ${skillsList(p.skills)}`;
       if (p.trait) s += ` с оружием «${p.trait}»`;
@@ -53,7 +55,9 @@
       if (b) s += ' ' + b;
       if (p.noiseMod) s += (b ? ', шум ' : ' шум ') + `${p.noiseMod > 0 ? '+' : '−'}${Math.abs(p.noiseMod)}`;
       s += '.';
-      if (p.noise) s += ` Шум +${p.noise}.`;
+      if (p.noise && p.noiseOthers) s += ` Шум +${p.noise} в этой локации и +${p.noiseOthers} в остальных.`;
+      else if (p.noise) s += ` Шум +${p.noise}.`;
+      if (p.gainCard) s = s.replace(/\.$/, '') + ` и возьмите в руку карту «${ZG.card(p.gainCard).name}».`;
       if (p.rechargeOnSuccess) s += ' При успехе перезарядите вместо сброса.';
       if (p.help) s += ' Можно сыграть в проверку соседа по локации.';
       return s;
@@ -69,14 +73,14 @@
       if (p.craft) fx.push(`смастерите базовое ${TYPE_GEN[p.craft] || p.craft} в руку`);
       if (p.clearConds) fx.push(`снимите все состояния ${p.target === 'self' ? 'с себя' : 'героя на вашей локации'}`);
       if (p.gain) fx.push(`найдите случайного ${TYPE_GEN[p.gain] || p.gain}`);
-      if (p.time) fx.push(`Часы +${p.time}`);
       if (p.clearCond) fx.push(`снимите «${ZG.CONDS[p.clearCond].name}»`);
       if (p.heal) fx.push(`${p.target === 'here' ? 'герой на вашей локации перетасовывает' : 'перетасуйте'} ${healText(p.heal)} из сброса в колоду`);
       if (p.cure) fx.push(`${tgt === 'вы' ? 'изгоните' : 'герой на вашей локации изгоняет'} ${p.cure === 'all' ? 'все Инфекции' : '1 Инфекцию'}`);
       if (p.explore) fx.push('исследуйте ещё раз');
       if (p.scout) fx.push('посмотрите верхнюю карту любой локации, можете положить её вниз');
-      if (p.draw) fx.push(`возьмите ${p.draw} ${ZG.plural(p.draw, 'карту', 'карты', 'карт')}${p.putBack ? `, затем перезарядите ${p.putBack} из руки` : ''}`);
+      if (p.draw) fx.push(`возьмите ${p.draw === 1 && p.time ? 'карту из колоды' : `${p.draw} ${ZG.plural(p.draw, 'карту', 'карты', 'карт')}`}${p.putBack ? `, затем перезарядите ${p.putBack} из руки` : ''}`);
       if (p.lure) fx.push('перенесите весь шум вашей локации в другую открытую локацию');
+      if (p.time) fx.push(`Часы +${p.time}`);
       return `${v} в свой ход: ${fx.join(', ')}.`;
     }
     return '';
