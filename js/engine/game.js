@@ -399,6 +399,8 @@
     }
     const cd = ZG.CLOCK[c.id];
     if (c.id !== 'calm') G.log(`Часы: ${cd.name}. ${cd.text}`, 'clock');
+    // событие хода — видно в верхней панели весь ход
+    m.turnEvent = { id: c.id, name: c.id === 'calm' ? (c.name || 'Тишина') : cd.name, turn: m.turn, detail: '' };
     switch (c.id) {
       case 'siren':
         for (const l of G.openLocs()) { G.addNoise(l, 1); }
@@ -417,6 +419,7 @@
           l.deck.push(G.inst(ZG.boxPick('enemy', G.def().tier)));
           R.shuffle(l.deck);
           G.log(`В локацию «${G.ldef(l).name}» пришёл мертвец.`, 'bad');
+          m.turnEvent.detail = `Мертвец пришёл в «${G.ldef(l).name}».`;
           await UI().flyIn(m.locations.indexOf(l), 1);
         }
         break;

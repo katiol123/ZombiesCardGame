@@ -81,8 +81,21 @@
         <div><div class="cnum">${left}</div></div>
         <div><div class="clab">${night ? T('night') : T('day')} · ${T('turns_left')}</div><div class="clockbar"><i style="width:${(left / m.clock.length) * 100}%"></i></div></div>
       </div>
+      ${UI.turnEventChip(m)}
       <button class="btn icon ghost" data-act="rules" title="${T('rules')}">${ZG.icon('book')}</button>
       <button class="btn icon ghost" data-act="menu" title="Меню">${ZG.icon('menu')}</button>`;
+  };
+
+  /** Плашка «событие хода» в верхней панели */
+  UI.turnEventChip = function (m) {
+    const e = m.turnEvent;
+    if (!e) return '';
+    const ev = e.id !== 'calm';
+    const cd = ZG.CLOCK[e.id] || {};
+    const text = ev ? cd.text : 'Ничего не произошло.';
+    return `<button class="turnev ${ev ? 'ev' : ''}" data-act="turnev" title="${esc(e.name + '. ' + text + (e.detail ? ' ' + e.detail : ''))}">
+      <span class="tei">${ZG.icon(ev ? cd.icon : m.phase === 'night' ? 'moon' : 'hourglass')}</span>
+      <span class="tet"><small>Событие хода ${e.turn}</small><b>${esc(e.name)}</b>${ev && e.id === 'fog' ? '<em>действует до конца хода</em>' : ''}</span></button>`;
   };
 
   UI.renderLocs = function () {
@@ -213,6 +226,11 @@
 
   UI.onAct = async function (act) {
     if (act === 'rules') return UI.showRules(true);
+    if (act === 'turnev') {
+      const e = G().M().turnEvent; if (!e) return;
+      const cd = ZG.CLOCK[e.id] || {};
+      return UI.alert(`Событие хода ${e.turn}: ${e.name}`, `<p>${esc(e.id === 'calm' ? 'Тишина — в этот ход Часы не принесли события.' : cd.text)}</p>${e.detail ? `<p class="muted">${esc(e.detail)}</p>` : ''}<p class="muted">Каждый ход начинается с карты Часов. Осталось карт: ${G().M().clock.length - G().M().clockPos}.</p>`);
+    }
     if (act === 'menu') return UI.gameMenu();
     if (act === 'traytoggle') { UI.trayCollapsed = !UI.trayCollapsed; return UI.renderTray(); }
     const w = UI.waiting;
@@ -322,9 +340,31 @@
       <div class="f ${ev ? 'ev' : ''}"><div class="ph">${T('clock')} · ход ${m.turn} · ${m.phase === 'night' ? T('night') : T('day')}</div>${ZG.icon(ev ? cd.icon : m.phase === 'night' ? 'moon' : 'hourglass')}<h3>${esc(name)}</h3>${ev ? `<p>${esc(cd.text)}</p>` : ''}</div></div></div>`);
     const card = el.querySelector('.clock-card');
     ZG.Audio.synth('tick');
-    card.style.animationDuration = ((ev ? 2.1 : 1.2) * Math.max(ZG.speed, 0.25)) + 's';
     document.body.appendChild(el);
-    await ZG.sleep(ev ? 2100 : 1200);
+    if (ev) {
+      // событие держится на экране, пока игрок его не прочтёт (клик или 7 с)
+      card.classList.add('hold');
+      card.style.animationDuration = (0.9 * Math.max(ZG.speed, 0.25)) + 's';
+      el.classList.add('wait');
+      const dim = ZG.html('<div class="clock-dim"></div>');
+      document.body.appendChild(dim);
+      el.querySelector('.f').insertAdjacentHTML('beforeend', '<div class="tap">Щёлкните, чтобы продолжить</div>');
+      await new Promise((res) => {
+        const t = setTimeout(res, 7000 * ZG.speed);
+        const go = () => { clearTimeout(t); document.removeEventListener('keydown', key); res(); };
+        const key = (e) => { if (e.key === 'Enter' || e.key === ' ' || e.key === 'Escape') go(); };
+        el.addEventListener('click', go, { once: true });
+        dim.addEventListener('click', go, { once: true });
+        document.addEventListener('keydown', key);
+      });
+      dim.remove();
+      card.classList.remove('hold'); card.classList.add('away');
+      card.style.animationDuration = (0.5 * Math.max(ZG.speed, 0.25)) + 's';
+      await ZG.sleep(500);
+    } else {
+      card.style.animationDuration = (1.2 * Math.max(ZG.speed, 0.25)) + 's';
+      await ZG.sleep(1200);
+    }
     el.remove();
     if (phaseChanged) {
       const night = m.phase === 'night';

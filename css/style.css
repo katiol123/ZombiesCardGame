@@ -589,15 +589,47 @@ h1, h2, h3 { font-family: var(--font-head); font-weight: 600; letter-spacing: 0.
 .clock-card .f, .clock-card .b { position: absolute; inset: 0; border-radius: 14px; backface-visibility: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; padding: 20px; text-align: center; box-shadow: 0 20px 60px rgba(0,0,0,.8); }
 .clock-card .b { background: repeating-linear-gradient(-45deg, rgba(255,255,255,.03) 0 8px, transparent 8px 16px), radial-gradient(circle, #283454, #0b0f1c); border: 1px solid #3f5383; }
 .clock-card .b .ic { font-size: 80px; color: rgba(170, 190, 240, .4); }
-.clock-card .f { transform: rotateY(180deg); background: linear-gradient(180deg, #1d2335, #0e1018); border: 1px solid #5a6aa0; }
+.clock-card .f { background: linear-gradient(180deg, #1d2335, #0e1018); border: 1px solid #5a6aa0; }
 .clock-card .f.ev { border-color: var(--amber); background: linear-gradient(180deg, #33281a, #120e08); }
 .clock-card .f .ic { font-size: 54px; color: #c8d3f0; }
 .clock-card .f.ev .ic { color: var(--amber); }
 .clock-card .f h3 { font-size: 22px; }
 .clock-card .f p { margin: 0; font-size: 14px; color: #c7bfae; }
 .clock-card .f .ph { font-size: 11px; letter-spacing: .3em; text-transform: uppercase; color: var(--muted); }
-@keyframes clockcard { 0% { transform: translateY(-40vh) rotateY(0) scale(.6); opacity: 0; } 18% { transform: translateY(0) rotateY(0) scale(1); opacity: 1; } 38% { transform: rotateY(180deg); } 80% { transform: rotateY(180deg); opacity: 1; } 100% { transform: translate(0, -45vh) rotateY(180deg) scale(.2); opacity: 0; } }
+@keyframes clockcard { 0% { transform: translateY(-40vh) scale(.6); opacity: 0; } 18% { transform: none; opacity: 1; } 27% { transform: rotateY(90deg); } 28% { transform: rotateY(-90deg); } 38% { transform: none; } 80% { transform: none; opacity: 1; } 100% { transform: translate(0, -45vh) scale(.2); opacity: 0; } }
+@keyframes clockB { 0%, 27% { opacity: 1; } 28%, 100% { opacity: 0; } }
+@keyframes clockF { 0%, 27% { opacity: 0; } 28%, 100% { opacity: 1; } }
 .clock-card.quick { animation-duration: 1.2s; }
+.clock-card .f, .clock-card .b { backface-visibility: visible; animation-duration: inherit; animation-fill-mode: forwards; animation-timing-function: steps(1, end); }
+.clock-card .b { animation-name: clockB; }
+.clock-card .f { animation-name: clockF; }
+.clock-flip.wait { pointer-events: auto; cursor: pointer; }
+.clock-dim { position: fixed; inset: 0; z-index: 1390; background: rgba(0, 0, 0, .5); cursor: pointer; animation: clockdim .3s ease both; }
+@keyframes clockdim { from { opacity: 0; } }
+.clock-card.hold { animation-name: clockhold; }
+.clock-card.away { animation-name: clockaway; }
+.clock-card.hold .b { animation: clockhideB .9s steps(1, end) forwards; animation-duration: inherit; }
+.clock-card.hold .f { animation: clockshowF .9s steps(1, end) forwards; animation-duration: inherit; }
+.clock-card.away .b { opacity: 0; animation: none; }
+.clock-card.away .f { opacity: 1; animation: none; }
+
+@keyframes clockhideB { 0%, 72% { opacity: 1; } 73%, 100% { opacity: 0; } }
+@keyframes clockshowF { 0%, 72% { opacity: 0; } 73%, 100% { opacity: 1; } }
+.clock-card .tap { font-size: 11px; color: var(--muted); margin-top: 6px; animation: tapblink 1.6s ease-in-out infinite; }
+@keyframes tapblink { 50% { opacity: .35; } }
+@keyframes clockhold { 0% { transform: translateY(-40vh) scale(.6); opacity: 0; } 45% { transform: none; opacity: 1; } 72% { transform: rotateY(90deg); } 73% { transform: rotateY(-90deg); } 100% { transform: none; opacity: 1; } }
+@keyframes clockaway { 0% { transform: none; opacity: 1; } 100% { transform: translate(30vw, -45vh) scale(.15); opacity: 0; } }
+/* событие хода в верхней панели */
+.turnev { display: flex; align-items: center; gap: 8px; padding: 4px 12px 4px 5px; border-radius: 40px; background: #0d0e11; border: 1px solid var(--edge); color: var(--text); cursor: pointer; font: inherit; text-align: left; max-width: 230px; }
+.turnev:hover { border-color: #5a6aa0; }
+.turnev .tei { width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 16px; background: #1b2030; color: #c8d3f0; flex: none; }
+.turnev.ev { border-color: rgba(230, 170, 60, .6); box-shadow: 0 0 12px rgba(230, 170, 60, .18); }
+.turnev.ev .tei { background: radial-gradient(circle, #6b5521, #2a210c); color: var(--amber); }
+.turnev .tet { display: flex; flex-direction: column; line-height: 1.15; min-width: 0; }
+.turnev .tet small { font-size: 10px; color: var(--muted); letter-spacing: .05em; }
+.turnev .tet b { font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.turnev .tet em { font-size: 10px; color: var(--amber); font-style: normal; }
+@media (max-width: 760px) { .turnev .tet { display: none; } .turnev { padding: 4px; } }
 
 /* передача хода */
 .handoff { position: fixed; inset: 0; z-index: 1600; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; background: radial-gradient(circle at 50% 40%, color-mix(in srgb, var(--hc) 25%, #0b0b0d), #020203 70%); animation: ovin .5s ease both; text-align: center; padding: 20px; }
