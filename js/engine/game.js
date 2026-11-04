@@ -1030,7 +1030,8 @@
     }
     // поражение
     if (isBoss) m.guarded = [];
-    const dmg = Math.min(ck.dc - res.total, G.dmgCap(def)) + (def.dmgAdd || 0);
+    const diff = ck.dc - res.total;
+    const dmg = Math.min(def.halfDmg ? Math.floor(diff / 2) : diff, G.dmgCap(def)) + (def.dmgAdd || 0);
     const taken = await G.damage(mh, dmg, { source: def.name, bite: def.bite, combat: true, dmgType: G.enemyDmgType(def, loc), pierceLight: !!def.pierceLight });
     if ((def.bite && taken > 0) || def.infectOnFail) await G.infect(mh);
     if (def.inflict && taken > 0 && !mh.dead) {
