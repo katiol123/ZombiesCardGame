@@ -211,7 +211,7 @@
     }
 
     // Часы
-    const len = G.CLOCK_BY_PARTY[Math.min(4, party.length) - 1] - (S.difficulty === 'hard' ? 4 : 0) + (special.clockMod || 0) + (def.act === 2 ? (party.length >= 3 ? 8 : party.length === 2 ? 5 : 0) : 0);
+    const len = G.CLOCK_BY_PARTY[Math.min(4, party.length) - 1] - (S.difficulty === 'hard' ? 4 : 0) + (special.clockMod || 0) + (def.act === 2 ? (party.length >= 3 ? 5 : party.length === 2 ? 3 : 0) : 0);
     const evCount = Math.round(len * 0.3);
     const evs = [];
     for (let i = 0; i < evCount; i++) evs.push(def.clockEvents[i % def.clockEvents.length]);
@@ -1046,7 +1046,8 @@
       }
       // Как в Pathfinder: заколотить можно только сразу после победы над вожаком.
       // Отказ или провал — шанс упущен, локацию придётся вычищать до пустой колоды.
-      if (def.type === 'henchman' && !loc.closed && !mh.dead && !(loc.deck.length === 0 && m.ts.closeTried)) {
+      const moreHench = loc.deck.some((c) => ZG.card(c.id).type === 'henchman');
+      if (def.type === 'henchman' && !loc.closed && !mh.dead && !moreHench && !(loc.deck.length === 0 && m.ts.closeTried)) {
         const c = await ui.choose({
           title: 'Вожак повержен',
           text: `Попытаться заколотить «${G.ldef(loc).name}» прямо сейчас? (${ZG.cardCheckLineClose(loc)}) Это единственный шанс: если отказаться или провалить проверку, локацию придётся вычищать до пустой колоды.`,
@@ -1333,7 +1334,7 @@
     }
     if (mh.id === 'marina' && skill === 'medicine' && ck.kind !== 'combat') dice.push({ d: 'd4', src: 'Твёрдая рука' });
     if (mh.id === 'palych') {
-      if (ck.kind === 'close') dice.push({ d: 'd6', src: 'Золотые руки' });
+      if (ck.kind === 'close') dice.push({ d: 'd4', src: 'Золотые руки' });
       if (ck.kind === 'combat' && wp && ZG.card(wp.id).traits.includes('Инструмент')) dice.push({ d: 'd4', src: 'Золотые руки' });
       if (ck.kind === 'acquire' && ck.card && (ck.card.type === 'weapon' || ck.card.type === 'item')) { bonus += 2; parts.push({ label: 'Барахольщик', v: 2 }); }
     }

@@ -376,7 +376,7 @@
       ],
       goal: 'Уничтожьте Колосса (две победы подряд) до того, как мост взлетит на воздух.',
       rule: 'Время на исходе: Часы короче на 4 хода. Орда приводит 3 мертвецов вместо 2.',
-      special: { clockMod: -4, hordeSize: 3 },
+      special: { clockMod: -2, hordeSize: 3 },
       boss: 'colossus', henchman: 'veteran',
       locations: ['checkpoint', 'jam', 'pylons', 'fieldhospital', 'embankment', 'evac'],
       clockEvents: ['siren', 'siren', 'howl', 'howl', 'hunger', 'dawn', 'broadcast'],

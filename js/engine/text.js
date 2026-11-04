@@ -16,6 +16,13 @@
 
   const skillsList = (arr) => arr.map(ZG.skillName).join(' / ');
 
+  // дательный падеж: «+1d4 к любой проверке»
+  const KIND_DAT = { combat: 'боевой проверке', acquire: 'проверке поиска', event: 'проверке препятствия', close: 'попытке заколотить', evade: 'уклонению' };
+  function kindDat(k) {
+    if (!k || k === 'any') return 'любой проверке';
+    if (k === 'noncombat') return 'небоевой проверке';
+    return (Array.isArray(k) ? k : [k]).map((x) => KIND_DAT[x]).join(' или ');
+  }
   function kindText(k) {
     if (!k || k === 'any') return 'любой проверки';
     if (k === 'noncombat') return 'небоевой проверки';
@@ -74,7 +81,7 @@
     if (p.on === 'action') {
       if (p.mode === 'display') return 'Выложите в свой ход перед собой (не больше 2 выложенных карт).';
       const fx = [];
-      if (p.craft) fx.push(`смастерите базовое ${TYPE_GEN[p.craft] || p.craft} в руку`);
+      if (p.craft) fx.push(`смастерите ${({ weapon: 'базовое Оружие', item: 'базовое Снаряжение', consumable: 'базовый Расходник' })[p.craft] || 'базовую карту'} в руку`);
       if (p.clearConds) fx.push(`снимите все состояния ${p.target === 'self' ? 'с себя' : 'героя на вашей локации'}`);
       if (p.gain) fx.push(`найдите случайного ${TYPE_GEN[p.gain] || p.gain}`);
       if (p.clearCond) fx.push(`снимите «${ZG.CONDS[p.clearCond].name}»`);
@@ -100,7 +107,7 @@
       if (def.before && def.before.damage) lines.push(`До проверки: ${def.before.damage} урон.`);
       if (def.noEvade) lines.push('От него нельзя уклониться.');
       if (def.armor) lines.push(`Броня: проверки Силой и Рукопашной против него −${def.armor}.`);
-      if (def.theft) lines.push(`Если вы не победили ${ZG.gf(def, 'его', 'её', 'его')}, ${ZG.gf(def, 'он', 'она', 'оно')} забирает случайную карту из руки.`);
+      if (def.theft) lines.push(`Если вы не победили ${ZG.gf(def, 'его', 'её', 'его')}, ${ZG.gf(def, 'он', 'она', 'оно')} забирает выложенную карту, а если её нет — случайную карту из руки.`);
     }
     if (ZG.isEnemy(def) && def.dmgType) lines.push(`Урон: ${ZG.DMG_TYPES[def.dmgType]}.`);
     if (ZG.isEnemy(def)) lines.push(`Провал: урон = ${def.halfDmg ? 'половина разницы, с округлением вниз' : 'разница'} (макс. ${ZG.Game.dmgCap(def)}${def.dmgAdd ? `, +${def.dmgAdd}` : ''})${def.bite ? '. Укус → Инфекция' : ''}${def.inflict ? (def.inflictCheck ? `. Рана → проверка ${skillsList(def.inflictCheck.skills)} ${def.inflictCheck.dc}, при провале — ${ZG.CONDS[def.inflict].name}` : `. Рана → ${ZG.CONDS[def.inflict].name}`) : ''}.`);
@@ -110,7 +117,7 @@
       const ef = [];
       if (dd.reduce) ef.push(`блок ${dd.reduce} урона${dd.combatOnly ? ' в бою' : ''} каждый раз`);
       if (dd.hand) ef.push(`размер руки +${dd.hand}`);
-      if (dd.check) ef.push(`+${ZG.diceStr(dd.check.dice)} к ${kindText(dd.check.kind === 'noncombat' ? 'noncombat' : dd.check.kind)}${dd.check.night ? ' ночью' : ''}`);
+      if (dd.check) ef.push(`+${ZG.diceStr(dd.check.dice)} к ${kindDat(dd.check.kind)}${dd.check.night ? ' ночью' : ''}`);
       lines.push(`Пока выложена: ${ef.join(', ')}.`);
     }
     const tr = def.traits || [];

@@ -399,7 +399,7 @@
       text: 'До проверки: 1 урон. От него нельзя уклониться.',
       flavor: 'Ошейник с биркой «Бадди». Хозяина рядом нет.' },
     { id: 'looter', type: 'enemy', living: true, name: 'Мародёр', tier: 1, icon: 'raider', dc: 7, theft: true,
-      text: 'Человек. Если вы не победили его, он забирает (изгоняет) случайную карту из вашей руки.',
+      text: 'Человек. Если вы не победили его, он забирает выложенную карту, а если её нет — случайную карту из руки.',
       flavor: '«Рюкзак. Медленно. На землю».' },
     { id: 'swarm', type: 'enemy', name: 'Стая', tier: 1, icon: 'skulls', dc: 9, bite: true, dmgAdd: 1, scatterMargin: 3,
       text: 'Урон от неё +1. Победа с перевесом меньше 3: стая разбегается и уходит под низ колоды локации.',
@@ -445,7 +445,7 @@
       text: 'Вожак, человек. Охота на одиночек: если вы одни в локации, сложность +3. Победив его, можно сразу попытаться заколотить локацию.',
       flavor: '«Кейн передаёт привет».' },
     { id: 'kane', type: 'boss', living: true, name: 'Главарь Кейн', tier: 2, icon: 'bossskull', dc: 15, theft: true, before: { damage: 2 },
-      text: 'Угроза, человек. До проверки: 2 урона. Если вы не победили его, он изгоняет случайную карту из руки.',
+      text: 'Угроза, человек. До проверки: 2 урона. Если вы не победили его, он забирает выложенную карту, а если её нет — случайную карту из руки.',
       flavor: 'Бывший помощник шерифа. Теперь закон — он.' },
 
     { id: 'veteran', type: 'henchman', name: 'Ветеран-мертвец', tier: 2, icon: 'ghost', dc: 12, bite: true, armor: 2, deathBlast: { skills: ['dex'], dc: 6, die: 'd4' },
@@ -610,7 +610,7 @@
       text: 'Вожак, человек. Огнемёт: в начале боя каждый герой в локации проходит проверку Ловкость / Выживание 7 — при провале 1d3 урона огнём. Победив его, можно сразу попытаться заколотить локацию.',
       flavor: 'Огнемёты, противогазы, приказ: «Никого не выпускать».' },
     { id: 'ridge', type: 'boss', living: true, name: 'Полковник Ридж', tier: 3, icon: 'bossskull', dc: 16, before: { damage: 2 }, theft: true,
-      text: 'Угроза, человек. До проверки: 2 урона. Если вы не победили его, он изымает случайную карту.',
+      text: 'Угроза, человек. До проверки: 2 урона. Если вы не победили его, он изымает выложенную карту, а если её нет — случайную карту из руки.',
       flavor: '«Карантин — это не тюрьма. Это фильтр»' },
     { id: 'foreman', type: 'henchman', name: 'Бригадир смены', tier: 3, icon: 'ghost', dc: 12, bite: true, armor: 1, callShift: 'blindminer',
       text: 'Вожак. Каска: Сила и Рукопашная −1. Свисток смены: если вы не победили его, в эту локацию приходит Слепой шахтёр. Победив его, можно сразу попытаться заколотить локацию.', flavor: 'Табельная книжка всё ещё в кармане.' },
@@ -745,13 +745,13 @@
     { id: 'propane', type: 'consumable', name: 'Баллон пропана', icon: 'fire', traits: ['Огонь'], acquire: { skills: ['str', 'tech'], dc: 6 },
       plays: [{ on: 'check', mode: 'burn', kind: COMBAT, dice: ['d6', 'd6', 'd6'], noise: 4 }], flavor: 'Для гриля. Был.' },
     { id: 'cleaver', type: 'weapon', name: 'Тесак мясника', icon: 'knife', traits: ['Ближнее'], acquire: { skills: ['str', 'melee'], dc: 6 },
-      plays: [{ on: 'check', mode: 'reveal', kind: COMBAT, weapon: ['str', 'melee'], dice: ['d8'], bonus: 1, noise: 1 }], flavor: 'Рубит кости. Любые.' },
+      plays: [{ on: 'check', mode: 'discard', kind: COMBAT, weapon: ['str', 'melee'], dice: ['d10'], bonus: 1, noise: 1, rechargeOnSuccess: true }], flavor: 'Рубит кости. Любые.' },
     { id: 'managerburt', type: 'ally', name: 'Управляющий Берт', icon: 'user', traits: ['Горожанин'], acquire: { skills: ['persuasion'], dc: 6 },
       plays: [{ on: 'action', mode: 'recharge', draw: 2 }, { on: 'check', mode: 'burn', kind: ['acquire'], cardTypes: ['weapon', 'consumable'], dice: ['d8', 'd8'] }], flavor: '«Склад? Я покажу. Только не стреляйте».' },
   ]);
   U('m3', [
     { id: 'flaregun', type: 'weapon', name: 'Ракетница', icon: 'flare', traits: ['Дальнее', 'Огонь'], acquire: { skills: ['dex', 'survival'], dc: 6 },
-      plays: [{ on: 'check', mode: 'reveal', kind: COMBAT, weapon: ['dex', 'shooting'], dice: ['d8'], noise: 2 }], flavor: 'Красная звезда. Горячая.' },
+      plays: [{ on: 'check', mode: 'discard', kind: COMBAT, weapon: ['dex', 'shooting'], dice: ['d8'], bonus: 1, noise: 2 }], flavor: 'Красная звезда. Горячая.' },
     { id: 'climbgear', type: 'item', name: 'Альпинистское снаряжение', icon: 'tower', traits: [], acquire: { skills: ['str', 'survival'], dc: 6 },
       plays: [{ on: 'check', mode: 'reveal', kind: NONCOMBAT, dice: ['d6'] }], flavor: 'Карабины, верёвка, страховка. Вверх — безопаснее.' },
     { id: 'batterypack', type: 'consumable', name: 'Аккумулятор вышки', icon: 'bolt', traits: ['Электричество'], acquire: { skills: ['tech'], dc: 6 },
@@ -761,7 +761,7 @@
   ]);
   U('m4', [
     { id: 'tireiron', type: 'weapon', name: 'Баллонный ключ', icon: 'wrench', traits: ['Ближнее', 'Инструмент'], acquire: { skills: ['str', 'tech'], dc: 6 },
-      plays: [{ on: 'check', mode: 'reveal', kind: COMBAT, weapon: ['str', 'melee'], dice: ['d8'], noise: 1 }], flavor: 'Тяжёлый. Удобный. Честный.' },
+      plays: [{ on: 'check', mode: 'recharge', kind: COMBAT, weapon: ['str', 'melee'], dice: ['d8'] }, { on: 'check', mode: 'recharge', kind: ['close'], dice: ['d4'] }], flavor: 'Тяжёлый. Удобный. Честный.' },
     { id: 'nitro', type: 'consumable', name: 'Канистра нитро', icon: 'fuel', traits: ['Огонь'], acquire: { skills: ['tech', 'survival'], dc: 7 },
       plays: [{ on: 'check', mode: 'burn', kind: COMBAT, dice: ['d8', 'd8'], noise: 3 }], flavor: 'С гоночной машины Кейна.' },
     { id: 'cagekey', type: 'item', name: 'Ключ от клетки', icon: 'lock', traits: [], acquire: { skills: ['stealth', 'dex'], dc: 7 },
@@ -796,7 +796,7 @@
     { id: 'dynamite', type: 'consumable', name: 'Динамит', icon: 'bomb', traits: ['Огонь'], acquire: { skills: ['tech', 'survival'], dc: 7 },
       plays: [{ on: 'check', mode: 'burn', kind: COMBAT, dice: ['d8', 'd8', 'd8'], noise: 6 }], flavor: 'Влажный. Будем надеяться.' },
     { id: 'pickaxe', type: 'weapon', name: 'Кирка', icon: 'hammer', traits: ['Ближнее', 'Тяжёлое', 'Инструмент'], acquire: { skills: ['str'], dc: 8 },
-      plays: [{ on: 'check', mode: 'reveal', kind: COMBAT, weapon: ['str', 'melee'], dice: ['d10'], bonus: 1, noise: 2 }], flavor: 'Сорок лет била породу.' },
+      plays: [{ on: 'check', mode: 'recharge', kind: COMBAT, weapon: ['str', 'melee'], dice: ['d10'], bonus: 1, noise: 2 }], flavor: 'Сорок лет била породу.' },
     { id: 'canary', type: 'ally', name: 'Сторожиха Агата', icon: 'flashlight', traits: ['Горожанин'], acquire: { skills: ['survival', 'persuasion'], dc: 6 },
       plays: [{ on: 'check', mode: 'reveal', kind: ['acquire', 'event'], dice: ['d4'] }], flavor: 'Тридцать лет сторожила контору шахты. Помнит каждый вход и каждый провал.' },
     { id: 'selfrescuer', type: 'item', name: 'Самоспасатель', icon: 'mask', traits: [], acquire: { skills: ['end', 'survival'], dc: 6 },
@@ -804,7 +804,7 @@
   ]);
   U('m8', [
     { id: 'compoundbow', type: 'weapon', name: 'Блочный лук', icon: 'crossbow', traits: ['Дальнее', 'Тихое'], acquire: { skills: ['dex', 'shooting'], dc: 8 },
-      plays: [{ on: 'check', mode: 'reveal', kind: COMBAT, weapon: ['dex', 'shooting'], dice: ['d10'] }], flavor: 'Тихо. Точно. Насмерть.' },
+      plays: [{ on: 'check', mode: 'recharge', kind: COMBAT, weapon: ['dex', 'shooting'], dice: ['d8'] }], flavor: 'Тихо. Точно. Насмерть.' },
     { id: 'beartrap', type: 'item', name: 'Медвежий капкан', icon: 'lock', traits: [], acquire: { skills: ['survival', 'str'], dc: 7 },
       plays: [{ on: 'check', mode: 'discard', kind: COMBAT, dice: ['d6', 'd6'] }, { on: 'evade', mode: 'discard' }], flavor: 'Щёлк.' },
     { id: 'counselor', type: 'ally', name: 'Рыбак Эрл', icon: 'waves', traits: ['Горожанин'], acquire: { skills: ['persuasion'], dc: 7 },
@@ -814,7 +814,7 @@
   ]);
   U('m9', [
     { id: 'trophycup', type: 'weapon', name: 'Кубок чемпионата', icon: 'trophy', traits: ['Ближнее'], acquire: { skills: ['str'], dc: 7 },
-      plays: [{ on: 'check', mode: 'reveal', kind: COMBAT, weapon: ['str', 'melee'], dice: ['d6'], bonus: 2, noise: 1 }], flavor: '«Ривертон Рэмс, 1998». Тяжёлый.' },
+      plays: [{ on: 'check', mode: 'recharge', kind: COMBAT, weapon: ['str', 'melee'], dice: ['d6'], bonus: 2, noise: 1 }], flavor: '«Ривертон Рэмс, 1998». Тяжёлый.' },
     { id: 'chemkit', type: 'item', name: 'Набор юного химика', icon: 'vial', traits: [], acquire: { skills: ['tech', 'wit'], dc: 7 },
       plays: [{ on: 'action', mode: 'burn', craft: 'consumable' }], flavor: '«От 12 лет». Сойдёт.' },
     { id: 'kidsdrawing', type: 'resolve', name: 'Детский рисунок', icon: 'photo', traits: [], acquire: { skills: ['will'], dc: 6 },
@@ -826,7 +826,7 @@
     { id: 'antidote', type: 'consumable', name: 'Прототип антидота', icon: 'vial', traits: ['Медицина'], acquire: { skills: ['medicine', 'wit'], dc: 9 },
       plays: [{ on: 'action', mode: 'burn', cure: 'all', clearConds: true, target: 'here' }], flavor: 'Вариант 41. Предыдущие сорок — нет.' },
     { id: 'stunbaton', type: 'weapon', name: 'Электрошокер охраны', icon: 'bolt', traits: ['Ближнее', 'Тихое', 'Электричество'], acquire: { skills: ['dex', 'melee'], dc: 8 },
-      plays: [{ on: 'check', mode: 'reveal', kind: COMBAT, weapon: ['dex', 'melee'], dice: ['d8'], bonus: 1 }], flavor: '50 000 вольт. Мертвецы дёргаются смешно.' },
+      plays: [{ on: 'check', mode: 'recharge', kind: COMBAT, weapon: ['dex', 'melee'], dice: ['d8'], bonus: 1 }], flavor: '50 000 вольт. Мертвецы дёргаются смешно.' },
     { id: 'keycard', type: 'item', name: 'Карта доступа ур. 5', icon: 'badge', traits: [], acquire: { skills: ['stealth', 'wit'], dc: 8 },
       plays: [{ on: 'check', mode: 'reveal', kind: ['close', 'event'], dice: ['d8'] }], flavor: 'Принадлежала директору исследований. Он не возражает.' },
     { id: 'drvoss', type: 'ally', name: 'Доктор Восс', icon: 'cross', traits: ['Медик'], acquire: { skills: ['persuasion', 'medicine'], dc: 9 },
