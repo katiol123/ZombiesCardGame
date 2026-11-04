@@ -798,7 +798,7 @@
 
   /* Уникальные враги миссий (обычные, не вожаки) */
   U('m1', [
-    { id: 'surgeonz', type: 'enemy', name: 'Мёртвый хирург', icon: 'knife', dc: 6, bite: true, inflict: 'poison', flavor: 'Маска на лице. Скальпель в руке. Привычка.' },
+    { id: 'surgeonz', type: 'enemy', name: 'Мёртвый хирург', icon: 'knife', dc: 6, bite: true, inflict: 'poison', inflictCheck: { skills: ['survival'], dc: 7 }, flavor: 'Маска на лице. Скальпель в руке. Привычка.' },
     { id: 'coldbody', type: 'enemy', name: 'Тело из холодильника', icon: 'skull', dc: 6, bite: true, dmgType: 'cold', inflict: 'numb', weak: { 'Огонь': 'd6' }, flavor: 'Иней на ресницах. Холодные пальцы.' },
   ]);
   U('m2', [
