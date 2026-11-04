@@ -313,6 +313,7 @@
   G.run = async function () {
     const m = G.M();
     const ui = UI();
+    m.hordeBusy = false;
     ui.showBoard();
     while (!m.over) {
       if (m.heroes.every((h) => h.dead)) return G.finish(false, 'dead');
@@ -321,12 +322,20 @@
       ZG.Save.persist();
       ui.renderBoard();
       if (m.heroes.filter((h) => !h.dead).length > 1) await ui.handoff(mh);
+      // флаги хода обнуляются до Часов: орда от события Часов уже воюет в новом ходу
+      m.ts = { moved: false, explored: false, explores: 1, closeTried: false, rested: false, gave: false, scouted: false, med: false, evaded: false };
       const fc = await G.flipClock(mh);
       if (fc === 'lose') return G.finish(false, 'time');
-      m.ts = { moved: false, explored: false, explores: 1, closeTried: false, rested: false, gave: false, scouted: false, med: false, evaded: false };
       await G.startTurnConds(mh);
       if (mh.dead) { G.advance(); continue; }
       ui.renderBoard();
+      if (m.ts.forceEnd && !mh.dead) {
+        // ход закончился ещё в начале (например, героя задержали в бою с ордой от события Часов)
+        await G.endTurn(mh);
+        if (m.heroes.every((h) => h.dead)) return G.finish(false, 'dead');
+        G.advance();
+        continue;
+      }
       if (G.conds(mh).detained) {
         // задержанный герой пропускает ход; состояние снимается в конце этого хода
         G.log(`${G.hname(mh)} задержан и пропускает ход.`, 'bad');
@@ -915,7 +924,8 @@
     if (!isBoss && !def.noEvade && !opts.noEvade) {
       const options = [];
       const dcNow = G.enemyCheck(def, loc, 0, 1).dc;
-      if (mh.id === 'ten' && !m.ts.evaded) options.push({ label: 'Ускользнуть', sub: `Проверка Скрытности ${dcNow}`, key: 'power' });
+      const evadeDc = dcNow + 2; // «Ускользнуть»: на 2 сложнее, чем победить
+      if (mh.id === 'ten' && !m.ts.evaded) options.push({ label: 'Ускользнуть', sub: `Проверка Скрытности ${evadeDc}`, key: 'power' });
       mh.hand.forEach((c) => {
         const d = ZG.card(c.id);
         (d.plays || []).forEach((p) => {
@@ -928,7 +938,7 @@
         let evaded = false;
         if (o.key === 'power') {
           m.ts.evaded = true;
-          const res = await G.doCheck(mh, { kind: 'evade', skills: ['stealth', 'dex'], dc: dcNow, base: dcNow, mods: [], title: `Ускользнуть: ${def.name}`, cardId: def.id });
+          const res = await G.doCheck(mh, { kind: 'evade', skills: ['stealth', 'dex'], dc: evadeDc, base: dcNow, mods: [{ label: 'Ускользнуть', v: 2 }], title: `Ускользнуть: ${def.name}`, cardId: def.id });
           evaded = res.success;
         } else if (o.key === 'card') {
           G.moveByMode(mh, o.u, o.mode || 'discard');
@@ -936,9 +946,8 @@
         }
         if (evaded) {
           loc.deck.push(inst);
-          if (o.key === 'power') m.ts.explores++;
           G.log(`${G.hname(mh)} уклоняется от встречи: ${def.name}.`, 'move');
-          await ui.banner('Ушли незамеченными', `${def.name} уходит под низ колоды локации${o.key === 'power' ? '. +1 исследование' : ''}`, 'good');
+          await ui.banner('Ушли незамеченными', `${def.name} уходит под низ колоды локации`, 'good');
           return null;
         }
       }
@@ -1575,23 +1584,39 @@
 
   G.checkHorde = async function (loc) {
     if (loc.closed || loc.noise < loc.limit) return;
+    const m = G.M();
+    if (m.hordeBusy) return; // идёт бой с ордой — новая орда дождётся его конца
     const size = (G.def().special || {}).hordeSize || 2;
-    if (G.lrule(loc).hordeTop) {
-      for (let i = 0; i < size; i++) loc.deck.unshift(G.inst(ZG.boxPick('enemy', G.def().tier)));
-    } else {
-      for (let i = 0; i < size; i++) loc.deck.push(G.inst(ZG.boxPick('enemy', G.def().tier)));
-      R.shuffle(loc.deck);
+    const zs = Array.from({ length: size }, () => G.inst(ZG.boxPick('enemy', G.def().tier)));
+    // Если ходящий герой здесь — орда сразу нападает на него (право на исследование сохраняется).
+    // При событии Часов в начале хода ходящим считается герой, чей ход начинается.
+    const mh = m.heroes[m.active];
+    const here = mh && !mh.dead && mh.loc === m.locations.indexOf(loc);
+    if (!here) {
+      if (G.lrule(loc).hordeTop) zs.forEach((z) => loc.deck.unshift(z));
+      else { zs.forEach((z) => loc.deck.push(z)); R.shuffle(loc.deck); }
     }
     loc.noise = 0;
-    G.M().stats.hordes++;
+    m.stats.hordes++;
     UI().renderBoard();
-    await UI().flyIn(G.M().locations.indexOf(loc), size);
-    G.log(`ОРДА! +${size} мертвецов в «${G.ldef(loc).name}».`, 'bad');
-    await UI().horde(loc, size);
+    await UI().flyIn(m.locations.indexOf(loc), size);
+    G.log(here ? `ОРДА! ${size} мертвецов нападают на ${G.hname(mh)} в «${G.ldef(loc).name}».` : `ОРДА! +${size} мертвецов в «${G.ldef(loc).name}».`, 'bad');
+    await UI().horde(loc, size, here ? mh : null);
     if ((G.def().special || {}).henchToHorde) {
       const hid = G.def().henchman;
       const src = G.openLocs().filter((l) => l !== loc && l.deck.some((c) => c.id === hid));
       if (src.length) await G.moveHench(R.pick(src), loc, 'На крик');
+    }
+    if (here) {
+      m.hordeBusy = true;
+      try {
+        for (const z of zs) {
+          if (mh.dead || m.over) break;
+          await G.encounter(mh, z, loc, { horde: true });
+        }
+      } finally { m.hordeBusy = false; }
+      // шум, накопленный в боях с ордой, проверяется только после всех её боёв
+      if (!mh.dead && !m.over) for (const l of G.openLocs()) await G.checkHorde(l);
     }
   };
 

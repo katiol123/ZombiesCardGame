@@ -732,7 +732,7 @@
   };
 
   /* ============================== Эффекты событий ============================== */
-  UI.horde = async function (loc, n) {
+  UI.horde = async function (loc, n, attacked) {
     const i = G().M().locations.indexOf(loc);
     UI.renderBoard();
     const el = document.querySelector(`.loc[data-i="${i}"]`);
@@ -741,7 +741,7 @@
     ZG.FX.shake();
     ZG.Audio.sfx('braam');
     setTimeout(() => ZG.Audio.sfx('growl'), 400);
-    await UI.banner(T('horde'), T('horde_sub', { n, loc: ZG.LOCATIONS[loc.id].name }), 'horde bad');
+    await UI.banner(T('horde'), attacked ? `${n} ${ZG.plural(n, 'мертвец нападает', 'мертвеца нападают', 'мертвецов нападают')} на ${UI.shortName(attacked.id)} — бой прямо сейчас!` : T('horde_sub', { n, loc: ZG.LOCATIONS[loc.id].name }), 'horde bad');
   };
 
   UI.barricade = async function (loc) {
