@@ -808,6 +808,8 @@
   U('m3', [
     { id: 'linesman', type: 'enemy', name: 'Монтёр', icon: 'bolt', dc: 7, bite: true, dmgType: 'electric', before: { damage: 1 }, flavor: 'Вцепился в провод под напряжением. Отпускать не собирается.' },
     { id: 'hiker', type: 'enemy', name: 'Турист', icon: 'skull', dc: 6, bite: true, inflict: 'terror', flavor: 'Рюкзак «38 литров». Компас всё ещё на шее.' },
+    { id: 'radiohost', type: 'enemy', name: 'Ночной ведущий', icon: 'radio', dc: 8, bite: true, noiseOnEncounter: 2, weak: { 'Инструмент': 'd6' },
+      text: 'В эфире: при встрече шум локации +2.', flavor: '«…не выходите из домов. С вами ночной эфир. Оставайтесь на волне…»' },
   ]);
   U('m4', [
     { id: 'biker', type: 'enemy', living: true, name: 'Байкер банды', icon: 'raider', dc: 8, theft: true, before: { damage: 1 }, flavor: 'Цепь вместо пояса. Улыбка без зубов.' },
