@@ -808,7 +808,7 @@
   U('m3', [
     { id: 'linesman', type: 'enemy', name: 'Монтёр', icon: 'bolt', dc: 7, bite: true, dmgType: 'electric', before: { damage: 1 }, flavor: 'Вцепился в провод под напряжением. Отпускать не собирается.' },
     { id: 'hiker', type: 'enemy', name: 'Турист', icon: 'skull', dc: 6, bite: true, inflict: 'terror', flavor: 'Рюкзак «38 литров». Компас всё ещё на шее.' },
-    { id: 'radiohost', type: 'enemy', name: 'Ночной ведущий', icon: 'radio', dc: 8, bite: true, noiseOnEncounter: 2, weak: { 'Инструмент': 'd6' },
+    { id: 'radiohost', type: 'enemy', name: 'Ночной ведущий', icon: 'radio', dc: 8, bite: true, dmgType: 'electric', noiseOnEncounter: 2, weak: { 'Инструмент': 'd6' },
       text: 'В эфире: при встрече шум локации +2.', flavor: '«…не выходите из домов. С вами ночной эфир. Оставайтесь на волне…»' },
   ]);
   U('m4', [
@@ -816,7 +816,7 @@
     { id: 'mechanicz', type: 'enemy', name: 'Сгоревший механик', icon: 'fire', dc: 7, bite: true, dmgType: 'fire', inflict: 'vuln', immune: ['Огонь'], flavor: 'Взорвался вместе с бензоколонкой. Встал.' },
   ]);
   U('m5', [
-    { id: 'drowned', type: 'enemy', name: 'Утопленник', icon: 'waves', dc: 8, bite: true, dmgType: 'cold', inflict: 'numb', flavor: 'Река вернула его. Не до конца.' },
+    { id: 'drowned', type: 'enemy', name: 'Утопленник', icon: 'waves', dc: 8, bite: true, dmgType: 'cold', flavor: 'Река вернула его. Не до конца.' },
     { id: 'paratrooper', type: 'enemy', name: 'Мёртвый десантник', icon: 'skull', dc: 9, bite: true, armor: 1, dmgType: 'electric', flavor: 'Парашют зацепился за опору. Стропы перерезаны.' },
   ]);
   U('m6', [
