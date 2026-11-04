@@ -703,6 +703,7 @@
     }
     if (p.time) {
       for (let i = 0; i < p.time; i++) G.M().clock.push({ id: 'calm', name: 'Выигранное время' });
+      ui.renderBoard();
       G.log(`Часы +${p.time}.`, 'good');
       await ui.banner('Выиграно время', `Часы +${p.time}`, 'good');
     }
@@ -1525,6 +1526,7 @@
     for (const f of fx) {
       if (f.time) {
         for (let i = 0; i < f.time; i++) m.clock.push({ id: 'calm', name: 'Передышка' });
+        UI().renderBoard();
         lines.push(`Часы +${f.time}`);
       }
       if (f.healHere) here.forEach((h) => { const n = G.heal(h, f.healHere); if (n) lines.push(`${G.hname(h)}: лечение ${n}`); });
