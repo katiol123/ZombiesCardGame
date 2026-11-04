@@ -1315,7 +1315,10 @@
       if (G.effMode(mh, p.id, pl) !== 'reveal') removed++;
     });
     const left = Math.max(0, n - reduce);
-    return Math.min(left, mh.hand.length - removed);
+    // Инфекцию нельзя сбросить как урон
+    const usedU = new Set(plays.map((p) => p.u));
+    const canDiscard = mh.hand.filter((c) => c.id !== 'infection' && !usedU.has(c.u)).length;
+    return Math.min(left, canDiscard);
   };
 
   G.damage = async function (mh, n, opts) {
@@ -1339,6 +1342,7 @@
       reduce = pl.reduce === 'all' ? Infinity : reduce + pl.reduce;
       G.moveByMode(mh, p.u, G.effMode(mh, p.id, pl));
     });
+    r.discards = r.discards.filter((u) => { const c = mh.hand.find((x) => x.u === u); return c && c.id !== 'infection'; });
     r.discards.forEach((u) => G.moveByMode(mh, u, 'discard'));
     const taken = Math.min(Math.max(0, n - reduce), r.discards.length);
     G.log(`${G.hname(mh)} получает ${taken} урона${opts.source ? ` (${opts.source})` : ''}.`, taken ? 'bad' : '');
@@ -1572,6 +1576,8 @@
     const ui = UI();
     const guarded = new Set((m.guarded || []).map((i) => m.locations[i]));
     m.guarded = [];
+    // окно боя убираем сразу: дальше всё (закрытие, отступление, побег) показывается на поле
+    await ui.encounterDismiss();
     // 1–3. Других злодеев в колоде нет — локация закрывается автоматически, карты изгоняются, срабатывает награда
     if (!loc.closed) {
       const villains = loc.deck.filter((c) => ZG.card(c.id).type === 'boss');

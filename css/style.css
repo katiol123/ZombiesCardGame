@@ -819,3 +819,5 @@ h1, h2, h3 { font-family: var(--font-head); font-weight: 600; letter-spacing: 0.
 .card.dense:not(.big):not(.mid) .cflavor, .card.xdense:not(.big) .cflavor { display: none; }
 .card.xdense .ccheck { font-size: .9em; }
 .card.clipped .ctext { -webkit-mask-image: linear-gradient(180deg, #000 82%, transparent); mask-image: linear-gradient(180deg, #000 82%, transparent); }
+.dmg-modal .card.disabled, .enc-panel .card.disabled { filter: grayscale(.8) brightness(.6); cursor: not-allowed; }
+.choice-list.done .choice:not(.chosen) { opacity: .35; } .choice.chosen { border-color: var(--amber); }

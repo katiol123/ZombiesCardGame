@@ -419,6 +419,17 @@
     UI.renderBoard();
   };
 
+  /** Досрочно убрать окно встречи (например, чтобы показать побег Угрозы на поле) */
+  UI.encounterDismiss = async function () {
+    if (!UI.enc) return;
+    const el = UI.enc.el;
+    UI.enc = null;
+    const box = el.querySelector('.enc-card');
+    if (box && /defeated|acquired|lost/.test(box.className)) await ZG.sleep(650);
+    await UI.closeOverlay(el);
+    UI.renderBoard();
+  };
+
   UI.cardBox = () => (UI.enc && UI.enc.el.isConnected ? UI.enc.el.querySelector('.enc-card') : null);
   UI.fxDefeat = function () {
     const b = UI.cardBox();
@@ -451,18 +462,30 @@
         own = UI.overlay(`<div class="encounter"><div class="enc-card drop">${ctx.check.kind === 'close' ? UI.locCardHTML(loc) : ctx.check.cardId ? UI.cardHTML(ctx.check.cardId, { size: 'big' }) : UI.locCardHTML(loc)}</div><div class="enc-panel panel"></div></div>`, 'enc-ov');
         panel = own.querySelector('.enc-panel');
       }
+      let restore = null; // карта встречи, временно подменённая картой локации
       if (!own && ctx.check.kind === 'close' && ctx.check.locIdx != null) {
         const box = UI.cardBox();
         if (box) {
           box.className = 'enc-card drop';
           const c = box.querySelector('.card');
-          if (c) c.outerHTML = UI.locCardHTML(G().M().locations[ctx.check.locIdx]);
+          if (c) {
+            const prev = c.outerHTML;
+            c.outerHTML = UI.locCardHTML(G().M().locations[ctx.check.locIdx]);
+            restore = () => {
+              const b = UI.cardBox();
+              const cur = b && b.querySelector('.card');
+              if (!cur) return;
+              b.className = 'enc-card drop';
+              cur.outerHTML = prev;
+            };
+          }
         }
       }
       const st = { rolled: false };
       const render = () => UI.renderCheck(panel, ctx, st, finish);
       const finish = async (res) => {
         if (own) await UI.closeOverlay(own);
+        if (restore) restore();
         resolve(res);
       };
       st.render = render;
@@ -653,8 +676,9 @@
           const red = (d.plays || []).map((p, pi) => (isRed(p) && !usedU.has(c.u) && !plays.some((x) => ZG.card(x.id).type === d.type) ? pi : -1)).filter((x) => x >= 0);
           const used = usedU.has(c.u);
           const burnArmor = red.length && G().missingProf(mh, c.id).includes('heavyarmor');
-          const badge = used ? 'блок' : sel.has(c.u) ? 'в сброс' : red.length ? (burnArmor ? 'Блок · сгорит' : 'Блок') : '';
-          return UI.cardHTML(c, { u: c.u, cls: `${used ? 'inpool' : ''} ${red.length ? 'playable' : ''} ${sel.has(c.u) ? 'selected' : ''}`, badge });
+          const inf = c.id === 'infection';
+          const badge = inf ? 'нельзя' : used ? 'блок' : sel.has(c.u) ? 'в сброс' : red.length ? (burnArmor ? 'Блок · сгорит' : 'Блок') : '';
+          return UI.cardHTML(c, { u: c.u, cls: `${used ? 'inpool' : ''} ${red.length ? 'playable' : ''} ${sel.has(c.u) ? 'selected' : ''} ${inf ? 'disabled' : ''}`, badge });
         }).join('');
         const reduced = plays.length ? `<div class="muted">Защита: ${plays.map((p) => esc(ZG.card(p.id).name)).join(', ')}</div>` : '';
         panel.innerHTML = `<div class="dmg-head"><div class="dmg-num">−${n}</div><div><h2>${T('dmg_title')}: ${esc(hd.name.split(' ')[0])}</h2><div class="mtext" style="margin:0">${opts.source ? esc(opts.source) + '. ' : ''}${opts.dmgType ? `<span style="color:var(--amber)">Тип урона: ${ZG.DMG_TYPES[opts.dmgType]}.</span> ` : ''}${opts.noReduce ? '<span style="color:var(--blood2)">Уязвимость: этот урон нельзя уменьшить.</span> ' : ''}${opts.bite ? '<span style="color:var(--toxic)">Укус: если урон пройдёт — Инфекция.</span> ' : ''}</div>${reduced}</div></div>
@@ -665,6 +689,7 @@
           const u = +el.dataset.u;
           const c = mh.hand.find((x) => x.u === u);
           const d = ZG.card(c.id);
+          if (c.id === 'infection') { UI.toast('Инфекцию нельзя сбросить как урон', 'bad'); return; }
           if (usedU.has(u)) {
             const i = plays.findIndex((p) => p.u === u);
             plays.splice(i, 1);
@@ -692,8 +717,9 @@
       ZG.FX.burstAt(document.querySelector('.hero-panel .avatar'), 'blood', 50);
       // если защититься нечем и выбора нет — авто
       const anyRed = mh.hand.some((c) => (ZG.card(c.id).plays || []).some(isRed));
-      if (!anyRed && mh.hand.length <= n) {
-        mh.hand.forEach((c) => sel.add(c.u));
+      const discardable = mh.hand.filter((c) => c.id !== 'infection');
+      if (!anyRed && discardable.length <= n) {
+        discardable.forEach((c) => sel.add(c.u));
         render();
         return;
       }
