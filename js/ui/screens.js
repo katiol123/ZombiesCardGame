@@ -306,7 +306,8 @@
         const cur = ph.feats.attr[a] || 0;
         return `<button class="choice" data-feat="attr:${a}" ${cur >= 3 ? 'disabled' : ''}><b>+1 ${esc(T('attr_' + a))}</b><span>сейчас ${hd.attrs[a].replace('d', T('die'))}${g.attrBonus(ph, a) ? (g.attrBonus(ph, a) > 0 ? '+' : '') + g.attrBonus(ph, a) : ''} (макс. +3)</span></button>`;
       }).join('')}
-      <button class="choice" data-feat="hand" ${(ph.feats.hand || 0) >= 2 ? 'disabled' : ''}><b>${T('feat_hand')}</b><span>сейчас ${g.handSize(ph)} (макс. +2)</span></button>
+      <button class="choice" data-feat="hand" ${(ph.feats.hand || 0) >= 2 || ph.featsPending < 2 ? 'disabled' : ''}><b>${T('feat_hand')} · 2 опыта</b><span>сейчас ${g.handSize(ph)} (макс. +2)</span></button>
+      ${Object.keys(ZG.PROF).filter((k) => !g.hasProf(ph, k)).map((k) => `<button class="choice" data-feat="prof:${k}" ${ph.featsPending < 2 ? 'disabled' : ''}><b>Владение: ${esc(ZG.PROF[k].name)} · 2 опыта</b><span>${k === 'heavyarmor' ? 'тяжёлая броня больше не сгорает после блока' : 'без штрафа −4 к проверке'}</span></button>`).join('')}
       ${ZG.CARD_TYPES.map((t) => `<button class="choice" data-feat="slot:${t}"><b>+1 слот: ${esc(T('slot_' + t))}</b><span>колода станет больше — это лишнее «здоровье»</span></button>`).join('')}
       ${ph.scars.length ? `<button class="choice" data-feat="scar"><b>${T('feat_scar')}</b><span>${esc(ZG.SCARS.find((x) => x.id === ph.scars[0].id).text)}</span></button>` : ''}
     </div></div>` : '';
@@ -334,7 +335,7 @@
           ${UI.statsHTML(ph)}
           <div class="stat-row"><span class="stat">Рука <b>${g.handSize(ph)}</b></span><span class="stat">Колода <b>${ZG.sum(Object.values(comp))}</b></span></div>
           ${hd.powers.map((p) => `<div class="power"><b>${esc(p.name)}.</b> ${esc(p.text)}</div>`).join('')}
-          <div class="prof">Владение: ${(hd.prof || []).length ? hd.prof.map((k) => esc(ZG.PROF[k].name)).join(', ') : 'нет'}</div>
+          <div class="prof">Владение: ${[...(hd.prof || []), ...(ph.feats.prof || [])].length ? [...(hd.prof || []), ...(ph.feats.prof || [])].map((k) => esc(ZG.PROF[k].name)).join(', ') : 'нет'}</div>
           ${ph.scars.length ? `<div><b class="scar">${T('scars')}:</b>${ph.scars.map((x) => `<div class="scar">${esc(ZG.SCARS.find((y) => y.id === x.id).text)}</div>`).join('')}</div>` : ''}
           ${featBox}
         </div>
@@ -370,10 +371,13 @@
     s.querySelectorAll('[data-feat]').forEach((b) => b.addEventListener('click', () => {
       const [k, v] = b.dataset.feat.split(':');
       if (k === 'attr') ph.feats.attr[v] = (ph.feats.attr[v] || 0) + 1;
+      const cost = k === 'hand' || k === 'prof' ? 2 : 1;
+      if (ph.featsPending < cost) return;
       if (k === 'hand') ph.feats.hand = (ph.feats.hand || 0) + 1;
+      if (k === 'prof') ph.feats.prof = [...(ph.feats.prof || []), v];
       if (k === 'slot') { ph.feats.slots[v] = (ph.feats.slots[v] || 0) + 1; }
       if (k === 'scar') ph.scars.shift();
-      ph.featsPending--;
+      ph.featsPending -= cost;
       ZG.FX.burstAt(b, 'gold', 50);
       UI.toast(`${ZG.icon('star')} ${esc(hd.name.split(' ')[0])}: улучшение получено`, 'loot');
       g.ensureDecks();

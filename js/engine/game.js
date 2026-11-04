@@ -46,7 +46,9 @@
   G.allPiles = (mh) => [...mh.deck, ...mh.hand, ...mh.discard, ...(mh.displayed || []), ...(mh.buried || [])];
 
   /* ============================== Владение, состояния ============================== */
-  G.hasProf = (mh, key) => (ZG.HEROES[mh.id].prof || []).includes(key);
+  /** Владение: врождённое у героя или выученное за опыт в лагере */
+  G.learnedProf = (id) => { const S = G.S(); const ph = S && S.campaign && S.campaign.party.find((p) => p.id === id); return (ph && ph.feats && ph.feats.prof) || []; };
+  G.hasProf = (mh, key) => (ZG.HEROES[mh.id].prof || []).includes(key) || G.learnedProf(mh.id).includes(key);
   /** Каких владений не хватает герою для карты */
   G.missingProf = (mh, id) => {
     const d = ZG.card(id);
