@@ -831,6 +831,16 @@
     const lm = (G.ldef(loc).mods || {}).enemyDc;
     if (lm) mods.push({ label: 'Локация', v: lm });
     if (m.turnMods.fog) mods.push({ label: 'Туман', v: 1 });
+    if (def.loneDc) {
+      // «Охота на одиночек»: герой один в локации
+      const li = m.locations.indexOf(loc);
+      if (m.heroes.filter((h) => !h.dead && h.loc === li).length <= 1) mods.push({ label: 'Охота на одиночек', v: def.loneDc });
+    }
+    if (def.packDc) {
+      // «Охотятся вместе»: +1 за каждого другого непобеждённого такого же врага в открытых локациях
+      const others = ZG.sum(G.openLocs().map((l) => l.deck.filter((c) => c.id === def.id).length));
+      if (others) mods.push({ label: `Стая: ещё ${others}`, v: Math.min(def.packDc, others) });
+    }
     if (def.filtration) {
       const fh = m.heroes[m.active];
       if (fh && G.infCount(fh) > 0) mods.push({ label: 'Фильтрация: есть Инфекция', v: def.filtration });
@@ -954,6 +964,17 @@
       await ui.banner(`${def.name} разбегается`, `Нужен перевес ${def.scatterMargin}+, чтобы добить. Уходит под низ колоды локации`, 'warn');
       return null;
     }
+    // echoNoise: победа шумной проверкой — враг не гибнет, а уходит в самую шумную открытую локацию
+    if (ok && def.echoNoise && res.pool && res.pool.noise > 0 && !loc.closed) {
+      const others = G.openLocs().filter((l) => l !== loc).sort((a, b) => b.noise - a.noise || R.next() - 0.5);
+      const to = others[0] || loc;
+      to.deck.push(inst);
+      R.shuffle(to.deck);
+      G.log(`${def.name}: шум (+${res.pool.noise}) — ${ZG.gf(def, 'он', 'она', 'оно')} не гибнет, а уходит на звук в «${G.ldef(to).name}».`, 'bad');
+      await ui.banner('Отзвук', `${def.name} уходит на шум в «${G.ldef(to).name}». Добить можно только тихо`, 'warn');
+      if (to !== loc) await ui.flyBetween(m.locations.indexOf(loc), m.locations.indexOf(to), def.icon || 'ghost');
+      return null;
+    }
     // finishCheck: после победы в бою — небоевая проверка, чтобы добить; провал — враг замешивается обратно
     if (ok && def.finishCheck) {
       const fc = def.finishCheck;
@@ -970,6 +991,23 @@
       G.S().campaign.stats.kills++;
       ui.fxDefeat();
       G.log(T('defeated', { name: def.name, pov: ZG.gf(def, 'повержен', 'повержена', 'повержено') }), 'good');
+      if (def.lastSwing && !mh.dead) {
+        // «Последний взмах»: побеждённый успевает ударить — увернуться
+        const ls = def.lastSwing;
+        await ui.banner('Последний взмах!', `${def.name} падает — но успевает замахнуться`, 'warn');
+        const lr = await G.doCheck(mh, { kind: 'event', skills: ls.skills, dc: ls.dc, base: ls.dc, mods: [], card: def, cardId: def.id, title: `Увернуться: ${def.name}` });
+        if (!lr.success) await G.damage(mh, ls.damage, { source: `${def.name}: последний взмах`, combat: true });
+      }
+      if (def.deathBlast) {
+        // «Граната на поясе»: все герои в локации проверяют Ловкость
+        const db = def.deathBlast;
+        await ui.banner('Граната!', 'Чека сорвана — все в локации, в укрытие!', 'bad');
+        const li = m.locations.indexOf(loc);
+        for (const h of m.heroes.filter((x) => !x.dead && x.loc === li)) {
+          const br = await G.doCheck(h, { kind: 'event', skills: db.skills, dc: db.dc, base: db.dc, mods: [], card: def, cardId: def.id, title: `${G.hname(h)}: в укрытие!` });
+          if (!br.success) await G.damage(h, ZG.rollDie(db.die), { source: `${def.name}: граната`, dmgType: 'fire' });
+        }
+      }
       if (def.toxic) {
         const tr = await G.doCheck(mh, G.eventCheck(def.toxic, loc, `${def.name}: брызги заразы`, def));
         if (!tr.success) await G.infect(mh);
@@ -1007,6 +1045,20 @@
       const c = mh.hand.splice(R.int(mh.hand.length), 1)[0];
       G.log(`${def.name} отбирает «${ZG.card(c.id).name}».`, 'bad');
       await ui.banner('Ограблен!', `${def.name} забирает «${ZG.card(c.id).name}»`, 'bad');
+    }
+    if (def.callShift && !loc.closed) {
+      // «Свисток смены»: в локацию приходит его смена
+      loc.deck.push(G.inst(def.callShift));
+      R.shuffle(loc.deck);
+      G.log(`${def.name} свистит: в «${G.ldef(loc).name}» приходит ${ZG.card(def.callShift).name}.`, 'bad');
+      await ui.flyIn(m.locations.indexOf(loc), 1);
+    }
+    if (def.alarm) {
+      // «Тревога»: теряется карта Часов
+      m.clockPos = Math.min(m.clock.length, m.clockPos + def.alarm);
+      G.log(`${def.name} поднимает тревогу: −${def.alarm} карта Часов.`, 'bad');
+      ui.renderBoard();
+      await ui.banner('Тревога!', `Комплекс блокируется: сброшена карта Часов`, 'bad');
     }
     if (def.purgeDiscard && !mh.dead && mh.discard.length) {
       // «Уничтожить улики»: случайные карты из сброса захоронены до конца миссии
