@@ -180,6 +180,13 @@ window.ZG_ART = {
     ten: 'assets/avatars/ten.webp',
     palych: 'assets/avatars/palych.webp',
   },
-  locations: {},
+  locations: {
+    lobby: 'assets/locations/lobby.webp',
+    wards: 'assets/locations/wards.webp',
+    morgue: 'assets/locations/morgue.webp',
+    pharmacy: 'assets/locations/pharmacy.webp',
+    boiler: 'assets/locations/boiler.webp',
+    ambulance: 'assets/locations/ambulance.webp',
+  },
   missions: {},
 };
