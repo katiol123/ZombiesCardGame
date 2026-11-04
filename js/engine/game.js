@@ -919,6 +919,13 @@
       if (!res.success) { ok = false; break; }
       if (i < hits - 1) await ui.banner('Он ещё стоит!', 'Нужна вторая победа подряд', 'warn');
     }
+    // scatterMargin: победа с перевесом меньше N — враг разбегается и уходит под низ колоды локации
+    if (ok && def.scatterMargin && res.total - res.dc < def.scatterMargin && !loc.closed) {
+      loc.deck.push(inst);
+      G.log(`${def.name} отбита (перевес ${res.total - res.dc} < ${def.scatterMargin}): разбегается и уходит под низ колоды локации.`, 'move');
+      await ui.banner(`${def.name} разбегается`, `Нужен перевес ${def.scatterMargin}+, чтобы добить. Уходит под низ колоды локации`, 'warn');
+      return null;
+    }
     if (ok) {
       m.stats.kills++;
       G.S().campaign.stats.kills++;
@@ -971,9 +978,9 @@
     }
     if (!loc.closed) {
       loc.deck.push(inst);
-      if (!def.toBottom) R.shuffle(loc.deck); // toBottom: враг уходит под низ колоды локации
+      R.shuffle(loc.deck);
     }
-    G.log(def.toBottom && !loc.closed ? `${def.name} не повержена и уходит под низ колоды локации` : T('undefeated', { name: def.name }), 'bad');
+    G.log(T('undefeated', { name: def.name }), 'bad');
     return null;
   };
 
