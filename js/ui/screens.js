@@ -125,12 +125,12 @@
           <div class="prof">Владение: ${(h.prof || []).length ? h.prof.map((k) => esc(ZG.PROF[k].name)).join(', ') : 'нет'}</div>
           <p class="flavor" style="font-size:13px;margin:10px 0 0">${esc(h.bio)}</p></div></div>`;
       }).join('')}</div>
-      <h2 style="margin-top:26px">${T('party_difficulty')}</h2>
-      <div class="diff-row">
-        <div class="diff" data-d="normal"><b>${T('diff_normal')}</b><div class="muted">${T('diff_normal_d')}</div></div>
-        <div class="diff" data-d="hard"><b>${T('diff_hard')}</b><div class="muted">${T('diff_hard_d')}</div></div>
-      </div>
-      <div class="sticky-foot"><span class="muted" id="pcount"></span><button class="btn primary" data-start>${ZG.icon('skull')} ${T('party_start')}</button></div>
+      <div class="sticky-foot">
+        <div class="diff-seg"><span class="muted">${T('party_difficulty')}:</span>
+          <button class="diff" data-d="normal" title="${esc(T('diff_normal_d'))}"><b>${T('diff_normal')}</b></button>
+          <button class="diff" data-d="hard" title="${esc(T('diff_hard_d'))}"><b>${T('diff_hard')}</b></button>
+          <span class="muted diff-note" id="diffnote"></span></div>
+        <span class="muted" id="pcount"></span><button class="btn primary" data-start>${ZG.icon('skull')} ${T('party_start')}</button></div>
     </div></div>`);
     const upd = () => {
       s.querySelectorAll('.hero-card').forEach((c) => {
@@ -138,6 +138,7 @@
         c.querySelector('.check').innerHTML = sel.has(c.dataset.id) ? '✓' : '';
       });
       s.querySelectorAll('.diff').forEach((d) => d.classList.toggle('sel', d.dataset.d === diff));
+      s.querySelector('#diffnote').textContent = T(diff === 'hard' ? 'diff_hard_d' : 'diff_normal_d');
       s.querySelector('[data-start]').disabled = sel.size === 0;
       s.querySelector('#pcount').textContent = sel.size ? `Героев: ${sel.size} · локаций в миссии: ${Math.min(6, sel.size + 2)}` : T('party_need');
     };
@@ -175,7 +176,7 @@
           const avail = i <= camp.progress;
           const cur = avail && !done;
           const actHead = i === 0 ? '<div class="act-head">Акт I · Первые дни</div>' : i === 5 ? '<div class="act-head">Акт II · Другой берег</div>' : '';
-          return actHead + `<div class="mnode ${done ? 'done' : ''} ${cur ? 'current' : ''} ${avail ? '' : 'locked'}">
+          return actHead + `<div class="mnode ${done ? 'done' : ''} ${cur ? 'current' : ''} ${avail ? '' : 'locked'}" style="--lt:${UI.locTint ? UI.locTint(m.icon) : '140, 40, 30'}">
             <div class="num">${m.num}</div><div class="micon">${ZG.art('missions', m.id, m.icon)}</div>
             <h3>${esc(m.name)}</h3><div class="place">${esc(m.place)}</div>
             <span class="badge">${done ? T('map_done') : cur ? 'Текущая' : avail ? '' : T('map_locked')}</span>
@@ -517,6 +518,7 @@
       title: 'Меню',
       text: T('save_note'),
       options: [{ label: 'Вернуться в игру', primary: true }, { label: T('rules') }, { label: T('settings') }, { label: T('quit_mission'), sub: 'Прогресс сохранён на начало текущего хода' }],
+      escIndex: 0, // Esc = «Вернуться в игру»
     });
     if (i === 1) UI.showRules();
     if (i === 2) UI.showSettings();

@@ -1647,7 +1647,7 @@
     m.stats.hordes++;
     UI().renderBoard();
     await UI().flyIn(m.locations.indexOf(loc), size);
-    G.log(here ? `ОРДА! +${size} мертвецов в «${G.ldef(loc).name}»: один сразу нападает на ${G.hname(mh)}${rest.length ? `, ${rest.length} — в колоду локации` : ''}.` : `ОРДА! +${size} мертвецов в «${G.ldef(loc).name}».`, 'bad');
+    G.log(here ? `ОРДА! +${size} мертвецов в «${G.ldef(loc).name}»: один сразу нападает на ${ZG.HEROES[mh.id].acc || G.hname(mh)}${rest.length ? `, ${rest.length} — в колоду локации` : ''}.` : `ОРДА! +${size} мертвецов в «${G.ldef(loc).name}».`, 'bad');
     await UI().horde(loc, size, here ? mh : null);
     if ((G.def().special || {}).henchToHorde) {
       const hid = G.def().henchman;

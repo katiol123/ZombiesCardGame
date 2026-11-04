@@ -105,6 +105,11 @@
       if (panel) { panel.innerHTML = body; host = panel; }
       else { ov = UI.overlay(`<div class="modal panel">${body}</div>`); host = ov; }
       let picked = false;
+      if (o.escIndex != null) {
+        // Esc выбирает указанный вариант (например, «Вернуться в игру»)
+        const onKey = (e) => { if (e.key !== 'Escape' || picked || !host.isConnected) return; document.removeEventListener('keydown', onKey); const b = host.querySelector(`.choice[data-i="${o.escIndex}"]`); if (b) b.click(); };
+        document.addEventListener('keydown', onKey);
+      }
       host.querySelectorAll('.choice').forEach((b) => b.addEventListener('click', async () => {
         if (picked) return;
         picked = true;

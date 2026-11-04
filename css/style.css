@@ -850,3 +850,69 @@ h1, h2, h3 { font-family: var(--font-head); font-weight: 600; letter-spacing: 0.
 .hand .card.blocking::before { content: '⛨'; position: absolute; top: -10px; right: -8px; z-index: 12; width: 24px; height: 24px; border-radius: 50%; background: #3f8f7f; color: #fff; font-weight: 700; display: flex; align-items: center; justify-content: center; font-size: 14px; box-shadow: 0 2px 8px #000; }
 .hand .card.blocking.burning .face { box-shadow: 0 0 0 3px #e0892f, 0 0 26px rgba(224, 137, 47, .65); }
 .hand .card.blocking.burning::before { content: '🔥'; background: #b5651d; font-size: 12px; }
+/* === правки визуального критика, раунд 1 === */
+/* сетка локаций: число колонок от числа локаций */
+@media (min-width: 901px) {
+  .locs { grid-template-columns: repeat(var(--cols, 3), minmax(0, 1fr)); }
+  .locs.two-rows .loc { min-height: 0; }
+  .locs.two-rows .loc .lart { height: 86px; }
+  .locs.two-rows .loc .lart .art-icon { font-size: 46px; }
+}
+/* шапка с артом не сжимается от длинного текста, значок колоды на месте */
+.loc .lart { flex-shrink: 0; }
+.tip.pick-bar { top: 6px; bottom: auto; left: 50%; right: auto; transform: translateX(-50%); display: flex; align-items: center; gap: 12px; padding: 8px 10px 8px 14px; max-width: min(640px, calc(100vw - 24px)); width: auto; }
+.pick-bar .pb-ic { color: var(--amber); font-size: 20px; display: flex; }
+.pick-bar .pb-t { display: flex; flex-direction: column; line-height: 1.2; min-width: 0; }
+.pick-bar .pb-t b { font-family: var(--font-head); font-size: 15px; letter-spacing: .02em; }
+.pick-bar .pb-t small { color: var(--muted); font-size: 12px; }
+/* окно встречи шире — руки не налезают друг на друга; кнопка внизу — сплошная плашка */
+.encounter { width: min(1360px, 100%); }
+.enc-panel { max-width: 900px; }
+.enc-panel .enc-actions { background: rgba(18, 20, 24, .98); border-top: 1px solid var(--edge); margin: 0 -20px; padding: 12px 20px 16px; }
+/* окна урона и сброса лишних карт — шире, без пустого зазора */
+.dmg-modal { width: min(1100px, 95vw); }
+.dmg-modal .hand { padding-top: 30px; }
+/* телефон: место под нижнюю панель считается по её реальной высоте; панель плотная и компактная */
+@media (max-width: 900px) {
+  .board, .board.tray-small { padding-bottom: calc(var(--tray-h, 380px) + 16px); }
+  .tray { background: #0b0c0f; }
+}
+@media (max-width: 520px) {
+  .hero-panel .hp-role { display: none; }
+  .hero-panel .hp-top .avatar { width: 32px; height: 32px; }
+  .pile { padding: 2px 2px; font-size: 9.5px; }
+  .pile b { font-size: 15px; }
+  .hand .card { height: 152px; }
+  .hand { padding-top: 12px; }
+}
+/* выбор отряда: сложность — в закреплённом низу */
+.diff-seg { display: flex; align-items: center; gap: 8px; margin-right: auto; flex-wrap: wrap; }
+.diff-seg .diff { flex: none; min-width: 0; padding: 7px 14px; font: inherit; color: var(--text); }
+.diff-seg .diff b { font-size: 15px; }
+.diff-seg .diff-note { font-size: 12px; max-width: 360px; }
+/* карты в руке: при наведении крупнее — текст правил читается */
+@media (hover: hover) and (pointer: fine) {
+  .hand .card:hover, .mini-hand .card:hover { transform: translateY(-34px) scale(1.32); z-index: 30; transition: transform .18s ease; }
+}
+/* подложка локации в цвет её смысла */
+.loc .lart { background: radial-gradient(ellipse at 50% 115%, rgba(var(--lt, 140, 40, 30), .42), transparent 62%), radial-gradient(circle at 15% 0%, rgba(var(--lt, 140, 40, 30), .12), transparent 50%), linear-gradient(180deg, #23262d, #121317); }
+.loc .lart .art-icon { color: color-mix(in srgb, rgb(var(--lt, 201, 191, 169)) 45%, #d8cfbb); }
+/* карта кампании: узлы миссий в тон их темы, путь по номерам */
+.mnode { background: radial-gradient(ellipse at 50% 0%, rgba(var(--lt, 140, 40, 30), .22), transparent 70%), linear-gradient(180deg, rgba(30,32,38,.92), rgba(14,15,18,.95)); }
+.mnode .micon .art-icon { color: color-mix(in srgb, rgb(var(--lt, 201, 191, 169)) 55%, #d8cfbb); }
+.locs { grid-auto-rows: max-content; }
+/* помощь соседей в окне проверки — компактнее, чтобы помещалась над кнопкой */
+.enc-panel .help-head + .mini-hand .card { zoom: .8; }
+.enc-panel .help-head + .mini-hand { padding-top: 10px; padding-bottom: 8px; }
+/* окно проверки плотнее — помощь соседей помещается над кнопкой */
+.enc-ov { padding-top: 14px; }
+.enc-panel .dc-box { margin: 4px 0 8px; }
+.enc-panel .slots-row { margin-bottom: 8px; }
+.enc-panel .pool-row { margin-bottom: 8px; }
+.enc-panel .mini-hand { padding: 12px 4px 8px; margin-bottom: 2px; }
+.enc-panel .help-head { margin-top: 4px !important; }
+@media (min-width: 901px) {
+  .enc-panel .dc-box { zoom: .82; }
+  .enc-panel .mini-hand .card { zoom: .92; }
+  .enc-panel .help-head + .mini-hand .card { zoom: .74; }
+}

@@ -98,6 +98,17 @@
       <span class="tet"><small>Событие хода ${e.turn}</small><b>${esc(e.name)}</b>${ev && e.id === 'fog' ? '<em>действует до конца хода</em>' : ''}</span></button>`;
   };
 
+  /** Цветовая подложка локации по её смыслу (пока нет рисованного арта) */
+  const LOC_TINT = {
+    hospital: '90, 160, 140', bed: '90, 150, 140', pill: '110, 170, 150', medkit: '110, 170, 150', vial: '120, 170, 90', biohazard: '140, 170, 60',
+    fire: '220, 110, 40', factory: '200, 110, 50', fuel: '210, 140, 50', bolt: '220, 200, 80', hammer: '190, 120, 60',
+    waves: '60, 120, 200', bridge: '80, 120, 180', trees: '70, 130, 80', paw: '120, 110, 70', tent: '150, 130, 90', binoculars: '110, 130, 90',
+    skull: '170, 40, 40', knife: '180, 40, 40', lock: '140, 60, 60', door: '130, 80, 60', flag: '120, 120, 140',
+    car: '130, 120, 110', truck: '150, 130, 70', road: '130, 120, 100', store: '170, 130, 70', warehouse: '120, 110, 100', coffee: '160, 110, 70', trash: '110, 120, 80',
+    building: '110, 110, 150', tower: '150, 70, 70', eye: '120, 80, 150', book: '140, 110, 160',
+  };
+  UI.locTint = (icon) => LOC_TINT[icon] || '140, 40, 30';
+
   UI.renderLocs = function () {
     const m = G().M();
     const active = m.heroes[m.active];
@@ -108,7 +119,7 @@
       const rules = ZG.locationRules(ld).map((t) => `<div class="lrule">${esc(t)}</div>`).join('');
       const pick = UI.pickMode && UI.pickMode.indices.includes(i);
       return `<div class="loc ${l.closed ? 'closed' : ''} ${active && active.loc === i ? 'here' : ''} ${pick ? 'pickable' : ''} ${UI.closingLoc === i ? 'closing' : ''}" data-i="${i}" style="--hc:${active ? ZG.HEROES[active.id].color : ''}">
-        <div class="lart">${ZG.art('locations', ld.id, ld.icon)}
+        <div class="lart" style="--lt:${UI.locTint(ld.icon)}">${ZG.art('locations', ld.id, ld.icon)}
           ${l.closed ? '' : `<div class="lstack" title="Карт в колоде локации">${ZG.icon('cards')} ${l.deck.length}</div>`}</div>
         ${l.closed ? '<div class="planks"><div class="plank p1"></div><div class="plank p2"></div></div>' : ''}
         <div class="lbody">
@@ -123,7 +134,13 @@
         </div>
       </div>`;
     }).join('');
-    document.getElementById('locs').innerHTML = html;
+    const locsEl = document.getElementById('locs');
+    locsEl.innerHTML = html;
+    // раскладка: до 4 локаций — в ряд, 5–6 — по 3 в ряд (3+2 или 3×3), дальше — по 4
+    const n = m.locations.length;
+    const cols = n <= 4 ? n : n <= 6 ? 3 : 4;
+    locsEl.style.setProperty('--cols', cols);
+    locsEl.classList.toggle('two-rows', n > cols);
   };
 
   UI.renderParty = function () {
@@ -206,6 +223,10 @@
     const bd = document.getElementById('board');
     if (bd) bd.classList.toggle('tray-small', !!UI.trayCollapsed);
     UI.fitHand(tray.querySelector('.hand'));
+    // телефон: поле оставляет снизу место ровно под нижнюю панель, чтобы журнал не прятался под ней
+    const setTrayH = () => document.documentElement.style.setProperty('--tray-h', tray.offsetHeight + 'px');
+    setTrayH();
+    if (window.ResizeObserver && UI.trayEl !== tray) { if (UI.trayRO) UI.trayRO.disconnect(); UI.trayEl = tray; UI.trayRO = new ResizeObserver(setTrayH); UI.trayRO.observe(tray); }
   };
 
   /* ---------- Ожидание действия ---------- */
@@ -300,7 +321,8 @@
       }
       UI.pickMode = { indices, resolve };
       UI.renderLocs();
-      const bar = ZG.html(`<div class="tip panel" style="bottom:auto;top:70px;left:50%;right:auto;transform:translateX(-50%)"><h4>${ZG.icon('mappin')} ${esc(title)}</h4><p>Выберите подсвеченную локацию.</p><div class="row"><span></span><button class="btn small ghost">${T('act_cancel')}</button></div></div>`);
+      // компактная плашка поверх верхней панели — не закрывает подсвеченные локации
+      const bar = ZG.html(`<div class="tip panel pick-bar"><span class="pb-ic">${ZG.icon('mappin')}</span><span class="pb-t"><b>${esc(title)}</b><small>Выберите подсвеченную локацию</small></span><button class="btn small ghost">${T('act_cancel')}</button></div>`);
       document.body.appendChild(bar);
       const prev = UI.pickMode;
       const cleanup = () => bar.remove();
@@ -741,7 +763,7 @@
     ZG.FX.shake();
     ZG.Audio.sfx('braam');
     setTimeout(() => ZG.Audio.sfx('growl'), 400);
-    await UI.banner(T('horde'), attacked ? `Один мертвец нападает на ${UI.shortName(attacked.id)} прямо сейчас${n > 1 ? `, ещё ${n - 1} — в колоду локации` : ''}` : T('horde_sub', { n, loc: ZG.LOCATIONS[loc.id].name }), 'horde bad');
+    await UI.banner(T('horde'), attacked ? `Один мертвец нападает на ${ZG.HEROES[attacked.id].acc || UI.shortName(attacked.id)} прямо сейчас${n > 1 ? `, ещё ${n - 1} — в колоду локации` : ''}` : T('horde_sub', { n, loc: ZG.LOCATIONS[loc.id].name }), 'horde bad');
   };
 
   UI.barricade = async function (loc) {

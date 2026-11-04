@@ -171,7 +171,7 @@
     infected: '{name}: заражение',
     turned: '{name}: обращение…',
     died: '{name}: гибель',
-    barricade_done: '«{loc}» заколочена',
+    barricade_done: 'Локация «{loc}» заколочена',
     boss_flee: '{boss} отступает в «{loc}»',
     boss_hiding: 'Здесь притаилась Угроза!',
     boss_cornered: 'Угроза загнана в угол!',
