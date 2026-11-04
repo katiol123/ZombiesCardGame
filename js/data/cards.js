@@ -831,7 +831,7 @@
   U('m8', [
     { id: 'bearz', type: 'enemy', name: 'Мёртвый медведь', icon: 'paw', dc: 12, bite: true, dmgAdd: 1, weak: { 'Огонь': 'd6' }, finishCheck: { skills: ['survival', 'end'], dc: 8 }, pierceLight: true,
       text: 'Живучий: после победы проверка Выживание / Выдержка 8, чтобы добить; при провале он уходит обратно в колоду локации. Пробивает лёгкую броню: из брони против его урона помогает только тяжёлая.', flavor: 'Сколько он спал? Неважно. Проснулся голодным.' },
-    { id: 'counselorz', type: 'enemy', name: 'Вожатый', icon: 'skull', dc: 9, bite: true, inflict: 'terror', flavor: 'Свисток на шее. Он всё ещё зовёт детей.' },
+    { id: 'counselorz', type: 'enemy', name: 'Вожатый', icon: 'skull', dc: 9, bite: true, inflict: 'terror', inflictCheck: { skills: ['will'], dc: 8 }, flavor: 'Свисток на шее. Он всё ещё зовёт детей.' },
   ]);
   U('m9', [
     { id: 'studentz', type: 'enemy', name: 'Старшеклассник', icon: 'skull', dc: 8, bite: true, inflict: 'decay', flavor: 'Куртка команды. Номер 23. Выпускной был через месяц.' },
