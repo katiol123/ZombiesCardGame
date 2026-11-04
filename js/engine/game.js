@@ -1591,7 +1591,7 @@
         await UI().banner('Нечем заколотить', `Нужно сбросить карту типа «${ZG.T('type_' + t)}»`, 'warn');
         return null;
       }
-      const us = await UI().pickCards(mh, 1, 'Цена баррикады', `Сбросьте карту типа «${ZG.T('type_' + t)}», чтобы попытаться заколотить.`, false, (c) => ZG.card(c.id).type === t);
+      const us = await UI().pickCards(mh, 1, 'Цена попытки', `Сбросьте карту типа «${ZG.T('type_' + t)}», чтобы попытаться заколотить.`, false, (c) => ZG.card(c.id).type === t);
       us.forEach((u) => G.moveByMode(mh, u, 'discard'));
     }
     let res = await G.doCheck(mh, G.closeCheck(loc));
@@ -1678,7 +1678,7 @@
     }
     if (lines.length) {
       G.log(`Награда за «${G.ldef(loc).name}»: ${lines.join('; ')}.`, 'loot');
-      await UI().banner('Награда за баррикаду', lines.join(' · '), 'good');
+      await UI().banner('Награда: заколочено', lines.join(' · '), 'good');
       UI().renderBoard();
     }
   };

@@ -844,3 +844,9 @@ h1, h2, h3 { font-family: var(--font-head); font-weight: 600; letter-spacing: 0.
 @media (min-width: 901px) and (max-width: 1100px) {
   .tray { grid-template-columns: auto 1fr 200px; }
 }
+/* окно урона: карты, выбранные для блока, приподняты и подсвечены (как карты для сброса, но цветом защиты) */
+.hand .card.blocking { transform: translateY(-20px); z-index: 4; }
+.hand .card.blocking .face { box-shadow: 0 0 0 3px #5fb3a1, 0 0 26px rgba(95, 179, 161, .6); }
+.hand .card.blocking::before { content: '⛨'; position: absolute; top: -10px; right: -8px; z-index: 12; width: 24px; height: 24px; border-radius: 50%; background: #3f8f7f; color: #fff; font-weight: 700; display: flex; align-items: center; justify-content: center; font-size: 14px; box-shadow: 0 2px 8px #000; }
+.hand .card.blocking.burning .face { box-shadow: 0 0 0 3px #e0892f, 0 0 26px rgba(224, 137, 47, .65); }
+.hand .card.blocking.burning::before { content: '🔥'; background: #b5651d; font-size: 12px; }

@@ -97,7 +97,7 @@
     check_combat: 'Бой',
     check_acquire: 'Поиск',
     check_event: 'Препятствие',
-    check_close: 'Баррикада',
+    check_close: 'Заколотить',
     check_evade: 'Уклонение',
     dc: 'Сложность',
     roll: 'Бросить кубики',

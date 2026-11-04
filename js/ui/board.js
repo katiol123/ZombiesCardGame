@@ -677,8 +677,12 @@
           const used = usedU.has(c.u);
           const burnArmor = red.length && G().missingProf(mh, c.id).includes('heavyarmor');
           const inf = c.id === 'infection';
-          const badge = inf ? 'нельзя' : used ? 'блок' : sel.has(c.u) ? 'в сброс' : red.length ? (burnArmor ? 'Блок · сгорит' : 'Блок') : '';
-          return UI.cardHTML(c, { u: c.u, cls: `${used ? 'inpool' : ''} ${red.length ? 'playable' : ''} ${sel.has(c.u) ? 'selected' : ''} ${inf ? 'disabled' : ''}`, badge });
+          // выбранный блок: что станет с картой (останется / под колоду / в сброс / сгорит)
+          const up = used ? plays.find((x) => x.u === c.u) : null;
+          const upMode = up ? G().effMode(mh, c.id, d.plays[up.pi]) : '';
+          const UPL = { reveal: 'блок · останется', recharge: 'блок · под колоду', discard: 'блок · в сброс', burn: 'блок · сгорит', technique: 'блок · перезарядка' };
+          const badge = inf ? 'нельзя' : used ? (UPL[upMode] || 'блок') : sel.has(c.u) ? 'в сброс' : red.length ? (burnArmor ? 'Блок · сгорит' : 'Блок') : '';
+          return UI.cardHTML(c, { u: c.u, cls: `${used ? 'blocking' : ''} ${used && upMode === 'burn' ? 'burning' : ''} ${red.length ? 'playable' : ''} ${sel.has(c.u) ? 'selected' : ''} ${inf ? 'disabled' : ''}`, badge });
         }).join('');
         const reduced = plays.length ? `<div class="muted">Защита: ${plays.map((p) => esc(ZG.card(p.id).name)).join(', ')}</div>` : '';
         panel.innerHTML = `<div class="dmg-head"><div class="dmg-num">−${n}</div><div><h2>${T('dmg_title')}: ${esc(hd.name.split(' ')[0])}</h2><div class="mtext" style="margin:0">${opts.source ? esc(opts.source) + '. ' : ''}${opts.dmgType ? `<span style="color:var(--amber)">Тип урона: ${ZG.DMG_TYPES[opts.dmgType]}.</span> ` : ''}${opts.noReduce ? '<span style="color:var(--blood2)">Уязвимость: этот урон нельзя уменьшить.</span> ' : ''}${opts.pierceLight ? '<span style="color:var(--blood2)">Пробивает лёгкую броню: из брони помогает только тяжёлая.</span> ' : ''}${opts.bite ? '<span style="color:var(--toxic)">Укус: если урон пройдёт — Инфекция.</span> ' : ''}</div>${reduced}</div></div>

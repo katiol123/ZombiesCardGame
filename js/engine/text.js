@@ -9,7 +9,7 @@
     combat: 'боевой проверки',
     acquire: 'проверки поиска',
     event: 'проверки препятствия',
-    close: 'проверки баррикады',
+    close: 'попытки заколотить',
     evade: 'уклонения',
   };
   const TYPE_GEN = { weapon: 'Оружие', item: 'Снаряжение', consumable: 'Расходник', ally: 'Союзника', resolve: 'Решимость', technique: 'Приём' };
@@ -159,7 +159,7 @@
     if (r.endTurn) out.push(`В конце хода здесь: ${r.endTurn.skills.map(ZG.skillName).join(' / ')} ${r.endTurn.dc}, провал — ${fxs(r.endTurn.fail)}.`);
     if (r.closeCost) out.push(`Чтобы заколотить, сбросьте ${TYPE_GEN[r.closeCost] || r.closeCost}.`);
     if (r.closeTwice) out.push('Заколотить: нужны 2 успешные проверки подряд.');
-    if (r.closeFail) out.push(`Провал баррикады: ${fxs(r.closeFail)}.`);
+    if (r.closeFail) out.push(`Провал попытки заколотить: ${fxs(r.closeFail)}.`);
     return out;
   };
 
