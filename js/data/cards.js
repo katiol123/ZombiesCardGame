@@ -839,7 +839,8 @@
   ]);
   U('m10', [
     { id: 'subject', type: 'enemy', name: 'Подопытный', icon: 'biohazard', dc: 11, bite: true, dmgType: 'acid', inflict: 'poison', weak: { 'Электричество': 'd6' }, flavor: 'Бирка: «Серия 7-Б, отказ».' },
-    { id: 'liquidator', type: 'enemy', living: true, name: 'Ликвидатор', icon: 'raider', dc: 11, dmgType: 'electric', inflict: 'numb', flavor: 'Нанят зачищать свидетелей. Вы — свидетели.' },
+    { id: 'liquidator', type: 'enemy', living: true, name: 'Ликвидатор', icon: 'raider', dc: 11, dmgType: 'electric', inflict: 'numb', purgeDiscard: 2,
+      text: 'Человек. Уничтожить улики: если вы не победили его, 2 случайные карты из вашего сброса захоронены до конца миссии.', flavor: 'Нанят зачищать свидетелей. Вы — свидетели.' },
   ]);
 
   /* ============================== ДОПОЛНЕНИЯ К КАРТАМ ==============================

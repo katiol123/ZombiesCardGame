@@ -1008,6 +1008,15 @@
       G.log(`${def.name} отбирает «${ZG.card(c.id).name}».`, 'bad');
       await ui.banner('Ограблен!', `${def.name} забирает «${ZG.card(c.id).name}»`, 'bad');
     }
+    if (def.purgeDiscard && !mh.dead && mh.discard.length) {
+      // «Уничтожить улики»: случайные карты из сброса захоронены до конца миссии
+      const gone = [];
+      for (let i = 0; i < def.purgeDiscard && mh.discard.length; i++) gone.push(mh.discard.splice(R.int(mh.discard.length), 1)[0]);
+      (mh.buried = mh.buried || []).push(...gone);
+      const names = gone.map((c) => `«${ZG.card(c.id).name}»`).join(', ');
+      G.log(`${def.name} уничтожает улики — ${G.hname(mh)}: из сброса до конца миссии захоронены ${names}.`, 'bad');
+      await ui.banner('Улики уничтожены', `До конца миссии захоронены: ${names}`, 'bad');
+    }
     if (def.detain && !mh.dead) {
       await G.addCond(mh, 'detained');
       m.ts.forceEnd = true;
