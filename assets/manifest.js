@@ -104,6 +104,7 @@ window.ZG_ART = {
     prisoner: 'assets/cards/prisoner.webp',
     quarantine: 'assets/cards/quarantine.webp',
     quarantined: 'assets/cards/quarantined.webp',
+    radiohost: 'assets/cards/radiohost.webp',
     rage: 'assets/cards/rage.webp',
     raider: 'assets/cards/raider.webp',
     rex: 'assets/cards/rex.webp',
