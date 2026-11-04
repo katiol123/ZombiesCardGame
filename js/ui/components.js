@@ -22,7 +22,7 @@
     else if (d.type === 'infection') corner = '☣';
     else if (d.tier === 9) corner = '★';
     else if (d.tier != null && d.type !== 'event') corner = ROMAN[d.tier] || '';
-    const art = d.heroArt ? ZG.art('heroes', d.heroArt, ZG.HEROES[d.heroArt].icon) : ZG.art('cards', d.id, d.icon || 'alert');
+    const art = d.heroArt ? ZG.art('heroes', d.heroArt, ZG.HEROES[d.heroArt].icon, 'hero-' + d.heroArt) : ZG.art('cards', d.id, d.icon || 'alert');
     const traits = (d.traits || []).filter((t) => t && t !== ZG.cardTypeLabel(d));
     const typeLine = ZG.cardTypeLabel(d) + (traits.length ? ' · ' + traits.join(', ') : '');
     const check = ZG.cardCheckLine(d);
@@ -64,7 +64,8 @@
 
   UI.avatar = function (heroId, cls) {
     const h = ZG.HEROES[heroId];
-    return `<div class="avatar ${cls || ''}" style="--hc:${h.color}" title="${esc(h.name)}">${ZG.art('heroes', heroId, h.icon)}</div>`;
+    const av = window.ZG_ART && window.ZG_ART.avatars && window.ZG_ART.avatars[heroId] ? 'avatars' : 'heroes';
+    return `<div class="avatar ${cls || ''}" style="--hc:${h.color}" title="${esc(h.name)}">${ZG.art(av, heroId, h.icon)}</div>`;
   };
 
   UI.statsHTML = function (ph) {

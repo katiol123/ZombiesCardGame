@@ -189,7 +189,11 @@ h1, h2, h3 { font-family: var(--font-head); font-weight: 600; letter-spacing: 0.
 .hero-card.sel { border-color: var(--hc); box-shadow: 0 0 0 2px var(--hc), 0 0 40px color-mix(in srgb, var(--hc) 35%, transparent); }
 .hero-card .portrait { height: 150px; position: relative; display: flex; align-items: center; justify-content: center; background: radial-gradient(circle at 50% 35%, color-mix(in srgb, var(--hc) 45%, #222) 0%, #121317 75%); }
 .hero-card .portrait .art-icon { font-size: 76px; color: color-mix(in srgb, var(--hc) 70%, #fff); filter: drop-shadow(0 6px 16px rgba(0,0,0,.8)); }
-.hero-card .portrait img { width: 100%; height: 100%; object-fit: cover; }
+.hero-card .portrait img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 25%; }
+.hero-card[data-id="grom"] .portrait img { object-position: 50% 38%; }
+.hero-card[data-id="palych"] .portrait img { object-position: 50% 45%; }
+.hero-card[data-id="ten"] .portrait img { object-position: 50% 30%; }
+.hero-card[data-id="marina"] .portrait img { object-position: 50% 26%; }
 .hero-card .check { position: absolute; top: 12px; right: 12px; width: 30px; height: 30px; border-radius: 50%; border: 2px solid #777; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,.5); transition: all .25s; }
 .hero-card.sel .check { background: var(--hc); border-color: #fff; transform: scale(1.1); }
 .hero-card .body { padding: 14px 16px 18px; flex: 1; display: flex; flex-direction: column; }
@@ -821,3 +825,8 @@ h1, h2, h3 { font-family: var(--font-head); font-weight: 600; letter-spacing: 0.
 .card.clipped .ctext { -webkit-mask-image: linear-gradient(180deg, #000 82%, transparent); mask-image: linear-gradient(180deg, #000 82%, transparent); }
 .dmg-modal .card.disabled, .enc-panel .card.disabled { filter: grayscale(.8) brightness(.6); cursor: not-allowed; }
 .choice-list.done .choice:not(.chosen) { opacity: .35; } .choice.chosen { border-color: var(--amber); }
+.art-img.hero-marina { object-position: 50% 26%; }
+.art-img.hero-grom { object-position: 50% 38%; }
+.art-img.hero-ten { object-position: 50% 30%; }
+.art-img.hero-palych { object-position: 50% 45%; }
+.card .cart img.art-img[class*="hero-"] { filter: sepia(.35) hue-rotate(55deg) saturate(.65) brightness(.78) contrast(1.15); } /* обращённый герой: мертвенный оттенок */

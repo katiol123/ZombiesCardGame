@@ -3,7 +3,7 @@
  *  Сейчас все карты используют векторные иконки-заглушки.
  *  Чтобы поставить свою картинку:
  *   1. Положите файл в assets/cards/, assets/heroes/, assets/locations/ или assets/missions/
- *      (подойдут .png .jpg .webp; пропорции: карты 2:1 (800×400), герои 1:1 (512×512),
+ *      (подойдут .png .jpg .webp; пропорции: карты 2:1 (800×400), герои 1:1 (768×768; жетон — крупный план лица 256×256 в assets/avatars/),
  *      локации 2:1 (800×400), миссии 1:1 (256×256)). Полный список имён — assets/ART_LIST.md
  *   2. Впишите путь ниже по id карты/героя/локации (id смотрите в js/data/*.js).
  *  Пример:
@@ -114,7 +114,19 @@ window.ZG_ART = {
     thug: 'assets/cards/thug.webp',
     wolfz: 'assets/cards/wolfz.webp',
   },
-  heroes: {},
+  heroes: {
+    marina: 'assets/heroes/marina.webp',
+    grom: 'assets/heroes/grom.webp',
+    ten: 'assets/heroes/ten.webp',
+    palych: 'assets/heroes/palych.webp',
+  },
+  // круглые жетоны героев: крупный план лица (если нет — берётся портрет из heroes)
+  avatars: {
+    marina: 'assets/avatars/marina.webp',
+    grom: 'assets/avatars/grom.webp',
+    ten: 'assets/avatars/ten.webp',
+    palych: 'assets/avatars/palych.webp',
+  },
   locations: {},
   missions: {},
 };
