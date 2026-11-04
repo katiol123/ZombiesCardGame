@@ -51,6 +51,7 @@ window.ZG_ART = {
     echo: 'assets/cards/echo.webp',
     engineer: 'assets/cards/engineer.webp',
     execute: 'assets/cards/execute.webp',
+    falsetrail: 'assets/cards/falsetrail.webp',
     fieldmedic: 'assets/cards/fieldmedic.webp',
     fire: 'assets/cards/fire.webp',
     focus: 'assets/cards/focus.webp',
