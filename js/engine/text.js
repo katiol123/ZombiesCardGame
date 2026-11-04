@@ -51,7 +51,7 @@
       s += ':';
       const b = bonusText(p);
       if (b) s += ' ' + b;
-      if (p.noiseMod) s += ` шум ${p.noiseMod > 0 ? '+' : '−'}${Math.abs(p.noiseMod)}`;
+      if (p.noiseMod) s += (b ? ', шум ' : ' шум ') + `${p.noiseMod > 0 ? '+' : '−'}${Math.abs(p.noiseMod)}`;
       s += '.';
       if (p.noise) s += ` Шум +${p.noise}.`;
       if (p.rechargeOnSuccess) s += ' При успехе перезарядите вместо сброса.';
