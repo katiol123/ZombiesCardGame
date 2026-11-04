@@ -103,7 +103,7 @@
       const tt = [];
       if (def.weak) Object.keys(def.weak).forEach((t) => tt.push(`уязвим: ${t} +${ZG.diceStr([def.weak[t]])}`));
       if (def.resist) Object.keys(def.resist).forEach((t) => tt.push(`стойкий: ${t} −${def.resist[t]}`));
-      if (def.immune) def.immune.forEach((t) => tt.push(`иммунитет: ${t}`));
+      if (def.immune && def.immune.length) tt.push(`иммунитет: ${def.immune.join(', ')}`);
       if (tt.length) { const x = tt.join(' · '); lines.push(x[0].toUpperCase() + x.slice(1) + '.'); }
     }
     return lines;

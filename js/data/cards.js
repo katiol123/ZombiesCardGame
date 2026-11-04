@@ -878,7 +878,7 @@
     blindminer: { weak: { 'Тихое': 'd6' } },
     soldierz: { weak: { 'Огонь': 'd4' } },
     burke: { weak: { 'Огнестрел': 'd6' } },
-    hazmat: { immune: ['Огонь'] },
+    hazmat: { immune: ['Огонь', 'Кислота'] },
     alpha: { resist: { 'Тяжёлое': 3 }, weak: { 'Огонь': 'd6' } },
     patientzero: { immune: ['Огонь'], resist: { 'Ближнее': 2 }, weak: { 'Электричество': 'd8' } },
   };
