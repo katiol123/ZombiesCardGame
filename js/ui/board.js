@@ -743,13 +743,17 @@
   UI.barricade = async function (loc) {
     const i = G().M().locations.indexOf(loc);
     UI.closingLoc = i;
-    await peek(true); // окно встречи не должно закрывать заколачивание
+    // окно встречи не должно закрывать заколачивание
+    const encOv = document.querySelector('.enc-ov');
+    if (encOv) encOv.classList.add('peek');
+    UI.renderBoard();
+    if (encOv) await ZG.sleep(250);
     const el = document.querySelector(`.loc[data-i="${i}"]`);
     if (el) ZG.FX.burstAt(el, 'spark', 40);
     ZG.Audio.synth('hammer');
     await UI.banner(T('barricaded'), T('barricade_done', { loc: ZG.LOCATIONS[loc.id].name }), 'good');
     UI.closingLoc = null;
-    await peek(false);
+    if (encOv) encOv.classList.remove('peek');
   };
 
   UI.fxNoise = function (loc) {
