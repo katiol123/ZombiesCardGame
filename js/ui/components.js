@@ -170,6 +170,7 @@
         else if (n === 1) { sel.clear(); sel.add(u); }
         upd();
       }));
+      if (UI.fitHand) requestAnimationFrame(() => UI.fitHand(ov.querySelector('.hand')));
       ov.querySelector('[data-ok]').addEventListener('click', async () => { await UI.closeOverlay(ov); resolve([...sel]); });
       const x = ov.querySelector('[data-x]');
       if (x) x.addEventListener('click', async () => { await UI.closeOverlay(ov); resolve([]); });
@@ -215,14 +216,15 @@
     henchman: ['Вожак', 'Победив вожака, можно сразу попытаться <b>заколотить</b> локацию. Заколоченная локация даёт свою награду и отрезает Угрозе путь.'],
     boss: ['Угроза!', 'Перед боем герои в других локациях могут перекрыть пути. Победите её — и её локация заколотится сама (если там нет других Угроз). Если все открытые локации закрыты или перекрыты — победа. Иначе Угроза скроется: в каждую неперекрытую локацию уйдёт по карте — сама Угроза или Ложный след.'],
     close: ['Баррикада', 'Локацию можно заколотить, если её колода пуста или в ней повержен вожак (одна попытка за ход). Если здесь притаилась Угроза, локация останется открытой, но всё остальное из неё будет вычищено — в колоде останется только Угроза.'],
-    night: ['Ночь', 'Ночью мертвецы опаснее (+2 к сложности боя), но находки искать проще. Фонари и молитвы ночью сильнее.'],
+    night: ['Ночь', 'Ночью мертвецы опаснее (+{n} к сложности боя), но находки искать проще. Фонари и молитвы ночью сильнее.'],
   };
 
   UI.tip = function (key) {
     const S = ZG.Save.current;
     if (!S || !ZG.Settings.data.tips || S.campaign.tips[key] || !UI.TIPS[key]) return Promise.resolve();
     S.campaign.tips[key] = true;
-    const [h, p] = UI.TIPS[key];
+    const h = UI.TIPS[key][0];
+    const p = UI.TIPS[key][1].replace('{n}', ZG.Game.M && ZG.Game.M() ? ZG.Game.nightBonus() : 2);
     return new Promise((resolve) => {
       const el = ZG.html(`<div class="tip panel"><h4>${ZG.icon('book')} ${esc(h)}</h4><p>${p}</p><div class="row"><label><input type="checkbox" data-off> Больше не показывать подсказки</label><button class="btn small primary">${T('ok')}</button></div></div>`);
       document.body.appendChild(el);

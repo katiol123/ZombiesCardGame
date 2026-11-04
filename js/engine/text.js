@@ -129,7 +129,7 @@
     }
     const r = ldef.rules || {};
     const fxs = (list) => (list || []).map((f) => {
-      if (f.damage) return `${f.damage === 'd4' ? '1к4' : f.damage} урона${f.dmgType ? ' (' + ZG.DMG_TYPES[f.dmgType] + ')' : ''}`;
+      if (f.damage) return `${f.damage === 'd4' ? '1d4' : f.damage} урона${f.dmgType ? ' (' + ZG.DMG_TYPES[f.dmgType] + ')' : ''}`;
       if (f.noise) return `шум +${f.noise}`;
       if (f.cond) return `«${ZG.CONDS[f.cond].name}»`;
       if (f.summon) return 'приходит мертвец';

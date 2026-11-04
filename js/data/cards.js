@@ -438,7 +438,7 @@
       text: 'Провал: шум локации +3.', flavor: 'Кто-то здесь уже держал оборону.' },
     { id: 'glass', type: 'event', name: 'Битое стекло', tier: 0, icon: 'alert',
       check: { skills: ['dex', 'stealth'], dc: 5 }, fail: [{ damage: 'd4' }],
-      text: 'Провал: 1к4 урона.', flavor: 'Хруст под ногами слышно в соседнем квартале.' },
+      text: 'Провал: 1d4 урона.', flavor: 'Хруст под ногами слышно в соседнем квартале.' },
     { id: 'locker', type: 'event', name: 'Запертый шкафчик', tier: 0, icon: 'lock',
       check: { skills: ['tech', 'str'], dc: 7 }, success: [{ gain: 'item' }],
       text: 'Успех: найдите случайное Снаряжение. Провал: ничего не происходит.', flavor: 'Табличка: «Д-р Хейл. Личное».' },
@@ -452,7 +452,7 @@
         effects: [{ banishType: 'resolve' }, { clock: 1 }] },
     ], text: 'Выбор: помочь или пройти мимо.', flavor: '«Пожалуйста! Они в подвале! Пожалуйста!»' },
     { id: 'woundedstranger', type: 'event', name: 'Раненый незнакомец', tier: 0, icon: 'user', choice: [
-      { label: 'Взять с собой', sub: 'Получите союзника «Незнакомец». Бросьте к6: на 1–2 он укушен и обращается прямо сейчас.',
+      { label: 'Взять с собой', sub: 'Получите союзника «Незнакомец». Бросьте d6: на 1–2 он укушен и обращается прямо сейчас.',
         effects: [{ stranger: true }] },
       { label: 'Забрать рюкзак', sub: 'Два случайных Расходника. Изгоните случайную Решимость из своей колоды.',
         effects: [{ gain: 'consumable' }, { gain: 'consumable' }, { banishType: 'resolve' }] },
@@ -468,13 +468,13 @@
       text: 'Успех: найдите Решимость. Провал: шок — сбросьте 2 случайные карты из руки.', flavor: 'Мобиль над кроваткой всё ещё крутится.' },
     { id: 'stash', type: 'event', name: 'Тайник выживальщика', tier: 0, icon: 'backpack',
       check: { skills: ['wit', 'survival'], dc: 6 }, success: [{ gain: 'weapon' }], fail: [{ damage: 'd4' }],
-      text: 'Успех: случайное Оружие. Провал: ловушка — 1к4 урона.', flavor: 'Крестик на карте. Растяжка у двери.' },
+      text: 'Успех: случайное Оружие. Провал: ловушка — 1d4 урона.', flavor: 'Крестик на карте. Растяжка у двери.' },
     { id: 'silence', type: 'event', name: 'Обманчивая тишина', tier: 0, icon: 'eye',
       check: { skills: ['stealth', 'wit'], dc: 6 }, fail: [{ summon: true }],
       text: 'Провал: встреча с мертвецом из темноты.', flavor: 'Слишком тихо. Так не бывает.' },
     { id: 'tripwire', type: 'event', name: 'Мина-растяжка', tier: 1, icon: 'bomb',
       check: { skills: ['dex', 'tech'], dc: 8 }, fail: [{ damage: 'd6' }, { noise: 2 }],
-      text: 'Провал: 1к6 урона, шум +2.', flavor: 'Работа банды Кейна.' },
+      text: 'Провал: 1d6 урона, шум +2.', flavor: 'Работа банды Кейна.' },
     { id: 'fire', type: 'event', name: 'Пожар', tier: 1, icon: 'fire',
       check: { skills: ['end', 'survival'], dc: 8 }, fail: [{ damage: 2 }, { noise: 2 }],
       text: 'Провал: 2 урона, шум +2.', flavor: 'Огонь ест дом за домом. Город горит уже неделю.' },
@@ -889,7 +889,7 @@
   });
   // состояния от препятствий
   const evFail = { glass: [{ damage: 1 }, { cond: 'poison' }], smokefill: [{ damage: 1, dmgType: 'fire' }, { cond: 'vuln' }], nursery: [{ cond: 'decay' }, { shock: 1 }], tripwire: [{ damage: 'd4', dmgType: 'fire' }, { cond: 'numb' }, { noise: 2 }], fire: [{ damage: 2, dmgType: 'fire' }, { cond: 'vuln' }, { noise: 2 }], rubble: [{ clock: 1 }, { cond: 'numb' }], quarantine: [{ infect: 1 }, { cond: 'poison' }], silence: [{ summon: true }, { cond: 'terror' }] };
-  const evText = { glass: 'Провал: 1 урон и Отравление (грязная рана).', smokefill: 'Провал: 1 урон огнём и Уязвимость.', nursery: 'Успех: найдите Решимость. Провал: Распад, сбросьте 1 случайную карту из руки.', tripwire: 'Провал: 1к4 урона огнём, Онемение, шум +2.', fire: 'Провал: 2 урона огнём, Уязвимость, шум +2.', rubble: 'Провал: сбросьте карту Часов и получите Онемение.', quarantine: 'Успех: случайный Расходник. Провал: Инфекция и Отравление.', silence: 'Провал: встреча с мертвецом из темноты и Ночной ужас.' };
+  const evText = { glass: 'Провал: 1 урон и Отравление (грязная рана).', smokefill: 'Провал: 1 урон огнём и Уязвимость.', nursery: 'Успех: найдите Решимость. Провал: Распад, сбросьте 1 случайную карту из руки.', tripwire: 'Провал: 1d4 урона огнём, Онемение, шум +2.', fire: 'Провал: 2 урона огнём, Уязвимость, шум +2.', rubble: 'Провал: сбросьте карту Часов и получите Онемение.', quarantine: 'Успех: случайный Расходник. Провал: Инфекция и Отравление.', silence: 'Провал: встреча с мертвецом из темноты и Ночной ужас.' };
   Object.keys(evFail).forEach((id) => { if (C[id]) { C[id].fail = evFail[id]; C[id].text = evText[id]; } });
   // консервы снимают истощение, бинты — кровотечение
   if (C.cannedfood) C.cannedfood.plays[0].clearCond = 'doom';

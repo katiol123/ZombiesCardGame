@@ -37,7 +37,7 @@
     const i = Math.max(0, Math.min(ZG.DIE_ORDER.length - 1, ZG.DIE_ORDER.indexOf(d) + n));
     return ZG.DIE_ORDER[i];
   };
-  /** Строка кубиков: ['d6','d6'], 2 → «2к6+2» */
+  /** Строка кубиков: ['d6','d6'], 2 → «2d6+2» */
   ZG.diceStr = (dice, bonus) => {
     const cnt = {};
     (dice || []).forEach((d) => (cnt[d] = (cnt[d] || 0) + 1));

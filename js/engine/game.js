@@ -545,8 +545,8 @@
       const gone = mh.discard.filter((c) => TYPES[r].includes(ZG.card(c.id).type));
       mh.discard = mh.discard.filter((c) => !gone.includes(c));
       (mh.buried = mh.buried || []).push(...gone);
-      G.log(`Распад (к4 = ${r}: ${LBL[r]}): захоронено ${gone.length}.`, gone.length ? 'bad' : '');
-      if (gone.length) await UI().banner(`Распад: к4 = ${r}`, `${LBL[r]} из сброса захоронены: ${gone.length}`, 'bad');
+      G.log(`Распад (d4 = ${r}: ${LBL[r]}): захоронено ${gone.length}.`, gone.length ? 'bad' : '');
+      if (gone.length) await UI().banner(`Распад: d4 = ${r}`, `${LBL[r]} из сброса захоронены: ${gone.length}`, 'bad');
     }
     ['vuln', 'doom'].forEach((k) => { if (cs[k]) { cs[k]--; if (!cs[k]) { delete cs[k]; G.log(`${G.hname(mh)}: «${ZG.CONDS[k].name}» проходит.`, 'good'); } } });
     const hs = G.handSizeMh(mh);
@@ -1099,14 +1099,14 @@
         const c = G.inst('stranger', { l: 1 });
         const roll = ZG.rollDie('d6');
         if (roll <= 2) {
-          G.log(`Незнакомец был укушен (к6 = ${roll}) и обращается!`, 'bad');
-          await ui.banner(`к6 = ${roll}`, 'Он был укушен…', 'bad');
+          G.log(`Незнакомец был укушен (d6 = ${roll}) и обращается!`, 'bad');
+          await ui.banner(`d6 = ${roll}`, 'Он был укушен…', 'bad');
           const r = await G.encounter(mh, G.inst('strangerz'), loc, { noEvade: true });
           if (r === 'win') return r;
         } else {
           mh.hand.push(c);
-          G.log(`Незнакомец присоединяется (к6 = ${roll}).`, 'loot');
-          await ui.gain(c, `к6 = ${roll}: он чист`);
+          G.log(`Незнакомец присоединяется (d6 = ${roll}).`, 'loot');
+          await ui.gain(c, `d6 = ${roll}: он чист`);
         }
       }
     }
@@ -1198,7 +1198,7 @@
       const top = Math.max(...dice.map((x) => ZG.sides(x.d)));
       if (top > 4) {
         dice.forEach((x) => { if (ZG.sides(x.d) === top) x.d = ZG.dieStep(x.d, -1); });
-        parts.push({ label: `Онемение: к${top} → к${top - 2}`, v: 0 });
+        parts.push({ label: `Онемение: d${top} → d${top - 2}`, v: 0 });
       }
     }
     noise = Math.max(0, noise + noiseMod);
