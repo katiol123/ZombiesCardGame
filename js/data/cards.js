@@ -802,17 +802,17 @@
     { id: 'coldbody', type: 'enemy', name: 'Тело из холодильника', icon: 'skull', dc: 6, bite: true, dmgType: 'cold', inflict: 'numb', weak: { 'Огонь': 'd6' }, flavor: 'Иней на ресницах. Холодные пальцы.' },
   ]);
   U('m2', [
-    { id: 'shopper', type: 'enemy', name: 'Покупательница', icon: 'skull', dc: 5, bite: true, theft: true, flavor: 'Всё ещё вцепилась в сумочку. И в вашу.' },
+    { id: 'shopper', type: 'enemy', name: 'Покупательница', icon: 'skull', dc: 5, bite: true, flavor: 'Всё ещё вцепилась в сумочку. Чек — на триста долларов.' },
     { id: 'stockboy', type: 'enemy', name: 'Грузчик', icon: 'skull', dc: 8, bite: true, dmgAdd: 1, resist: { 'Тихое': 2 }, flavor: 'Бейдж «Работник месяца».' },
   ]);
   U('m3', [
-    { id: 'linesman', type: 'enemy', name: 'Монтёр', icon: 'bolt', dc: 7, bite: true, dmgType: 'electric', before: { damage: 1 }, flavor: 'Вцепился в провод под напряжением. Отпускать не собирается.' },
+    { id: 'linesman', type: 'enemy', name: 'Монтёр', icon: 'bolt', dc: 7, bite: true, dmgType: 'electric', flavor: 'Вцепился в провод под напряжением. Отпускать не собирается.' },
     { id: 'hiker', type: 'enemy', name: 'Турист', icon: 'skull', dc: 6, bite: true, inflict: 'terror', flavor: 'Рюкзак «38 литров». Компас всё ещё на шее.' },
     { id: 'radiohost', type: 'enemy', name: 'Ночной ведущий', icon: 'radio', dc: 8, bite: true, dmgType: 'electric', noiseOnEncounter: 2, weak: { 'Инструмент': 'd6' },
       text: 'В эфире: при встрече шум локации +2.', flavor: '«…не выходите из домов. С вами ночной эфир. Оставайтесь на волне…»' },
   ]);
   U('m4', [
-    { id: 'biker', type: 'enemy', living: true, name: 'Байкер банды', icon: 'raider', dc: 8, theft: true, before: { damage: 1 }, flavor: 'Цепь вместо пояса. Улыбка без зубов.' },
+    { id: 'biker', type: 'enemy', living: true, name: 'Байкер банды', icon: 'raider', dc: 8, flavor: 'Цепь вместо пояса. Улыбка без зубов.' },
     { id: 'mechanicz', type: 'enemy', name: 'Сгоревший механик', icon: 'fire', dc: 7, bite: true, dmgType: 'fire', inflict: 'vuln', immune: ['Огонь'], flavor: 'Взорвался вместе с бензоколонкой. Встал.' },
   ]);
   U('m5', [
@@ -825,7 +825,7 @@
     { id: 'quarantined', type: 'enemy', name: 'Карантинный', icon: 'biohazard', dc: 9, bite: true, infectOnFail: true, inflict: 'poison', flavor: 'Номер 2214 на запястье.' },
   ]);
   U('m7', [
-    { id: 'gasminer', type: 'enemy', name: 'Шахтёр в метане', icon: 'fire', dc: 10, bite: true, dmgType: 'fire', noiseOnEncounter: 1, weak: { 'Тихое': 'd6' }, flavor: 'Каска искрит о камень. Воздух вспыхивает.' },
+    { id: 'gasminer', type: 'enemy', name: 'Шахтёр в метане', icon: 'fire', dc: 10, bite: true, dmgType: 'fire', weak: { 'Тихое': 'd6' }, flavor: 'Каска искрит о камень. Воздух вспыхивает.' },
     { id: 'rockcrawler', type: 'enemy', name: 'Каменный ползун', icon: 'skull', dc: 9, bite: true, resist: { 'Ближнее': 2 }, inflict: 'numb', flavor: 'Сросся с породой. Почти.' },
   ]);
   U('m8', [
@@ -839,7 +839,7 @@
   ]);
   U('m10', [
     { id: 'subject', type: 'enemy', name: 'Подопытный', icon: 'biohazard', dc: 11, bite: true, dmgType: 'acid', inflict: 'poison', weak: { 'Электричество': 'd6' }, flavor: 'Бирка: «Серия 7-Б, отказ».' },
-    { id: 'liquidator', type: 'enemy', living: true, name: 'Ликвидатор', icon: 'raider', dc: 11, dmgType: 'electric', inflict: 'numb', before: { damage: 1 }, theft: true, flavor: 'Нанят зачищать свидетелей. Вы — свидетели.' },
+    { id: 'liquidator', type: 'enemy', living: true, name: 'Ликвидатор', icon: 'raider', dc: 11, dmgType: 'electric', inflict: 'numb', flavor: 'Нанят зачищать свидетелей. Вы — свидетели.' },
   ]);
 
   /* ============================== ДОПОЛНЕНИЯ К КАРТАМ ==============================
