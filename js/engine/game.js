@@ -1434,7 +1434,7 @@
 
   /* ============================== Баррикады и угроза ============================== */
   G.tryClose = async function (mh, loc, fromHench) {
-    if (!fromHench) G.M().ts.closeTried = true;
+    G.M().ts.closeTried = true; // одна попытка за ход — в т.ч. сразу после победы над вожаком
     await UI().tip('close');
     const lr = G.lrule(loc);
     if (lr.closeCost) {
