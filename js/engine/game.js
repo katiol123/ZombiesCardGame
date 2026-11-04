@@ -461,7 +461,8 @@
       explore: ts.explores > 0 && !loc.closed && loc.deck.length > 0,
       close: !loc.closed && loc.deck.length === 0 && !ts.closeTried && (!G.lrule(loc).closeCost || mh.hand.some((c) => ZG.card(c.id).type === G.lrule(loc).closeCost)),
       give: !ts.gave && !G.lrule(loc).noGive && others.length > 0 && mh.hand.some((c) => c.id !== 'infection'),
-      scout: mh.id === 'ten' && !ts.scouted && G.openLocs().some((l) => l.deck.length),
+      // «Разведка» Тени: только до исследования и за перезарядку карты из руки (не Инфекции)
+      scout: mh.id === 'ten' && !ts.scouted && !ts.explored && mh.hand.some((c) => c.id !== 'infection') && G.openLocs().some((l) => l.deck.length),
       // «Полевая медицина»: вместо первого исследования хода, за карту с признаком «Медицина»
       fieldmed: mh.id === 'marina' && !ts.med && !ts.explored && ts.explores > 0 && mh.hand.some(G.isMedCard) && G.heroesAt(mh.loc).some((h) => h.discard.length || G.infCount(h) || Object.keys(G.conds(h)).filter((k) => k !== 'detained').length),
     };
@@ -524,8 +525,7 @@
           await G.give(mh);
           break;
         case 'scout':
-          m.ts.scouted = true;
-          await G.scout(mh);
+          await G.scout(mh, { power: true });
           break;
         case 'fieldmed':
           await G.fieldMed(mh);
@@ -629,11 +629,20 @@
     G.log(`${G.hname(mh)} передаёт «${ZG.card(c.id).name}» → ${G.hname(to)}.`, 'move');
   };
 
-  G.scout = async function (mh) {
+  G.scout = async function (mh, opts) {
     const locs = G.openLocs().filter((l) => l.deck.length);
     const li = await UI().pickLocation('Разведка: какую локацию осмотреть?', locs.map((l) => G.M().locations.indexOf(l)));
     if (li == null) return;
     const l = G.M().locations[li];
+    if (opts && opts.power) {
+      // цена способности: перезарядить карту из руки
+      const us = await UI().pickCards(mh, 1, 'Разведка', 'Перезарядите карту из руки (она уйдёт под низ колоды), чтобы осмотреть локацию.', true, (c) => c.id !== 'infection');
+      if (!us.length) return;
+      const c = mh.hand.find((x) => x.u === us[0]);
+      G.moveByMode(mh, us[0], 'recharge');
+      G.M().ts.scouted = true;
+      if (c) G.log(`${G.hname(mh)} перезаряжает «${ZG.card(c.id).name}» ради разведки.`, 'card');
+    }
     const toBottom = await UI().scout(l.deck[0], l);
     if (toBottom) l.deck.push(l.deck.shift());
     G.log(`${G.hname(mh)} разведывает «${G.ldef(l).name}».`, 'move');
