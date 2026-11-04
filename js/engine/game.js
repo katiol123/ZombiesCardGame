@@ -77,7 +77,8 @@
     const d = ZG.card(c.id);
     const rc = d.recharge || { skills: [], dc: 99 };
     const hd = ZG.HEROES[owner.id];
-    const known = rc.skills.filter((sk) => (hd.skills[sk] || 0) > 0);
+    // навык должен быть у героя; характеристика (например, Воля) есть у всех
+    const known = rc.skills.filter((sk) => ZG.ATTRS.includes(sk) || (hd.skills[sk] || 0) > 0);
     if (!known.length) {
       (owner.burned = owner.burned || []).push(c);
       G.log(`«${d.name}»: у ${G.hname(owner)} нет навыка — приём сгорает.`, 'bad');
