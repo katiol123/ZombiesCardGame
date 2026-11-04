@@ -384,8 +384,8 @@
     { id: 'brute', type: 'enemy', name: 'Громила', tier: 2, icon: 'skull', dc: 11, bite: true, dmgAdd: 1,
       text: 'Урон от него +1.',
       flavor: 'При жизни он был вышибалой. Ничего не изменилось.' },
-    { id: 'raider', type: 'enemy', living: true, name: 'Рейдер', tier: 2, icon: 'raider', dc: 9, theft: true, before: { damage: 1 },
-      text: 'Человек. До проверки: 1 урон (стреляет первым). Если вы не победили его, он изгоняет случайную карту из вашей руки.',
+    { id: 'raider', type: 'enemy', living: true, name: 'Рейдер', tier: 2, icon: 'raider', dc: 9, before: { damage: 1 }, noiseOnEncounter: 1,
+      text: 'Человек. До проверки: 1 урон (стреляет первым), шум локации +1.',
       flavor: 'Банда Кейна. Красная бандана — их знак.' },
   ]);
 
@@ -883,6 +883,9 @@
     patientzero: { immune: ['Огонь'], resist: { 'Ближнее': 2 }, weak: { 'Электричество': 'd8' } },
   };
   Object.keys(AUG).forEach((id) => { if (C[id]) Object.assign(C[id], AUG[id]); });
+  // грамматический род врагов (по умолчанию мужской): f — женский, n — средний
+  const GENDER = { swarm: 'f', matriarch: 'f', holt: 'f', guardz: 'f', shopper: 'f', echo: 'n', coldbody: 'n' };
+  Object.keys(GENDER).forEach((id) => { if (C[id]) C[id].g = GENDER[id]; });
   // карты, которые можно выложить
   ['rex', 'vest', 'helmet', 'nvg', 'minerlamp'].forEach((id) => {
     if (C[id] && !C[id].plays.some((p) => p.mode === 'display')) C[id].plays.push({ on: 'action', mode: 'display' });

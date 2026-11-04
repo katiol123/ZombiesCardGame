@@ -163,8 +163,8 @@
 
     acquired: 'Найдено: {name}',
     lost_find: '{name} потеряно',
-    defeated: '{name} повержен',
-    undefeated: '{name} не повержен и уходит в колоду локации',
+    defeated: '{name} {pov}',
+    undefeated: '{name} не {pov} и уходит в колоду локации',
     horde: 'ОРДА!',
     horde_sub: 'Шум привлёк мертвецов: +{n} в локацию «{loc}»',
     infected: '{name}: заражение',

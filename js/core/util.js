@@ -37,6 +37,8 @@
     const i = Math.max(0, Math.min(ZG.DIE_ORDER.length - 1, ZG.DIE_ORDER.indexOf(d) + n));
     return ZG.DIE_ORDER[i];
   };
+  /** Форма слова по роду карты: ZG.gf(def, 'повержен', 'повержена', 'повержено') */
+  ZG.gf = (def, m, f, n) => (def && def.g === 'f' ? f : def && def.g === 'n' ? (n || m) : m);
   /** Строка кубиков: ['d6','d6'], 2 → «2d6+2» */
   ZG.diceStr = (dice, bonus) => {
     const cnt = {};

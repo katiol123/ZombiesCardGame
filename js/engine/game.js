@@ -388,8 +388,9 @@
         const to = R.pick(others);
         to.deck.push(b);
         R.shuffle(to.deck);
-        G.log(`${ZG.card(b.id).name} меняет укрытие. Где он теперь — неизвестно.`, 'bad');
-        await UI().banner('Охотник сменил укрытие', `${ZG.card(b.id).name} ушёл из прежней локации`, 'bad');
+        const bd = ZG.card(b.id);
+        G.log(`${bd.name} меняет укрытие. Где ${ZG.gf(bd, 'он', 'она', 'оно')} теперь — неизвестно.`, 'bad');
+        await UI().banner('Угроза сменила укрытие', `${bd.name} ${ZG.gf(bd, 'ушёл', 'ушла', 'ушло')} из прежней локации`, 'bad');
       }
     }
     if (old === 'night' && m.phase === 'day') {
@@ -922,7 +923,7 @@
     // scatterMargin: победа с перевесом меньше N — враг разбегается и уходит под низ колоды локации
     if (ok && def.scatterMargin && res.total - res.dc < def.scatterMargin && !loc.closed) {
       loc.deck.push(inst);
-      G.log(`${def.name} отбита (перевес ${res.total - res.dc} < ${def.scatterMargin}): разбегается и уходит под низ колоды локации.`, 'move');
+      G.log(`${def.name} ${ZG.gf(def, 'отбит', 'отбита', 'отбито')} (перевес ${res.total - res.dc} < ${def.scatterMargin}): разбегается и уходит под низ колоды локации.`, 'move');
       await ui.banner(`${def.name} разбегается`, `Нужен перевес ${def.scatterMargin}+, чтобы добить. Уходит под низ колоды локации`, 'warn');
       return null;
     }
@@ -930,7 +931,7 @@
       m.stats.kills++;
       G.S().campaign.stats.kills++;
       ui.fxDefeat();
-      G.log(T('defeated', { name: def.name }), 'good');
+      G.log(T('defeated', { name: def.name, pov: ZG.gf(def, 'повержен', 'повержена', 'повержено') }), 'good');
       if (def.toxic) {
         const tr = await G.doCheck(mh, G.eventCheck(def.toxic, loc, `${def.name}: брызги заразы`, def));
         if (!tr.success) await G.infect(mh);
@@ -980,7 +981,7 @@
       loc.deck.push(inst);
       R.shuffle(loc.deck);
     }
-    G.log(T('undefeated', { name: def.name }), 'bad');
+    G.log(T('undefeated', { name: def.name, pov: ZG.gf(def, 'повержен', 'повержена', 'повержено') }), 'bad');
     return null;
   };
 
@@ -1605,13 +1606,13 @@
     const ob = G.special().objective;
     if (!remaining.length && ob && (m.obj || 0) < ob.need) {
       m.bossDown = true;
-      G.log(`${def.name} уничтожен. Не хватает: ${ob.label} ${m.obj || 0}/${ob.need}.`, 'win');
-      await ui.banner(T('boss_cornered'), `${def.name} уничтожен. Теперь соберите ${ob.label.toLowerCase()}: ${m.obj || 0}/${ob.need}`, 'win');
+      G.log(`${def.name} ${ZG.gf(def, 'уничтожен', 'уничтожена', 'уничтожено')}. Не хватает: ${ob.label} ${m.obj || 0}/${ob.need}.`, 'win');
+      await ui.banner(T('boss_cornered'), `${def.name} ${ZG.gf(def, 'уничтожен', 'уничтожена', 'уничтожено')}. Теперь соберите ${ob.label.toLowerCase()}: ${m.obj || 0}/${ob.need}`, 'win');
       return null;
     }
     if (!remaining.length) {
       G.log(T('boss_cornered'), 'win');
-      await ui.banner(T('boss_cornered'), `${def.name} уничтожен`, 'win');
+      await ui.banner(T('boss_cornered'), `${def.name} ${ZG.gf(def, 'уничтожен', 'уничтожена', 'уничтожено')}`, 'win');
       return 'win';
     }
     // 4. Герои из закрытой локации уходят в другие локации
