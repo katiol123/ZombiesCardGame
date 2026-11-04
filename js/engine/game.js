@@ -1272,7 +1272,8 @@
     const night = m.phase === 'night';
     const wp = G.weaponPlay(ctx);
     let opts = wp ? G.playDef(wp).weapon.slice() : ck.skills.slice();
-    if (mh.id === 'marina' && wp && ZG.card(wp.id).traits.includes('Тихое') && !opts.includes('medicine')) opts.push('medicine');
+    // «Твёрдая рука»: с «Тихим» оружием — кубик Смекалки вместо Ловкости, без бонуса Медицины
+    if (mh.id === 'marina' && wp && ZG.card(wp.id).traits.includes('Тихое') && !opts.includes('wit')) opts.push('wit');
     let skill = ctx.skill && opts.includes(ctx.skill) ? ctx.skill : null;
     if (!skill) skill = opts.slice().sort((a, b) => G.skillScore(ph, b) - G.skillScore(ph, a))[0];
     const sv = G.skillValue(ph, skill);
