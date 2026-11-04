@@ -85,6 +85,15 @@
   ZG.cardRules = function (def) {
     const lines = [];
     if (def.text) lines.push(def.text);
+    // у врагов без ручного текста свойства описываются автоматически
+    if (ZG.isEnemy(def) && !def.text) {
+      if (def.living) lines.push('Человек.');
+      if (def.noiseOnEncounter) lines.push(`При встрече: шум локации +${def.noiseOnEncounter}.`);
+      if (def.before && def.before.damage) lines.push(`До проверки: ${def.before.damage} урон.`);
+      if (def.noEvade) lines.push('От него нельзя уклониться.');
+      if (def.armor) lines.push(`Броня: проверки Силой и Рукопашной против него −${def.armor}.`);
+      if (def.theft) lines.push(`Если вы не победили ${ZG.gf(def, 'его', 'её', 'его')}, ${ZG.gf(def, 'он', 'она', 'оно')} забирает случайную карту из руки.`);
+    }
     if (ZG.isEnemy(def) && def.dmgType) lines.push(`Урон: ${ZG.DMG_TYPES[def.dmgType]}.`);
     if (ZG.isEnemy(def)) lines.push(`Провал: урон = разница (макс. ${ZG.Game.dmgCap(def)}${def.dmgAdd ? `, +${def.dmgAdd}` : ''})${def.bite ? '. Укус → Инфекция' : ''}${def.inflict ? (def.inflictCheck ? `. Рана → проверка ${skillsList(def.inflictCheck.skills)} ${def.inflictCheck.dc}, при провале — ${ZG.CONDS[def.inflict].name}` : `. Рана → ${ZG.CONDS[def.inflict].name}`) : ''}.`);
     if (def.plays && def.plays.length) def.plays.forEach((p) => lines.push(ZG.playText(p)));
