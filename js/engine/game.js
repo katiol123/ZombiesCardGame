@@ -1401,6 +1401,7 @@
     const pl = def.plays[pi];
     if (!pl || pl.on !== 'check') return false;
     const ck = ctx.check;
+    if (pl.helpOnly && owner === ctx.mh) return false; // только в проверку соседа
     if (owner !== ctx.mh) {
       if (!pl.help || owner.dead || owner.loc !== ctx.mh.loc || G.conds(owner).detained) return false;
     }
@@ -1461,6 +1462,7 @@
       const pl = G.playDef(p);
       let mode = pl.mode;
       if (pl.rechargeOnSuccess && res.success && mode === 'discard') mode = 'recharge';
+      if (pl.burnOnFail && !res.success) mode = 'burn';
       G.moveByMode(owner, p.u, mode);
       if (pl.gainCard) {
         // например, Оружейник Хэнк: «возьмите в руку карту Патроны»
