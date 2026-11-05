@@ -939,6 +939,12 @@
     patientzero: { inflict: 'numb', dmgType: 'electric', immune: ['Огонь'], resist: { 'Ближнее': 2 }, weak: { 'Электричество': 'd8' } },
   };
   Object.keys(AUG).forEach((id) => { if (C[id]) Object.assign(C[id], AUG[id]); });
+  // броня защищает только от физического урона; кислота, холод, электричество и огонь проходят сквозь неё
+  // (кроме специального снаряжения с явно указанным типом урона, например Противогаза)
+  Object.values(C).forEach((d) => {
+    if (!(d.traits || []).includes('Броня')) return;
+    (d.plays || []).forEach((p) => { if (p.on === 'damage' && !p.onlyType) p.physical = true; });
+  });
   // грамматический род врагов (по умолчанию мужской): f — женский, n — средний
   const GENDER = { swarm: 'f', matriarch: 'f', holt: 'f', guardz: 'f', shopper: 'f', echo: 'n', coldbody: 'n' };
   Object.keys(GENDER).forEach((id) => { if (C[id]) C[id].g = GENDER[id]; });
