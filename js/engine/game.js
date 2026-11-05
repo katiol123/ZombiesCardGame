@@ -142,7 +142,8 @@
 
   /* ============================== Создание миссии ============================== */
   G.LOC_SIZE = 7;
-  G.CLOCK_BY_PARTY = [20, 25, 27, 30];
+  // как в Pathfinder: 30 карт Часов при любом составе отряда
+  G.CLOCK_BY_PARTY = [30, 30, 30, 30];
   G.enemyDmgType = (def, loc) => def.dmgType || ((G.ldef(loc).rules || {}).enemyDmgType) || null;
   G.dmgCap = (def) => def.maxDmg || (def.type === 'boss' ? 5 : def.type === 'henchman' ? 4 : 3);
   G.newMission = function (idx) {
@@ -204,7 +205,7 @@
     });
 
     // Часы
-    const len = G.CLOCK_BY_PARTY[Math.min(4, party.length) - 1] - (S.difficulty === 'hard' ? 4 : 0) + (special.clockMod || 0) + (def.act === 2 ? (party.length >= 3 ? 5 : party.length === 2 ? 3 : 0) : 0);
+    const len = G.CLOCK_BY_PARTY[Math.min(4, party.length) - 1] - (S.difficulty === 'hard' ? 4 : 0) + (special.clockMod || 0) ;
     const evCount = Math.round(len * 0.3);
     const evs = [];
     for (let i = 0; i < evCount; i++) evs.push(def.clockEvents[i % def.clockEvents.length]);

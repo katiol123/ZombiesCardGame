@@ -13,13 +13,13 @@
     close: { skills: ['tech', 'str'], dc: 6 }, noise: 7, mods: {},
     flavor: 'Каталки поперёк коридора. Табло всё ещё показывает очередь: 47.' });
   loc({ id: 'wards', name: 'Палаты', icon: 'bed', deck: { e: 3, w: 0, i: 1, c: 3, a: 1, r: 0, v: 1 },
-    close: { skills: ['wit', 'tech', 'will'], dc: 6 }, noise: 6, mods: { acquireDc: { consumable: -1 } },
+    close: { skills: ['will'], dc: 6 }, noise: 6, mods: { acquireDc: { consumable: -1 } },
     flavor: 'Пустые кровати. Ремни на некоторых разорваны.' });
   loc({ id: 'morgue', name: 'Морг', icon: 'skull', deck: { e: 4, w: 1, i: 1, c: 0, a: 0, r: 1, v: 2 },
     close: { skills: ['will', 'tech'], dc: 7 }, noise: 7, mods: { enemyDc: 1 },
     flavor: 'Холодильные камеры открыты изнутри.' });
   loc({ id: 'pharmacy', name: 'Аптека', icon: 'pill', deck: { e: 2, w: 0, i: 1, c: 4, a: 1, r: 0, v: 1 },
-    close: { skills: ['tech', 'str'], dc: 7 }, noise: 6, mods: { acquireDc: { consumable: -1 } },
+    close: { skills: ['medicine'], dc: 7 }, noise: 6, mods: { acquireDc: { consumable: -1 } },
     flavor: 'Решётка выломана. Но не всё вынесли.' });
   loc({ id: 'boiler', name: 'Котельная', icon: 'factory', deck: { e: 2, w: 2, i: 2, c: 0, a: 0, r: 1, v: 2 },
     close: { skills: ['tech', 'end'], dc: 6 }, noise: 8, mods: {},
@@ -39,7 +39,7 @@
     close: { skills: ['str'], dc: 7 }, noise: 6, mods: { enemyDc: 1 },
     flavor: 'Холодильник не работает третий день. Запах ведёт их сюда.' });
   loc({ id: 'security', name: 'Офис охраны', icon: 'eye', deck: { e: 1, w: 2, i: 1, c: 0, a: 1, r: 1, v: 1 },
-    close: { skills: ['tech', 'wit'], dc: 7 }, noise: 6, mods: { acquireDc: { weapon: -1 } },
+    close: { skills: ['wit'], dc: 7 }, noise: 6, mods: { acquireDc: { weapon: -1 } },
     flavor: 'Мониторы показывают зал. На каждом — движение.' });
   loc({ id: 'loading', name: 'Погрузочная рампа', icon: 'truck', deck: { e: 3, w: 1, i: 1, c: 1, a: 2, r: 0, v: 1 },
     close: { skills: ['str', 'survival'], dc: 6 }, noise: 5, mods: {},
@@ -53,7 +53,7 @@
     close: { skills: ['survival'], dc: 7 }, noise: 6, mods: {},
     flavor: 'Серпантин уходит в туман.' });
   loc({ id: 'rangerhut', name: 'Будка смотрителя', icon: 'building', deck: { e: 2, w: 2, i: 2, c: 1, a: 1, r: 0, v: 1 },
-    close: { skills: ['tech', 'will'], dc: 7 }, noise: 6, mods: {},
+    close: { skills: ['will'], dc: 7 }, noise: 6, mods: {},
     flavor: 'Журнал смотрителя обрывается на полуслове.' });
   loc({ id: 'generator', name: 'Генераторная', icon: 'bolt', deck: { e: 3, w: 0, i: 3, c: 1, a: 0, r: 1, v: 1 },
     close: { skills: ['tech'], dc: 8 }, noise: 5, mods: { acquireDc: { item: -1 } },
@@ -76,7 +76,7 @@
     close: { skills: ['tech'], dc: 8 }, noise: 6, mods: { acquireDc: { weapon: -1, item: -1 } },
     flavor: 'Лабиринт ржавых кузовов. Идеальное место для засады.' });
   loc({ id: 'gangcamp', name: 'Лагерь банды', icon: 'tent', deck: { e: 4, w: 2, i: 1, c: 1, a: 0, r: 0, v: 1 },
-    close: { skills: ['persuasion', 'stealth'], dc: 9 }, noise: 5, mods: { enemyDc: 1 },
+    close: { skills: ['persuasion'], dc: 9 }, noise: 5, mods: { enemyDc: 1 },
     flavor: 'Костёр, бочки, клетка. В клетке — люди.' });
   loc({ id: 'motel', name: 'Мотель «Пайнс»', icon: 'bed', deck: { e: 3, w: 0, i: 1, c: 2, a: 2, r: 1, v: 0 },
     close: { skills: ['tech', 'wit'], dc: 8 }, noise: 6, mods: {},
@@ -90,7 +90,7 @@
 
   /* ---------- Миссия 5: Мост Мэдисон ---------- */
   loc({ id: 'checkpoint', name: 'Блокпост', icon: 'flag', deck: { e: 4, w: 2, i: 1, c: 1, a: 0, r: 1, v: 0 },
-    close: { skills: ['str', 'tech'], dc: 9 }, noise: 6, mods: { acquireDc: { weapon: -1 } },
+    close: { skills: ['str'], dc: 9 }, noise: 6, mods: { acquireDc: { weapon: -1 } },
     flavor: 'Мешки с песком, прожекторы, тела в камуфляже.' });
   loc({ id: 'jam', name: 'Пробка на шоссе', icon: 'car', deck: { e: 4, w: 1, i: 1, c: 2, a: 1, r: 0, v: 0 },
     close: { skills: ['survival', 'stealth'], dc: 9 }, noise: 5, mods: {},
@@ -105,7 +105,7 @@
     close: { skills: ['survival'], dc: 8 }, noise: 7, mods: {},
     flavor: 'Река несёт тела к океану.' });
   loc({ id: 'evac', name: 'Пункт эвакуации', icon: 'flag', deck: { e: 4, w: 1, i: 1, c: 1, a: 1, r: 1, v: 0 },
-    close: { skills: ['will', 'persuasion'], dc: 9 }, noise: 5, mods: { enemyDc: 1 },
+    close: { skills: ['persuasion'], dc: 9 }, noise: 5, mods: { enemyDc: 1 },
     flavor: 'Последний вертолёт улетел вчера. Но кто-то ещё отвечает по рации.' });
 
 
@@ -114,10 +114,10 @@
     close: { skills: ['str', 'tech'], dc: 9 }, noise: 6, mods: { acquireDc: { weapon: -1 } },
     flavor: 'Шлагбаум, вышка, прожектор. И список фамилий на стене.' });
   loc({ id: 'tents', name: 'Палаточный городок', icon: 'tent', deck: { e: 0, w: 0, i: 1, c: 3, a: 2, r: 1, v: 0 },
-    close: { skills: ['survival', 'persuasion'], dc: 8 }, noise: 6, mods: {},
+    close: { skills: ['persuasion'], dc: 8 }, noise: 6, mods: {},
     flavor: 'Сотни коек. На каждой — бирка с номером.' });
   loc({ id: 'lab', name: 'Мобильная лаборатория', icon: 'vial', deck: { e: 1, w: 0, i: 2, c: 3, a: 0, r: 0, v: 2 },
-    close: { skills: ['tech', 'medicine', 'end'], dc: 9 }, noise: 5, mods: { acquireDc: { consumable: -1 }, eventDc: 1 },
+    close: { skills: ['medicine'], dc: 9 }, noise: 5, mods: { acquireDc: { consumable: -1 }, eventDc: 1 },
     flavor: 'Логотип «Хейл Биомед» на каждом ящике с пробирками.' });
   loc({ id: 'armory', name: 'Склад вооружения', icon: 'warehouse', deck: { e: 3, w: 3, i: 1, c: 1, a: 0, r: 0, v: 1 },
     close: { skills: ['tech', 'str'], dc: 9 }, noise: 6, mods: { enemyDc: 1 },
@@ -131,13 +131,13 @@
 
   /* ---------- Миссия 7: Шахта Блэкстоун ---------- */
   loc({ id: 'shaftentry', name: 'Устье шахты', icon: 'door', deck: { e: 3, w: 1, i: 2, c: 1, a: 1, r: 1, v: 0 },
-    close: { skills: ['str', 'tech'], dc: 8 }, noise: 6, mods: {},
+    close: { skills: ['str'], dc: 8 }, noise: 6, mods: {},
     flavor: 'Табличка «Без каски не входить». Касок не осталось.' });
   loc({ id: 'cage', name: 'Клеть подъёмника', icon: 'warehouse', deck: { e: 1, w: 1, i: 1, c: 1, a: 0, r: 1, v: 2 },
     close: { skills: ['tech'], dc: 9 }, noise: 5, mods: { eventDc: 1 },
     flavor: 'Трос стонет. До дна — двести метров.' });
   loc({ id: 'drift', name: 'Штрек №3', icon: 'road', deck: { e: 4, w: 2, i: 1, c: 1, a: 0, r: 0, v: 1 },
-    close: { skills: ['dex', 'survival'], dc: 9 }, noise: 5, mods: { enemyDc: 1 },
+    close: { skills: ['dex'], dc: 9 }, noise: 5, mods: { enemyDc: 1 },
     flavor: 'Узкий, низкий, бесконечный. Шаги отдаются со всех сторон.' });
   loc({ id: 'pumproom', name: 'Насосная', icon: 'waves', deck: { e: 2, w: 0, i: 3, c: 1, a: 0, r: 1, v: 1 },
     close: { skills: ['tech', 'end'], dc: 9 }, noise: 6, mods: { acquireDc: { item: -1 } },
@@ -151,10 +151,10 @@
 
   /* ---------- Миссия 8: Лагерь «Сосновый ручей» ---------- */
   loc({ id: 'campfire', name: 'Кострище', icon: 'fire', deck: { e: 3, w: 1, i: 1, c: 2, a: 1, r: 1, v: 0 },
-    close: { skills: ['survival', 'str'], dc: 8 }, noise: 6, mods: {},
+    close: { skills: ['survival'], dc: 8 }, noise: 6, mods: {},
     flavor: 'Угли ещё тёплые. Кто-то был здесь вчера.' });
   loc({ id: 'cabins', name: 'Домики вожатых', icon: 'building', deck: { e: 3, w: 1, i: 2, c: 1, a: 1, r: 1, v: 0 },
-    close: { skills: ['tech', 'dex'], dc: 8 }, noise: 6, mods: {},
+    close: { skills: ['dex'], dc: 8 }, noise: 6, mods: {},
     flavor: 'Расписание на двери: «Ночная игра. 21:00».' });
   loc({ id: 'lake', name: 'Озеро', icon: 'waves', deck: { e: 3, w: 1, i: 1, c: 1, a: 1, r: 2, v: 0 },
     close: { skills: ['survival', 'end'], dc: 9 }, noise: 7, mods: {},
@@ -174,13 +174,13 @@
     close: { skills: ['tech', 'str'], dc: 9 }, noise: 6, mods: {},
     flavor: 'Жёлтый автобус №12. Ключ в замке. Бак пуст.' });
   loc({ id: 'gym', name: 'Спортзал', icon: 'building', deck: { e: 4, w: 2, i: 1, c: 1, a: 0, r: 1, v: 0 },
-    close: { skills: ['persuasion', 'end'], dc: 9 }, noise: 5, mods: { enemyDc: 1 },
+    close: { skills: ['persuasion'], dc: 9 }, noise: 5, mods: { enemyDc: 1 },
     flavor: 'Здесь был пункт эвакуации. Здесь он и остался.' });
   loc({ id: 'cafeteria', name: 'Столовая', icon: 'coffee', deck: { e: 3, w: 0, i: 1, c: 3, a: 1, r: 1, v: 0 },
     close: { skills: ['str', 'tech'], dc: 8 }, noise: 6, mods: { acquireDc: { consumable: -1 } },
     flavor: 'Подносы, лужи, детские рюкзаки.' });
   loc({ id: 'chemlab', name: 'Кабинет химии', icon: 'vial', deck: { e: 3, w: 1, i: 2, c: 2, a: 0, r: 0, v: 1 },
-    close: { skills: ['tech', 'wit'], dc: 9 }, noise: 6, mods: { acquireDc: { item: -1 } },
+    close: { skills: ['wit'], dc: 9 }, noise: 6, mods: { acquireDc: { item: -1 } },
     flavor: 'Таблица Менделеева в брызгах. Вытяжка ещё работает.' });
   loc({ id: 'library', name: 'Библиотека', icon: 'book', deck: { e: 3, w: 0, i: 1, c: 1, a: 2, r: 2, v: 0 },
     close: { skills: ['wit', 'stealth'], dc: 8 }, noise: 7, mods: {},
@@ -194,13 +194,13 @@
     close: { skills: ['str', 'tech'], dc: 10 }, noise: 6, mods: {},
     flavor: 'Мраморный пол. Слоган на стене: «Мы лечим будущее».' });
   loc({ id: 'offices', name: 'Офисы', icon: 'building', deck: { e: 3, w: 1, i: 2, c: 1, a: 1, r: 1, v: 0 },
-    close: { skills: ['wit', 'will'], dc: 9 }, noise: 6, mods: {},
+    close: { skills: ['will'], dc: 9 }, noise: 6, mods: {},
     flavor: 'Шредеры забиты. Не успели.' });
   loc({ id: 'vivarium', name: 'Виварий', icon: 'paw', deck: { e: 5, w: 0, i: 1, c: 1, a: 0, r: 1, v: 1 },
     close: { skills: ['will', 'end'], dc: 10 }, noise: 5, mods: { enemyDc: 1 },
     flavor: 'Клетки открыты. Подопытными были не только мыши.' });
   loc({ id: 'cleanroom', name: 'Чистая зона', icon: 'biohazard', deck: { e: 3, w: 0, i: 2, c: 3, a: 0, r: 0, v: 1 },
-    close: { skills: ['tech', 'medicine'], dc: 10 }, noise: 5, mods: { acquireDc: { consumable: -1 }, eventDc: 1 },
+    close: { skills: ['medicine'], dc: 10 }, noise: 5, mods: { acquireDc: { consumable: -1 }, eventDc: 1 },
     flavor: 'Белые стены. Красные отпечатки ладоней.' });
   loc({ id: 'server', name: 'Серверная', icon: 'bolt', deck: { e: 3, w: 1, i: 2, c: 1, a: 1, r: 1, v: 0 },
     close: { skills: ['tech', 'wit'], dc: 10 }, noise: 6, mods: { acquireDc: { item: -1 } },
