@@ -583,10 +583,15 @@
       if (gone.length) await UI().banner(`Распад: d4 = ${r}`, `${LBL[r]} из сброса захоронены: ${gone.length}`, 'bad');
     }
     ['vuln', 'doom'].forEach((k) => { if (cs[k]) { cs[k]--; if (!cs[k]) { delete cs[k]; G.log(`${G.hname(mh)}: «${ZG.CONDS[k].name}» проходит.`, 'good'); } } });
+    // Обновить руку (как в Pathfinder): можно сбросить любые карты, лишние сверх размера руки — обязательно, затем добрать
     const hs = G.handSizeMh(mh);
-    if (mh.hand.length > hs) {
-      const us = await UI().pickCards(mh, mh.hand.length - hs, 'Лишние карты', `Размер руки — ${hs}. Сбросьте ${mh.hand.length - hs}.`);
+    const ok = (c) => c.id !== 'infection';
+    const extra = Math.max(0, mh.hand.length - hs);
+    if (mh.hand.some(ok)) {
+      const txt = (extra ? `Размер руки — ${hs}: сбросьте лишние (<b>${extra}</b>). ` : '') + `Можно сбросить и любые другие карты — затем рука доберётся до ${hs} из колоды. <b>Колода — это здоровье</b>: в ней сейчас ${mh.deck.length}.`;
+      const us = await UI().pickRange(mh, extra, mh.hand.filter(ok).length, `Обновить руку: ${G.hname(mh)}`, txt, ok);
       us.forEach((u) => G.moveByMode(mh, u, 'discard'));
+      if (us.length > extra) G.log(`${G.hname(mh)} сбрасывает ${us.length} ${ZG.plural(us.length, 'карту', 'карты', 'карт')} при обновлении руки.`, 'card');
     }
     while (mh.hand.length < hs) {
       if (!mh.deck.length) {
@@ -1982,13 +1987,19 @@
       const li = m.locations.indexOf(l);
       for (const h of G.heroesAt(li)) {
         if (G.conds(h).detained) { G.log(`${G.hname(h)} задержан и не может перекрыть «${G.ldef(l).name}».`, 'bad'); continue; }
+        ui.trayHero = h; // панель внизу — того, кто решает
+        ui.renderBoard();
         await ui.tip('guard');
         const lc = G.ldef(l).close;
-        const c = await ui.choose({
-          title: 'Перекрыть путь',
-          text: `${G.hname(h)}: перед боем с Угрозой перекрыть «${G.ldef(l).name}», чтобы ей некуда было бежать? (Проверка: ${lc.skills.map(ZG.skillName).join(' / ')} ${lc.dc + (G.special().closeDcMod || 0)}) Награда «Когда заколочено» при этом не срабатывает.`,
-          options: [{ label: 'Перекрыть', primary: true }, { label: 'Нет' }],
-        });
+        const gck = G.closeCheck(l, `Перекрыть: ${G.ldef(l).name}`);
+        const pool = G.pool({ check: gck, mh: h, played: [] });
+        const gctx = { check: gck, mh: h, played: [] };
+        const playable = h.hand.filter((c) => (ZG.card(c.id).plays || []).some((p, pi) => G.canPlay(gctx, h, c, pi))).map((c) => c.u);
+        const c = ui.guardAsk
+          ? await ui.guardAsk(h, l, { line: `${lc.skills.map(ZG.skillName).join(' / ')} ${gck.dc}`, skill: `${ZG.skillName(pool.skill)} ${ZG.diceStr(pool.dice.map((x) => x.d), pool.bonus)}`, chance: pool.chance, playable })
+          : await ui.choose({ title: 'Перекрыть путь', text: `${G.hname(h)}: перекрыть «${G.ldef(l).name}»?`, options: [{ label: 'Перекрыть', primary: true }, { label: 'Нет' }] });
+        ui.trayHero = null;
+        ui.renderBoard();
         if (c !== 0) continue;
         const res = await G.doCheck(h, G.closeCheck(l, `Перекрыть: ${G.ldef(l).name}`));
         if (res.success) {

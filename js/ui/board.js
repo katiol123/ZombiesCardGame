@@ -169,7 +169,8 @@
   /* ---------- Лоток ---------- */
   UI.renderTray = function () {
     const m = G().M();
-    const mh = m.heroes[m.active];
+    // во время решения о перекрытии пути панель показывает того, кто решает
+    const mh = UI.trayHero || m.heroes[m.active];
     const tray = document.getElementById('tray');
     if (!mh) return;
     const ph = G().ph(mh);
@@ -342,7 +343,10 @@
   UI.handoff = function (mh) {
     return new Promise((resolve) => {
       const hd = ZG.HEROES[mh.id];
-      const el = ZG.html(`<div class="handoff" style="--hc:${hd.color}"><div class="k">${T('handoff')}</div>${UI.avatar(mh.id)}<h1>${esc(hd.name)}</h1><div class="role">${esc(hd.role)}</div><button class="btn primary" style="min-width:220px">${T('handoff_ready')}</button></div>`);
+      const m = G().M();
+      const lart = m && m.locations[mh.loc] ? UI.locArtUrl(m.locations[mh.loc].id) : null;
+      const lname = m && m.locations[mh.loc] ? ZG.LOCATIONS[m.locations[mh.loc].id].name : '';
+      const el = ZG.html(`<div class="handoff ${lart ? 'has-art' : ''}" style="--hc:${hd.color};${lart ? `background-image:radial-gradient(circle at 50% 45%, rgba(10,10,12,.35), rgba(2,2,3,.93) 75%), url('${lart}')` : ''}">${lart ? `<div class="ho-loc">${ZG.icon('mappin')} ${esc(lname)}</div>` : ''}<div class="k">${T('handoff')}</div>${UI.avatar(mh.id)}<h1>${esc(hd.name)}</h1><div class="role">${esc(hd.role)}</div><button class="btn primary" style="min-width:220px">${T('handoff_ready')}</button></div>`);
       document.body.appendChild(el);
       el.querySelector('.btn').addEventListener('click', async () => {
         el.style.transition = 'opacity .4s';
@@ -836,6 +840,35 @@
     await UI.banner(T('horde'), attacked ? `Один мертвец нападает на ${ZG.HEROES[attacked.id].acc || UI.shortName(attacked.id)} прямо сейчас${n > 1 ? `, ещё ${n - 1} — в колоду локации` : ''}` : T('horde_sub', { n, loc: ZG.LOCATIONS[loc.id].name }), 'horde bad');
   };
 
+  /** URL картинки локации (или null) */
+  UI.locArtUrl = (id) => (window.ZG_ART && window.ZG_ART.locations && window.ZG_ART.locations[id]) || null;
+
+  /** Окно «Перекрыть путь»: решает герой h — показываем его руку, колоду, состояния и шанс */
+  UI.guardAsk = function (h, l, info) {
+    return new Promise((resolve) => {
+      const g = G();
+      const hd = ZG.HEROES[h.id];
+      const conds = Object.keys(h.conds || {}).map((k) => `<span class="cond" title="${esc(ZG.CONDS[k].text)}">${ZG.icon(ZG.CONDS[k].icon)} ${esc(ZG.CONDS[k].name)}</span>`).join('');
+      const pct = Math.round(info.chance * 100);
+      const art = UI.locArtUrl(l.id);
+      const ov = UI.overlay(`<div class="modal panel guard-modal">
+        ${art ? `<div class="guard-art" style="background-image:url('${art}')"></div>` : ''}
+        <h2>${ZG.icon('hammer')} Перекрыть путь: ${esc(g.ldef(l).name)}</h2>
+        <div class="mtext">Перед боем с Угрозой можно перекрыть эту локацию, чтобы Угрозе некуда было бежать. Награда «Когда заколочено» при этом не срабатывает.</div>
+        <div class="guard-hero" style="--hc:${hd.color}">${UI.avatar(h.id)}
+          <div><b>${esc(hd.name)}</b> <span class="muted">решает и проходит проверку</span>
+          <div class="guard-stats"><span>${ZG.icon('cards')} Колода ${h.deck.length}</span><span>Сброс ${h.discard.length}</span><span>${ZG.icon('hand')} Рука ${h.hand.length}</span><span>☣ ${g.infCount(h)}/3</span>${conds ? `<span class="cond-row">${conds}</span>` : ''}</div></div></div>
+        <div class="guard-check"><div><span class="muted">Проверка</span><b>${esc(info.line)}</b></div><div><span class="muted">Лучший навык</span><b>${esc(info.skill)}</b></div><div><span class="muted">Шанс без карт</span><b class="${pct >= 60 ? 'good' : pct >= 35 ? 'mid' : 'bad'}">${pct}%</b></div></div>
+        <div class="sec-label">Рука — подсвечены карты, которыми можно усилить проверку</div>
+        <div class="hand">${h.hand.map((c) => UI.cardHTML(c, { u: c.u, size: 'sm', cls: (info.playable || []).includes(c.u) ? 'playable' : 'unplayable' })).join('') || '<span class="muted">Рука пуста</span>'}</div>
+        <div class="enc-actions"><button class="btn ghost" data-no>Не перекрывать</button><button class="btn primary" data-ok>Перекрыть</button></div></div>`);
+      if (UI.fitHand) requestAnimationFrame(() => UI.fitHand(ov.querySelector('.hand')));
+      const done = async (v) => { await UI.closeOverlay(ov); resolve(v); };
+      ov.querySelector('[data-ok]').addEventListener('click', () => done(0));
+      ov.querySelector('[data-no]').addEventListener('click', () => done(1));
+    });
+  };
+
   UI.barricade = async function (loc) {
     const i = G().M().locations.indexOf(loc);
     UI.closingLoc = i;
@@ -847,7 +880,15 @@
     const el = document.querySelector(`.loc[data-i="${i}"]`);
     if (el) ZG.FX.burstAt(el, 'spark', 40);
     ZG.Audio.sfx('hammer', 0.9);
-    await UI.banner(T('barricaded'), T('barricade_done', { loc: ZG.LOCATIONS[loc.id].name }), 'good');
+    const art = UI.locArtUrl(loc.id);
+    if (art) {
+      const show = ZG.html(`<div class="close-show"><div class="cs-art" style="background-image:url('${art}')"><div class="cs-plank p1"></div><div class="cs-plank p2"></div><div class="cs-stamp">${esc(T('barricaded'))}</div></div><div class="cs-name">${esc(ZG.LOCATIONS[loc.id].name)}</div></div>`);
+      document.body.appendChild(show);
+      await ZG.sleep(2100);
+      show.classList.add('out');
+      await ZG.sleep(350);
+      show.remove();
+    } else await UI.banner(T('barricaded'), T('barricade_done', { loc: ZG.LOCATIONS[loc.id].name }), 'good');
     UI.closingLoc = null;
     if (encOv) encOv.classList.remove('peek');
   };

@@ -221,6 +221,44 @@
     });
   };
 
+  /** Выбрать от min до max карт из руки (обновление руки в конце хода) */
+  UI.pickRange = function (mh, min, max, title, text, filter) {
+    return new Promise((resolve) => {
+      const sel = new Set();
+      const cards = mh.hand.filter((c) => !filter || filter(c));
+      max = Math.min(max, cards.length);
+      min = Math.min(min, max);
+      if (max <= 0) return resolve([]);
+      const ov = UI.overlay(`<div class="modal panel dmg-modal"><h2>${esc(title)}</h2><div class="mtext">${text}</div>
+        <div class="hand">${cards.map((c) => UI.cardHTML(c, { u: c.u })).join('')}</div>
+        <div class="enc-actions" style="margin-top:12px;align-items:center"><span class="muted cnt"></span><button class="btn primary" data-ok>${T('continue')}</button></div></div>`);
+      const upd = () => {
+        ov.querySelector('.cnt').textContent = min ? `Выбрано: ${sel.size} (нужно не меньше ${min})` : (sel.size ? `Сбросить: ${sel.size}` : 'Ничего не сбрасывать');
+        ov.querySelector('[data-ok]').classList.toggle('not-ready', sel.size < min);
+        ov.querySelectorAll('.hand .card').forEach((el) => el.classList.toggle('selected', sel.has(+el.dataset.u)));
+      };
+      ov.querySelectorAll('.hand .card').forEach((el) => el.addEventListener('click', () => {
+        const u = +el.dataset.u;
+        if (sel.has(u)) sel.delete(u); else if (sel.size < max) sel.add(u);
+        upd();
+      }));
+      if (UI.fitHand) requestAnimationFrame(() => UI.fitHand(ov.querySelector('.hand')));
+      let closing = false;
+      ov.querySelector('[data-ok]').addEventListener('click', async () => {
+        if (closing) return;
+        if (sel.size < min) {
+          const cnt = ov.querySelector('.cnt');
+          cnt.textContent = `Сбросьте ещё ${min - sel.size} — рука больше своего размера`;
+          cnt.classList.remove('warn-pulse'); void cnt.offsetWidth; cnt.classList.add('warn-pulse');
+          return;
+        }
+        closing = true;
+        await UI.closeOverlay(ov); resolve([...sel]);
+      });
+      upd();
+    });
+  };
+
   UI.inspect = function (inst) {
     const ov = UI.overlay(`<div class="inspect" style="display:flex;flex-direction:column;align-items:center;gap:18px">${UI.cardHTML(inst, { size: 'big' })}<button class="btn" data-x>${T('close')}</button></div>`);
     const close = () => UI.closeOverlay(ov);
@@ -262,7 +300,7 @@
     noise: ['Шум и орда', 'Громкое оружие, некоторые карты и события поднимают <b>шум</b> локации — смотрите на шкалу и звуковые круги на картинке. Когда шум дойдёт до порога, придёт <b>орда</b>: несколько мертвецов, и первый сразу нападает на героя в этой локации. Утром шум везде спадает на 1, а заколоченная локация затихает навсегда.'],
     modes: ['Как играть карты', '<b>Показать</b> — бесплатно, карта остаётся в руке. <b>Перезарядить</b> — карта уходит под низ колоды и вернётся позже. <b>Сбросить</b> — в сброс (лечение может вернуть её в колоду). <b>Сжечь</b> — навсегда. Чем дороже способ, тем сильнее обычно эффект.'],
     help: ['Помощь соседа', 'Герои в вашей локации могут сыграть в <b>вашу</b> проверку свои карты с пометкой «можно сыграть в проверку соседа» (чаще всего Решимость). Это не их ход, но тратятся их карты. Нажмите на карту соседа, чтобы добавить её.'],
-    endturn: ['Конец хода', 'В конце хода лишние карты сверх размера руки сбрасываются, а затем вы добираете руку из колоды. <b>Колода — это здоровье</b>: если добрать нечего, герой погибает. Лечение возвращает карты из сброса в колоду.'],
+    endturn: ['Конец хода', 'В конце хода вы <b>обновляете руку</b>: можно сбросить любые ненужные карты (лишние сверх размера руки — обязательно), а затем добрать руку из колоды. <b>Колода — это здоровье</b>: если добрать нечего, герой погибает. Лечение возвращает карты из сброса в колоду.'],
     nonphys: ['Нефизический урон', 'Этот урон — огонь, холод, кислота или электричество. <b>Броня от него не защищает.</b> Помогут лекарства, союзники, Решимость и специальное снаряжение: Противогаз и Костюм химзащиты (кислота), Самоспасатель (любой нефизический).'],
     conds: ['Состояния', 'Состояние держится, пока его не снимут; что оно делает — видно, если навести на значок в панели героя. Антибиотики снимают Отравление, Консервы — Обречённость, а «Полевая медицина» Марины снимает любые состояния.'],
     evade: ['Уклонение', 'От врага можно уклониться и не сражаться: это стоит карты или проверки. Враг не исчезает — он уходит <b>под низ</b> колоды локации и встретится вам снова, когда колода подойдёт к концу.'],
