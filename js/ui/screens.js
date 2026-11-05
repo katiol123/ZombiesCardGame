@@ -218,9 +218,10 @@
         <div class="fact"><div class="k">${T('brief_threat')}</div><b>${esc(boss.name)}</b> — сложность ${boss.dc}${boss.hits ? ' ×' + boss.hits : ''}. ${esc(boss.text || '')}</div>
         <div class="fact"><div class="k">${T('brief_minion')}</div><b>${esc(hen.name)}</b> ×${n - 1 + (m.special && m.special.extraHench ? (m.special.extraHench === 'all' ? n : Math.min(m.special.extraHench, n)) : 0)} — сложность ${hen.dc}. Локаций: ${n}.</div>
       </div>
-      ${(() => { const arts = m.locations.map((id) => ({ id, url: UI.locArtUrl && UI.locArtUrl(id) })).filter((x) => x.url); return arts.length ? `<div class="brief-locs">${arts.map((x, i) => `<div class="bl ${i >= n ? 'extra' : ''}" style="background-image:url('${x.url}')" title="${i >= n ? 'Только для отряда побольше' : ''}"><span>${esc(ZG.LOCATIONS[x.id].name)}</span></div>`).join('')}</div>` : ''; })()}
       <div class="enc-actions"><button class="btn ghost" data-back>${T('to_map')}</button><button class="btn primary" data-go>${ZG.icon('skull')} ${T('brief_start')}</button></div>
-    </div></div>`);
+    </div>
+      ${(() => { const arts = m.locations.map((id) => ({ id, url: UI.locArtUrl && UI.locArtUrl(id) })).filter((x) => x.url); return arts.length ? `<div class="brief-locs">${arts.map((x, i) => `<div class="bl ${i >= n ? 'extra' : ''}" style="background-image:url('${x.url}')" title="${i >= n ? 'Только для отряда побольше' : ''}"><span>${esc(ZG.LOCATIONS[x.id].name)}</span></div>`).join('')}</div>` : ''; })()}
+    </div>`);
     const tw = s.querySelector('#tw');
     let skip = false;
     const type = async () => {
