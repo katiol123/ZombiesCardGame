@@ -1421,11 +1421,17 @@
       if (!kOk || (pc.night && !night)) return;
       (pc.dice || []).forEach((d) => dice.push({ d, src: ZG.card(c.id).name + ' (выл.)' }));
     });
+    // признаки, которые карта добавляет оружию на эту атаку (например, «Едкая смазка» — «Кислота»)
+    const addedTraits = new Set();
+    ctx.played.forEach((p) => (G.playDef(p).addTraits || []).forEach((t) => addedTraits.add(t)));
+    const traitsOf = (p) => {
+      const own = ZG.card(p.id).traits || [];
+      return ZG.card(p.id).type === 'weapon' && addedTraits.size ? [...own, ...addedTraits] : own;
+    };
+    const playedTraits = new Set();
+    ctx.played.forEach((p) => traitsOf(p).forEach((t) => playedTraits.add(t)));
     if (ck.enemy) {
       const en = ck.enemy;
-      const traitsOf = (p) => ZG.card(p.id).traits || [];
-      const playedTraits = new Set();
-      ctx.played.forEach((p) => traitsOf(p).forEach((t) => playedTraits.add(t)));
       (en.immune || []).forEach((t) => {
         const bad = ctx.played.filter((p) => traitsOf(p).includes(t)).map((p) => ZG.card(p.id).name);
         if (!bad.length) return;
@@ -1436,8 +1442,10 @@
       Object.keys(en.weak || {}).forEach((t) => { if (playedTraits.has(t)) dice.push({ d: en.weak[t], src: `Уязвим: ${t}` }); });
       Object.keys(en.resist || {}).forEach((t) => { if (playedTraits.has(t)) { bonus -= en.resist[t]; parts.push({ label: `Стойкость: ${t}`, v: -en.resist[t] }); } });
     }
-    const ignoreArmor = ctx.played.some((p) => G.playDef(p).ignoreArmor);
-    if (ignoreArmor && ck.enemy && ck.enemy.armor) parts.push({ label: 'Броня врага не действует', v: 0 });
+    // кислота проедает броню
+    const acid = ck.kind === 'combat' && playedTraits.has('Кислота');
+    const ignoreArmor = acid || ctx.played.some((p) => G.playDef(p).ignoreArmor);
+    if (ignoreArmor && ck.enemy && ck.enemy.armor) parts.push({ label: acid ? 'Кислота: броня врага не действует' : 'Броня врага не действует', v: 0 });
     if (!ignoreArmor && ck.enemy && ck.enemy.armor && (skill === 'melee' || ZG.attrOf(skill) === 'str')) {
       bonus -= ck.enemy.armor;
       parts.push({ label: 'Броня врага', v: -ck.enemy.armor });

@@ -52,7 +52,7 @@
       hand: 5,
       deck: { weapon: 2, item: 3, consumable: 4, ally: 2, resolve: 3, technique: 1 },
       prof: [],
-      start: ['knife', 'flashlight', 'jacket', 'binoculars', 'bandage', 'bandage', 'painkillers', 'cannedfood', 'neighbor', 'rex', 'hope', 'hope', 'prayer', 'triage', 'knife'],
+      start: ['knife', 'flashlight', 'jacket', 'binoculars', 'bandage', 'bandage', 'painkillers', 'cannedfood', 'neighbor', 'rex', 'hope', 'hope', 'prayer', 'triage', 'acidsyringe'],
       powers: [
         { id: 'fieldmed', name: 'Полевая медицина', text: 'Вместо первого исследования за ход покажите карту с признаком «Медицина» и выберите героя в своей локации (можно себя). На выбор: он перетасовывает 1d4+1 случайных карт из сброса в колоду, или изгоняет 1 Инфекцию, или снимает все состояния. Показанная карта сбрасывается.' },
         { id: 'steady', name: 'Твёрдая рука', text: 'Небоевые проверки Медицины получают +1d4. В бою с оружием «Тихое» +1d4, и можно бросать кубик Смекалки вместо Ловкости (без бонуса Медицины).' },

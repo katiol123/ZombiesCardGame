@@ -27,6 +27,20 @@
         { on: 'check', mode: 'reveal', kind: COMBAT, weapon: ['str', 'dex', 'melee'], dice: ['d4'], bonus: 1 },
       ],
       flavor: 'Ещё вчера им резали хлеб.' },
+    { id: 'acidsyringe', type: 'weapon', name: 'Шприц с кислотой', tier: 1, icon: 'syringe', traits: ['Медицина', 'Кислота', 'Тихое'],
+      missions: ['m1', 'm6', 'm9', 'm10'], // находится только там, где есть лаборатории и аптеки
+      acquire: { skills: ['medicine', 'dex'], dc: 6 },
+      text: 'Кислота проедает броню: броня врага не действует.',
+      plays: [
+        { on: 'check', mode: 'discard', kind: COMBAT, weapon: ['medicine', 'dex'], dice: ['d8'] },
+      ],
+      flavor: 'Серная кислота из лабораторного шкафа. Марина знает, куда колоть.' },
+    { id: 'acidcoat', type: 'item', name: 'Едкая смазка', tier: 1, icon: 'biohazard', traits: ['Кислота', 'Самоделка'],
+      acquire: { skills: ['tech', 'medicine'], dc: 6 },
+      plays: [
+        { on: 'check', mode: 'recharge', kind: COMBAT, trait: 'Ближнее', addTraits: ['Кислота'], text: 'Перезарядите для боевой проверки с оружием «Ближнее»: в этой атаке оружие получает признак «Кислота» — броня врага не действует.' },
+      ],
+      flavor: 'Электролит из аккумулятора и тряпка. Лезвие шипит.' },
     { id: 'bat', type: 'weapon', name: 'Бейсбольная бита', tier: 0, basic: true, icon: 'bat', traits: ['Ближнее'],
       acquire: { skills: ['str', 'melee'], dc: 5 },
       plays: [
@@ -863,7 +877,7 @@
   ]);
   U('m7', [
     { id: 'gasminer', type: 'enemy', name: 'Шахтёр в метане', icon: 'fire', dc: 10, bite: true, dmgType: 'fire', weak: { 'Тихое': 'd6' }, flavor: 'Каска искрит о камень. Воздух вспыхивает.' },
-    { id: 'rockcrawler', type: 'enemy', name: 'Каменный ползун', icon: 'skull', dc: 9, bite: true, resist: { 'Ближнее': 2 }, inflict: 'numb', flavor: 'Сросся с породой. Почти.' },
+    { id: 'rockcrawler', type: 'enemy', name: 'Каменный ползун', icon: 'skull', dc: 9, bite: true, resist: { 'Ближнее': 2 }, weak: { 'Кислота': 'd6' }, inflict: 'numb', flavor: 'Сросся с породой. Почти.' },
   ]);
   U('m8', [
     { id: 'bearz', type: 'enemy', name: 'Мёртвый медведь', icon: 'paw', dc: 12, bite: true, dmgAdd: 1, weak: { 'Огонь': 'd6' }, finishCheck: { skills: ['survival', 'end'], dc: 8 }, pierceLight: true,
@@ -894,9 +908,9 @@
     swarm: { inflict: 'decay', weak: { 'Огонь': 'd8' }, resist: { 'Огнестрел': 2 } },
     stalker: { inflict: 'terror' },
     drhale: { inflict: 'poison', dmgType: 'acid' },
-    brute: { inflict: 'numb', resist: { 'Тихое': 2 } },
+    brute: { inflict: 'numb', resist: { 'Тихое': 2 }, weak: { 'Кислота': 'd6' } },
     mutant: { inflict: 'vuln', dmgType: 'acid', weak: { 'Огонь': 'd6' } },
-    colossus: { inflict: 'numb', weak: { 'Огонь': 'd10' }, resist: { 'Огнестрел': 2 } },
+    colossus: { inflict: 'numb', weak: { 'Огонь': 'd10', 'Кислота': 'd6' }, resist: { 'Огнестрел': 2 } },
     holt: { inflict: 'poison', dmgType: 'acid', weak: { 'Огонь': 'd8' } },
     screamer: { inflict: 'terror', weak: { 'Тихое': 'd6' } },
     echo: { inflict: 'terror', weak: { 'Тихое': 'd6' }, echoNoise: true },
@@ -960,6 +974,7 @@
     const pool = Object.values(C).filter((c) => {
       if (c.type !== type || c.reward || c.eventOnly) return false;
       if (c.mission) return c.mission === mid;
+      if (c.missions && !c.missions.includes(mid)) return false;
       if (c.tier > 3) return false;
       return c.tier <= tier;
     });
