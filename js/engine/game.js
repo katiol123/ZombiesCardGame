@@ -513,7 +513,7 @@
     UI().renderBoard();
     const ec = G.lrule(G.loc(mh)).enterCheck;
     if (ec && !G.loc(mh).closed) {
-      const er = await G.doCheck(mh, G.eventCheck(ec, G.loc(mh), `Вход: ${G.ldef(G.loc(mh)).name}`, null));
+      const er = await G.doCheck(mh, G.eventCheck(ec, G.loc(mh), ec.name || `Вход: ${G.ldef(G.loc(mh)).name}`, null));
       if (!er.success) return await G.applyFx(mh, G.loc(mh), ec.fail);
     }
     return null;
@@ -1276,6 +1276,14 @@
             await ui.banner('Это будет сниться', `Изгнана карта «${ZG.card(c.id).name}»`, 'bad');
             break;
           }
+        }
+      }
+      if (fx.toll) {
+        // «Плата за проезд»: герой сам выбирает, какую карту отдать
+        const ok = (c) => c.id !== 'infection';
+        if (mh.hand.some(ok)) {
+          const us = await ui.pickCards(mh, fx.toll, 'Плата за проезд', 'Банда требует плату: сбросьте карту из руки.', false, ok);
+          us.forEach((u) => { const c = mh.hand.find((x) => x.u === u); G.moveByMode(mh, u, 'discard'); G.log(`${G.hname(mh)} платит за проезд: «${ZG.card(c.id).name}».`, 'bad'); });
         }
       }
       if (fx.banishRandomHand) {

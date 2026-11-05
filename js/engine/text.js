@@ -159,6 +159,7 @@
       if (f.cond) return `«${ZG.CONDS[f.cond].name}»`;
       if (f.summon) return 'приходит мертвец';
       if (f.clock) return `−${f.clock} Часы`;
+      if (f.toll) return 'сбросьте карту из руки на выбор';
       return '';
     }).filter(Boolean).join(', ');
     if (r.undeadDc) out.push(`Мертвецы здесь +${r.undeadDc}.`);
@@ -171,7 +172,7 @@
     if (r.firearmNoise) out.push(`Огнестрел здесь: шум +${r.firearmNoise}.`);
     if (r.stealthBonus) out.push(`Уклонение и Скрытность +${r.stealthBonus}.`);
     if (r.noGive) out.push('Здесь нельзя передавать карты.');
-    if (r.enterCheck) out.push(`При входе: ${r.enterCheck.skills.map(ZG.skillName).join(' / ')} ${r.enterCheck.dc}, провал — ${fxs(r.enterCheck.fail)}.`);
+    if (r.enterCheck) out.push(`${r.enterCheck.name ? r.enterCheck.name + '. ' : ''}При входе: ${r.enterCheck.skills.map(ZG.skillName).join(' / ')} ${r.enterCheck.dc}, провал — ${fxs(r.enterCheck.fail)}.`);
     if (r.endTurn) out.push(`В конце хода здесь: ${r.endTurn.skills.map(ZG.skillName).join(' / ')} ${r.endTurn.dc}, провал — ${fxs(r.endTurn.fail)}.`);
     if (r.closeCost) out.push(`Чтобы заколотить, сбросьте ${TYPE_GEN[r.closeCost] || r.closeCost}.`);
     if (r.closeTwice) out.push('Заколотить: нужны 2 успешные проверки подряд.');

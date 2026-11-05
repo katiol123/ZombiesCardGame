@@ -255,6 +255,8 @@
     gangcamp: { livingDc: 2, noGive: true },
     junkyard: { findsStay: true },
     motel: { endTurn: { skills: ['will'], dc: 5, fail: [{ cond: 'terror' }] } },
+    highway: { enterCheck: { name: 'Плата за проезд', skills: ['stealth'], dc: 6, fail: [{ toll: 1 }] } },
+    diner: { enterCheck: { name: 'Плата за проезд', skills: ['stealth'], dc: 6, fail: [{ toll: 1 }] } },
     pylons: { closeCost: 'item', closeFail: [{ damage: 'd4', dmgType: 'fire' }] },
     embankment: { enemyDmgType: 'cold', enterCheck: { skills: ['end', 'survival'], dc: 5, fail: [{ cond: 'numb' }] } },
     jam: { hordeTop: true },
