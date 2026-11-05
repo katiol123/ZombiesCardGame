@@ -586,7 +586,7 @@
       flavor: 'Один свист — и волки замирают. Пока что.' },
     { id: 'busdriver', type: 'ally', name: 'Водитель Глория', tier: 9, reward: true, icon: 'truck', traits: ['Трофей'],
       acquire: { skills: ['persuasion'], dc: 4 },
-      plays: [{ on: 'action', mode: 'recharge', explore: true }],
+      plays: [{ on: 'action', mode: 'recharge', relocate: true }],
       flavor: '«Дети, пристегнитесь. Будет трясти».' },
     { id: 'fuelcan', type: 'objective', name: 'Канистра с топливом', tier: 9, eventOnly: true, icon: 'fuel', traits: ['Цель'],
       acquire: { skills: ['str', 'survival', 'tech'], dc: 5 },

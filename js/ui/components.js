@@ -143,9 +143,14 @@
   };
 
   UI.toast = function (text, kind) {
+    const box = document.getElementById('toasts');
+    // то же сообщение уже на экране — не плодим копии, а продлеваем его
+    const same = [...box.children].find((e) => e.dataset.txt === text);
+    if (same) { clearTimeout(same._t); same._t = setTimeout(() => same.remove(), 2900); return; }
     const el = ZG.html(`<div class="toast ${kind || ''}">${text}</div>`);
-    document.getElementById('toasts').appendChild(el);
-    setTimeout(() => el.remove(), 2900);
+    el.dataset.txt = text;
+    box.appendChild(el);
+    el._t = setTimeout(() => el.remove(), 2900);
   };
 
   /* ============================== Выбор героя / карт / локации ============================== */

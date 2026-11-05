@@ -502,7 +502,21 @@
     if (p.scout) return G.openLocs().some((l) => l.deck.length);
     if (p.draw) return mh.deck.length > 0;
     if (p.lure) return !loc.closed && loc.noise > 0 && G.openLocs().length > 1;
+    if (p.relocate) return G.openLocs().some((l) => l !== loc);
     return false;
+  };
+
+  /** Переход героя в локацию (с проверкой входа, если она есть) */
+  G.enterLoc = async function (mh, i, verb) {
+    mh.loc = i;
+    G.log(`${G.hname(mh)} ${verb || 'идёт'} в «${G.ldef(G.loc(mh)).name}».`, 'move');
+    UI().renderBoard();
+    const ec = G.lrule(G.loc(mh)).enterCheck;
+    if (ec && !G.loc(mh).closed) {
+      const er = await G.doCheck(mh, G.eventCheck(ec, G.loc(mh), `Вход: ${G.ldef(G.loc(mh)).name}`, null));
+      if (!er.success) return await G.applyFx(mh, G.loc(mh), ec.fail);
+    }
+    return null;
   };
 
   G.turn = async function (mh) {
@@ -517,14 +531,8 @@
       switch (act.type) {
         case 'move':
           if (act.loc !== mh.loc) {
-            mh.loc = act.loc;
             m.ts.moved = true;
-            G.log(`${G.hname(mh)} идёт в «${G.ldef(G.loc(mh)).name}».`, 'move');
-            const ec = G.lrule(G.loc(mh)).enterCheck;
-            if (ec && !G.loc(mh).closed) {
-              const er = await G.doCheck(mh, G.eventCheck(ec, G.loc(mh), `Вход: ${G.ldef(G.loc(mh)).name}`, null));
-              if (!er.success) r = await G.applyFx(mh, G.loc(mh), ec.fail);
-            }
+            r = await G.enterLoc(mh, act.loc, 'идёт');
           }
           break;
         case 'explore':
@@ -722,6 +730,12 @@
       lureTo = await ui.pickLocation('Куда увести шум?', cand);
       if (lureTo == null) return null;
     }
+    let relTo = null;
+    if (p.relocate) {
+      const cand = G.openLocs().filter((l) => l !== G.loc(mh)).map((l) => G.M().locations.indexOf(l));
+      relTo = await ui.pickLocation('Куда отвезти?', cand);
+      if (relTo == null) return null;
+    }
     G.moveByMode(mh, u, p.mode);
     G.log(`${G.hname(mh)}: «${d.name}» — ${ZG.T('mode_' + p.mode).toLowerCase()}.`, 'card');
     if (p.heal) {
@@ -773,6 +787,10 @@
       await G.checkHorde(to);
     }
     if (p.scout) await G.scout(mh);
+    if (relTo != null) {
+      const rr = await G.enterLoc(mh, relTo, 'едет');
+      if (rr) return rr;
+    }
     if (p.explore) {
       return await G.explore(mh);
     }
@@ -1046,8 +1064,7 @@
       }
       // Как в Pathfinder: заколотить можно только сразу после победы над вожаком.
       // Отказ или провал — шанс упущен, локацию придётся вычищать до пустой колоды.
-      const moreHench = loc.deck.some((c) => ZG.card(c.id).type === 'henchman');
-      if (def.type === 'henchman' && !loc.closed && !mh.dead && !moreHench && !(loc.deck.length === 0 && m.ts.closeTried)) {
+      if (def.type === 'henchman' && !loc.closed && !mh.dead && !(loc.deck.length === 0 && m.ts.closeTried)) {
         const c = await ui.choose({
           title: 'Вожак повержен',
           text: `Попытаться заколотить «${G.ldef(loc).name}» прямо сейчас? (${ZG.cardCheckLineClose(loc)}) Это единственный шанс: если отказаться или провалить проверку, локацию придётся вычищать до пустой колоды.`,
