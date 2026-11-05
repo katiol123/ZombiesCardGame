@@ -115,17 +115,23 @@
     const html = m.locations.map((l, i) => {
       const ld = ZG.LOCATIONS[l.id];
       const heroes = m.heroes.filter((h) => h.loc === i);
+      // шум — звуковые круги от картинки локации: чем громче, тем чаще и краснее
+      const lvl = Math.min(1, l.noise / Math.max(1, l.limit));
+      const alarm = !l.closed && l.noise > 0 && l.noise >= l.limit - 1;
+      const rd = +(2.8 - 1.9 * lvl).toFixed(2);
+      const ph = Date.now() % (rd * 1000);
       const segs = Array.from({ length: l.limit }, (_, k) => `<i class="${k < l.noise ? 'on' : ''} ${k < l.noise && l.noise >= l.limit - 1 ? 'hot' : ''}"></i>`).join('');
+      const rings = !l.closed && l.noise > 0 ? `<div class="nrings" style="--rd:${rd}s;--rh:${Math.round(42 - 42 * lvl)};--ra:${(0.35 + 0.5 * lvl).toFixed(2)}">${[0, 1, 2].map((k) => `<i style="animation-delay:${-ph - (k * rd * 1000) / 3}ms"></i>`).join('')}</div>` : '';
       const rules = ZG.locationRules(ld).map((t) => `<div class="lrule">${esc(t)}</div>`).join('');
       const pick = UI.pickMode && UI.pickMode.indices.includes(i);
-      return `<div class="loc ${l.closed ? 'closed' : ''} ${active && active.loc === i ? 'here' : ''} ${pick ? 'pickable' : ''} ${UI.closingLoc === i ? 'closing' : ''}" data-i="${i}" style="--hc:${active ? ZG.HEROES[active.id].color : ''}">
-        <div class="lart" style="--lt:${UI.locTint(ld.icon)}">${ZG.art('locations', ld.id, ld.icon)}
+      return `<div class="loc ${l.closed ? 'closed' : ''} ${alarm ? 'alarm' : ''} ${active && active.loc === i ? 'here' : ''} ${pick ? 'pickable' : ''} ${UI.closingLoc === i ? 'closing' : ''}" data-i="${i}" style="--hc:${active ? ZG.HEROES[active.id].color : ''}">
+        <div class="lart" style="--lt:${UI.locTint(ld.icon)}">${ZG.art('locations', ld.id, ld.icon)}${rings}
           ${l.closed ? '' : `<div class="lstack" title="Карт в колоде локации">${ZG.icon('cards')} ${l.deck.length}</div>`}</div>
         ${l.closed ? '<div class="planks"><div class="plank p1"></div><div class="plank p2"></div></div>' : ''}
         <div class="lbody">
           <h3>${esc(ld.name)}</h3>
           ${l.closed ? `<span class="shelter-tag">${ZG.icon('tent')} ${T('barricaded')}</span>` : `
-          <div class="noise-meter" data-noise="${i}" title="Шум ${l.noise} из ${l.limit}. При пороге приходит орда.">${ZG.icon('noise')}<div class="segs">${segs}</div><span>${l.noise}/${l.limit}</span></div>
+          <div class="noise-meter ${alarm ? 'hot' : ''}" data-noise="${i}" title="Шум ${l.noise} из ${l.limit}. При пороге приходит орда.">${ZG.icon('noise')}<div class="segs">${segs}</div><span><b>${l.noise}</b>/${l.limit}</span>${alarm ? '<em>орда близко</em>' : ''}</div>
           ${rules}
           <div class="lclose">${ZG.icon('hammer')} ${esc(ZG.cardCheckLineClose(l))}</div>
           ${ZG.closeRewardText(ld) ? `<div class="lreward" title="Награда, когда локация заколочена">${ZG.icon('trophy')} ${esc(ZG.closeRewardText(ld))}</div>` : ''}
@@ -623,6 +629,24 @@
     UI.keyRoll = () => { const b = panel.querySelector('[data-roll]'); if (b) b.click(); };
   };
 
+  /** Комиксная надпись при попадании: звук зависит от оружия */
+  UI.comicHit = function (ctx) {
+    const w = (ctx.played || []).map((p) => ZG.card(p.id)).find((d) => d.type === 'weapon');
+    const tr = (w && w.traits) || [];
+    const pool = tr.includes('Огнестрел') ? ['БАХ!', 'БДЫЩ!', 'ПАФ!']
+      : tr.includes('Огонь') ? ['ВЖУХ!', 'ФШШ!']
+      : tr.includes('Электричество') ? ['ТРЕСК!', 'ВЗЗТ!']
+      : tr.includes('Дальнее') ? ['ВЖИК!', 'ТУК!']
+      : tr.includes('Тяжёлое') ? ['ХРЯСЬ!', 'БУМ!']
+      : w ? ['ХРЯСЬ!', 'ШМЯК!', 'БАМ!'] : ['БАМ!', 'ТЫЦ!'];
+    const word = pool[Math.floor(Math.random() * pool.length)];
+    const box = document.querySelector('.enc-ov .enc-card .card') || (UI.cardBox && UI.cardBox());
+    const r = box && box.offsetParent !== null ? box.getBoundingClientRect() : { left: innerWidth / 2 - 100, top: innerHeight / 3, width: 200, height: 200 };
+    const el = ZG.html(`<div class="comic-hit" style="left:${Math.round(r.left + r.width / 2)}px;top:${Math.round(r.top + Math.min(r.height * 0.32, 150))}px;--rot:${(Math.random() * 16 - 8).toFixed(1)}deg"><div class="ch-burst"></div><b>${word}</b></div>`);
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 1500);
+  };
+
   UI.doRoll = async function (panel, ctx, finish) {
     UI.keyRoll = null;
     const res = G().rollCheck(ctx);
@@ -660,6 +684,7 @@
       <div class="enc-actions"><button class="btn ${ok ? 'good' : 'primary'}" data-cont>${T('continue')}</button></div>`;
     ZG.Audio.synth(ok ? 'success' : 'fail');
     if (ok) { ZG.FX.flash('green'); ZG.FX.burstAt(panel.querySelector('.result-banner'), 'gold', 40); }
+    if (ok && ctx.check && ctx.check.kind === 'combat') UI.comicHit(ctx);
     else { ZG.FX.flash('red'); ZG.FX.shake(UI.cardBox() || undefined); }
     const btn = bottom.querySelector('[data-cont]');
     UI.keyRoll = () => btn.click();
@@ -819,7 +844,7 @@
     if (encOv) await ZG.sleep(250);
     const el = document.querySelector(`.loc[data-i="${i}"]`);
     if (el) ZG.FX.burstAt(el, 'spark', 40);
-    ZG.Audio.synth('hammer');
+    ZG.Audio.sfx('hammer', 0.9);
     await UI.banner(T('barricaded'), T('barricade_done', { loc: ZG.LOCATIONS[loc.id].name }), 'good');
     UI.closingLoc = null;
     if (encOv) encOv.classList.remove('peek');

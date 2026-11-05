@@ -65,7 +65,17 @@
   UI.avatar = function (heroId, cls) {
     const h = ZG.HEROES[heroId];
     const av = window.ZG_ART && window.ZG_ART.avatars && window.ZG_ART.avatars[heroId] ? 'avatars' : 'heroes';
-    return `<div class="avatar ${cls || ''}" style="--hc:${h.color}" title="${esc(h.name)}">${ZG.art(av, heroId, h.icon)}</div>`;
+    // в миссии портрет показывает состояние: Инфекция — зелёные прожилки, тающая колода — трещины
+    let st = '';
+    const M = document.getElementById('board') && ZG.Game.M && ZG.Game.M();
+    const mh = M && M.heroes.find((x) => x.id === heroId);
+    if (mh && !mh.dead) {
+      const inf = ZG.Game.infCount(mh);
+      if (inf) st += ` inf${Math.min(3, inf)}`;
+      if (mh.deck.length <= 2) st += ' crack2';
+      else if (mh.deck.length <= 5) st += ' crack1';
+    }
+    return `<div class="avatar${st} ${cls || ''}" style="--hc:${h.color}" title="${esc(h.name)}">${ZG.art(av, heroId, h.icon)}${st ? '<i class="av-fx"></i>' : ''}</div>`;
   };
 
   UI.statsHTML = function (ph) {
