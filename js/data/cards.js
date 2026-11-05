@@ -495,9 +495,6 @@
     { id: 'nursery', type: 'event', name: 'Детская комната', tier: 0, icon: 'child',
       check: { skills: ['will', 'end'], dc: 6 }, success: [{ gain: 'resolve' }], fail: [{ shock: 2 }],
       text: 'Успех: найдите Решимость. Провал: шок — сбросьте 2 случайные карты из руки.', flavor: 'Мобиль над кроваткой всё ещё крутится.' },
-    { id: 'huntertrap', type: 'event', name: 'Капкан егеря', tier: 9, eventOnly: true, icon: 'alert',
-      check: { skills: ['dex', 'survival'], dc: 7 }, success: [{ explore: 1 }], fail: [{ damage: 'd4' }, { cond: 'numb' }],
-      text: 'Успех: можете исследовать ещё раз. Провал: 1d4 урона и Онемение — нога в стальных зубьях.', flavor: 'Присыпан хвоей. Кроули знает, где вы пойдёте.' },
     { id: 'stash', type: 'event', name: 'Тайник выживальщика', tier: 0, icon: 'backpack',
       check: { skills: ['wit', 'survival'], dc: 6 }, success: [{ gain: 'weapon' }], fail: [{ damage: 'd4' }],
       text: 'Успех: случайное Оружие. Провал: ловушка — 1d4 урона.', flavor: 'Крестик на карте. Растяжка у двери.' },
@@ -619,7 +616,7 @@
     { id: 'packwolf', type: 'henchman', name: 'Волк стаи', tier: 3, icon: 'paw', dc: 11, bite: true, packDc: 3,
       text: 'Вожак. Охотятся вместе: +1 к сложности за каждого другого Волка стаи в открытых локациях (не больше +3). Победив его, можно сразу попытаться заколотить локацию.', flavor: 'Глаза светятся в темноте. Все двенадцать пар.' },
     { id: 'alpha', type: 'boss', name: 'Егерь Кроули', tier: 3, icon: 'bossskull', dc: 18, bite: true,
-      text: 'Угроза. Капканы: каждые 3 хода в случайную открытую локацию замешивается препятствие «Капкан егеря».', flavor: 'Лесничий, который открыл вольеры. Теперь стая слушается только его.' },
+      text: 'Угроза. Капканы: каждые 3 хода в случайную открытую локацию замешивается «Медвежий капкан».', flavor: 'Лесничий, который открыл вольеры. Теперь стая слушается только его.' },
     { id: 'hallmonitor', type: 'henchman', name: 'Школьный сторож', tier: 3, icon: 'ghost', dc: 15, bite: true, halfDmg: true,
       text: 'Вожак. Победив его, можно сразу попытаться заколотить локацию.', flavor: 'Связка ключей звенит в каждом коридоре.' },
     { id: 'principal', type: 'boss', name: 'Директор Брэдшоу', tier: 3, icon: 'bossskull', dc: 16, bite: true, noiseOnEncounter: 3,
@@ -805,8 +802,10 @@
   U('m8', [
     { id: 'canoepaddle', type: 'weapon', name: 'Весло от каноэ', icon: 'waves', traits: ['Ближнее', 'Тихое'], acquire: { skills: ['str', 'survival'], dc: 7 },
       plays: [{ on: 'check', mode: 'recharge', kind: COMBAT, weapon: ['str', 'melee'], dice: ['d8'], bonus: 1 }], flavor: 'На лопасти выжжено: «Сосновый ручей — отряд „Бобры“». Бобры бы гордились.' },
-    { id: 'beartrap', type: 'item', name: 'Медвежий капкан', icon: 'lock', traits: [], acquire: { skills: ['survival', 'str'], dc: 7 },
-      plays: [{ on: 'check', mode: 'discard', kind: COMBAT, dice: ['d6', 'd6'] }, { on: 'evade', mode: 'discard' }], flavor: 'Щёлк.' },
+    { id: 'beartrap', type: 'item', name: 'Медвежий капкан', icon: 'lock', traits: [], eventOnly: true, acquire: { skills: ['dex', 'survival'], dc: 7 },
+      trap: { skills: ['dex', 'survival'], dc: 7, fail: [{ damage: 'd4' }, { cond: 'numb' }] },
+      text: 'Ставит Егерь Кроули. В локации: успех — обезврежен, заберите в руку; провал — 1d4 урона и Онемение.',
+      plays: [{ on: 'check', mode: 'discard', kind: COMBAT, dice: ['d6', 'd6'] }, { on: 'evade', mode: 'discard' }], flavor: 'Присыпан хвоей. Кроули знает, где вы пойдёте.' },
     { id: 'counselor', type: 'ally', name: 'Рыбак Эрл', icon: 'waves', traits: ['Горожанин'], acquire: { skills: ['persuasion'], dc: 7 },
       plays: [{ on: 'action', mode: 'bury', heal: { dice: ['d4', 'd4'], bonus: -1 }, target: 'here' }], flavor: 'Живёт в трейлере у озера. Уха лечит всё. Почти.' },
     { id: 'campsong', type: 'resolve', name: 'Песня у костра', icon: 'fire', traits: [], acquire: { skills: ['will', 'persuasion'], dc: 6 },
@@ -941,7 +940,7 @@
 
   /** Определение карты по id (поддерживает динамических «обращённых» героев) */
   // старые id карт, заменённых новыми (чтобы не ломались сохранения)
-  const ALIAS = { compoundbow: 'canoepaddle' };
+  const ALIAS = { compoundbow: 'canoepaddle', huntertrap: 'beartrap' };
   ZG.card = function (id) {
     if (C[id]) return C[id];
     if (ALIAS[id]) return C[ALIAS[id]];

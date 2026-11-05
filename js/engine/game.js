@@ -850,6 +850,8 @@
     } else if (def.type === 'event') {
       await ui.tip('event');
       r = await G.event(mh, inst, loc);
+    } else if (def.trap) {
+      r = await G.trap(mh, inst, loc);
     } else {
       await ui.tip('acquire');
       r = await G.acquire(mh, inst, loc);
@@ -1222,6 +1224,22 @@
   };
 
   /* ---------- Препятствия ---------- */
+  /** Ловушка (капкан Егеря): успех — обезврежена и забрана в руку, провал — срабатывает и теряется */
+  G.trap = async function (mh, inst, loc) {
+    const def = ZG.card(inst.id);
+    const t = def.trap;
+    const res = await G.doCheck(mh, G.eventCheck(t, loc, `Ловушка: ${def.name}`, def));
+    if (res.success) {
+      inst.l = 1;
+      mh.hand.push(inst);
+      G.log(`${G.hname(mh)} обезвреживает «${def.name}» и забирает его.`, 'loot');
+      await UI().gain(inst, 'Обезврежен!');
+      return null;
+    }
+    G.log(`«${def.name}» защёлкнулся.`, 'bad');
+    return await G.applyFx(mh, loc, t.fail);
+  };
+
   G.event = async function (mh, inst, loc) {
     const def = ZG.card(inst.id);
     const ui = UI();
