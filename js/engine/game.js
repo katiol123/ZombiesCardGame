@@ -920,7 +920,9 @@
 
   G.closeCheck = function (loc, title) {
     const ld = G.ldef(loc);
-    return { kind: 'close', skills: ld.close.skills, dc: ld.close.dc, base: ld.close.dc, mods: [], locIdx: G.M().locations.indexOf(loc), title: title || `${T('check_close')}: ${ld.name}` };
+    const cm = G.special().closeDcMod || 0;
+    const mods = cm ? [{ label: G.special().closeDcLabel || 'Миссия', v: cm }] : [];
+    return { kind: 'close', skills: ld.close.skills, dc: ld.close.dc + cm, base: ld.close.dc, mods, locIdx: G.M().locations.indexOf(loc), title: title || `${T('check_close')}: ${ld.name}` };
   };
 
   /** Удар по всем героям в локации: каждый проходит проверку, при провале — урон кубиком */
@@ -1168,7 +1170,7 @@
 
   ZG.cardCheckLineClose = (loc) => {
     const c = ZG.LOCATIONS[loc.id].close;
-    return `${c.skills.map(ZG.skillName).join(' / ')} ${c.dc}`;
+    return `${c.skills.map(ZG.skillName).join(' / ')} ${c.dc + (G.special().closeDcMod || 0)}`;
   };
 
   /* ---------- Поиск ---------- */
