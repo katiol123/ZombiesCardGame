@@ -18,7 +18,7 @@
 
   /* ============================== Главное меню ============================== */
   UI.showTitle = function () {
-    ZG.FX.setNight(false);
+    ZG.FX.setNight(false); ZG.Audio.ambient && ZG.Audio.ambient(null);
     ZG.Audio.music('shelter');
     const last = ZG.Save.lastSlot();
     const s = show(`<div class="screen title-screen">
@@ -251,7 +251,7 @@
     const S = ZG.Save.current;
     const r = S.lastResult;
     const m = ZG.MISSIONS[r.idx];
-    ZG.FX.setNight(false);
+    ZG.FX.setNight(false); ZG.Audio.ambient && ZG.Audio.ambient(null);
     const finalWin = r.win && r.idx === ZG.MISSIONS.length - 1;
     const s = show(`<div class="screen result-screen"><div class="result-box panel ${r.win ? 'win' : 'lose'}">
       <div class="brief-kicker">Миссия ${m.num} · ${esc(m.name)}</div>

@@ -426,6 +426,7 @@
     m.turnEvent = { id: c.id, name: c.id === 'calm' ? (c.name || 'Тишина') : cd.name, turn: m.turn, detail: '' };
     switch (c.id) {
       case 'siren':
+        ZG.Audio.sfx('siren', 0.7);
         for (const l of G.openLocs()) { G.addNoise(l, 1); }
         for (const l of G.openLocs()) await G.checkHorde(l);
         break;

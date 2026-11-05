@@ -5,8 +5,9 @@
   const ZG = window.ZG;
   const BASE = 'assets/audio/';
   const MUSIC = { missions: 'missions.mp3', shelter: 'shelter.mp3' };
-  const SFX = { braam: 'braam.mp3', growl: 'growl.mp3', psychedelic: 'psychedelic.mp3', tension: 'tension.mp3', dice: 'dice.mp3', hammer: 'hammer.mp3' };
-  const SFX_GAP = { growl: 900, braam: 1200, psychedelic: 1500, tension: 1500, dice: 200 };
+  const SFX = { braam: 'braam.mp3', growl: 'growl.mp3', psychedelic: 'psychedelic.mp3', tension: 'tension.mp3', dice: 'dice.mp3', hammer: 'hammer.mp3', flip: 'flip.mp3', heartbeat: 'heartbeat.mp3', siren: 'siren.mp3' };
+  const AMB = { rain: 'rain.mp3' };
+  const SFX_GAP = { growl: 900, braam: 1200, psychedelic: 1500, tension: 1500, dice: 200, flip: 120, heartbeat: 900, siren: 1500 };
 
   const A = (ZG.Audio = {
     unlocked: false,
@@ -53,6 +54,20 @@
     if (musicVol() > 0) {
       el.play().then(() => fade(el, musicVol(), 2000)).catch(() => {});
     }
+  };
+
+  /** Фоновая петля события (дождь) поверх музыки; null — выключить */
+  A.ambient = function (name) {
+    if (A.amb && A.amb.name === name) return;
+    const old = A.amb;
+    if (old) fade(old.el, 0, 1200, () => old.el.pause());
+    A.amb = null;
+    if (!name || !AMB[name] || A.disabled || !A.unlocked || sfxVol() <= 0) return;
+    const el = new Audio(BASE + AMB[name]);
+    el.loop = true;
+    el.volume = 0;
+    A.amb = { name, el };
+    el.play().then(() => fade(el, Math.min(1, sfxVol() * 0.5), 1800)).catch(() => {});
   };
 
   /** Короткий звук */

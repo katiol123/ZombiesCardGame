@@ -68,6 +68,7 @@
 
   UI.renderTop = function () {
     const m = G().M();
+    ZG.Audio.ambient && ZG.Audio.ambient(m.turnEvent && m.turnEvent.id === 'rain' && !m.over ? 'rain' : null);
     const def = G().def();
     const left = m.clock.length - m.clockPos;
     const night = m.phase === 'night' && m.turn > 0;
@@ -426,7 +427,7 @@
       UI.enc = { el, depth: 1 };
     }
     await ZG.sleep(280);
-    ZG.Audio.synth('flip');
+    ZG.Audio.sfx('flip', 0.8);
     const fl = UI.enc.el.querySelector('.card-flipper');
     if (fl) fl.classList.remove('down');
     await ZG.sleep(650);
@@ -859,7 +860,8 @@
   };
 
   UI.fxInfect = async function (mh, n) {
-    ZG.Audio.sfx('psychedelic', n >= 2 ? 1 : 0.7);
+    ZG.Audio.sfx('heartbeat', 1);
+    if (n >= 2) ZG.Audio.sfx('psychedelic', 0.6);
     ZG.FX.flash('toxic');
     ZG.FX.burstAt(UI.cardBox() || document.querySelector('.hero-panel .avatar'), 'toxic', 60);
     UI.toast(`${ZG.icon('biohazard')} ${esc(G().hname(mh))}: Инфекция ${n}/3`, 'bad');
