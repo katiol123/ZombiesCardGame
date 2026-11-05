@@ -122,6 +122,7 @@ window.ZG_ART = {
     patient: 'assets/cards/patient.webp',
     patientzero: 'assets/cards/patientzero.webp',
     patrol: 'assets/cards/patrol.webp',
+    pipebomb: 'assets/cards/pipebomb.webp',
     pistol: 'assets/cards/pistol.webp',
     prayer: 'assets/cards/prayer.webp',
     priest: 'assets/cards/priest.webp',
