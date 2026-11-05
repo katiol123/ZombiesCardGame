@@ -291,7 +291,8 @@
   };
 
   /** Всплывающее меню режимов розыгрыша возле карты */
-  UI.modePop = function (anchor, opts) {
+  UI.modePop = async function (anchor, opts) {
+    await UI.tip('modes');
     return new Promise((resolve) => {
       document.querySelectorAll('.mode-pop').forEach((x) => x.remove());
       const el = ZG.html(`<div class="mode-pop panel">${opts.map((o, i) => `<button class="choice" data-i="${i}"><b>${esc(o.label)}</b>${o.sub ? `<span>${esc(o.sub)}</span>` : ''}</button>`).join('')}</div>`);
@@ -565,6 +566,7 @@
     }).join('');
     const helpers = m.heroes.filter((h) => h !== mh && !h.dead && h.hand.some((c) => (ZG.card(c.id).plays || []).some((p, pi) => g.canPlay(ctx, h, c, pi) || ctx.played.some((x) => x.u === c.u))));
     // помощь соседей — одной лентой: группы карт рядом, над каждой — кто помогает
+    if (helpers.length) setTimeout(() => UI.tip('help'), 400);
     const helpHtml = helpers.length ? `<div class="sec-label help-head">${T('help_cards')} — можно сыграть в эту проверку</div><div class="help-row">${helpers.map((h) => `<div class="help-grp"><div class="help-who">${UI.avatar(h.id)} ${esc(g.hname(h))}${h.loc !== mh.loc ? ' <small>(другая локация)</small>' : ''}</div><div class="mini-hand" data-owner="${h.id}">${handCards(h)}</div></div>`).join('')}</div>` : '';
 
     panel.innerHTML = `
@@ -700,7 +702,8 @@
       const g = G();
       const plays = [];
       const sel = new Set();
-      const isRed = (p, d) => p.on === 'damage' && !opts.noReduce && !(opts.pierceLight && G().lightArmor(d)) && (!p.combatOnly || opts.combat) && (!p.onlyType || p.onlyType.includes(opts.dmgType));
+      // те же правила, что и в движке (броня — только физический урон и т.д.)
+      const isRed = (p, d) => p.on === 'damage' && G().playBlocks(p, opts, d);
       ZG.FX.flash('red');
       ZG.FX.shake();
       ZG.Audio.synth('hit');

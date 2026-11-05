@@ -291,6 +291,7 @@
   UI.campHero = 0;
   UI.showCamp = function (refresh) {
     ZG.Audio.music('shelter');
+    setTimeout(() => UI.tip('camp'), 600);
     const S = ZG.Save.current;
     S.screen = 'camp';
     const camp = S.campaign;

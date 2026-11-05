@@ -62,6 +62,7 @@
     c[key] = key === 'vuln' || key === 'doom' || key === 'poison' ? 3 : 1;
     G.log(`${G.hname(mh)}: состояние «${ZG.CONDS[key].name}».`, 'bad');
     await UI().fxCond(mh, key);
+    await UI().tip('conds');
   };
   G.clearConds = function (mh, keys) {
     const c = G.conds(mh);
@@ -521,6 +522,7 @@
     for (;;) {
       if (mh.dead) return null;
       ui.renderBoard();
+      if (G.openLocs().some((l) => l.noise > 0)) await ui.tip('noise');
       const act = await ui.waitAction(mh, G.actions(mh));
       const loc = G.loc(mh);
       let r = null;
@@ -561,6 +563,7 @@
   };
 
   G.endTurn = async function (mh) {
+    if (!mh.dead) await UI().tip('endturn');
     const el = G.loc(mh);
     const et = G.lrule(el).endTurn;
     if (et && !el.closed && !mh.dead) {
@@ -987,6 +990,7 @@
         });
       });
       if (options.length) {
+        await ui.tip('evade');
         options.push({ label: 'Сражаться', sub: '', key: 'fight', primary: true });
         const o = options[await ui.choose({ title: T('evade_q'), text: def.name, options, keepCard: true })];
         let evaded = false;
@@ -1652,6 +1656,7 @@
       if (n <= 0) { UI().toast(`${ZG.icon('shield')} Броня поглотила удар`, 'loot'); return 0; }
     }
     await UI().tip('damage');
+    if (opts.dmgType) await UI().tip('nonphys');
     const r = await UI().damage(mh, n, opts);
     let reduce = 0;
     if (opts.noReduce) r.plays = [];
@@ -1977,9 +1982,11 @@
       const li = m.locations.indexOf(l);
       for (const h of G.heroesAt(li)) {
         if (G.conds(h).detained) { G.log(`${G.hname(h)} задержан и не может перекрыть «${G.ldef(l).name}».`, 'bad'); continue; }
+        await ui.tip('guard');
+        const lc = G.ldef(l).close;
         const c = await ui.choose({
           title: 'Перекрыть путь',
-          text: `${G.hname(h)}: перед боем с Угрозой перекрыть «${G.ldef(l).name}», чтобы ей некуда было бежать? (${ZG.cardCheckLineClose(l)}) Награда «Когда заколочено» при этом не срабатывает.`,
+          text: `${G.hname(h)}: перед боем с Угрозой перекрыть «${G.ldef(l).name}», чтобы ей некуда было бежать? (Проверка: ${lc.skills.map(ZG.skillName).join(' / ')} ${lc.dc + (G.special().closeDcMod || 0)}) Награда «Когда заколочено» при этом не срабатывает.`,
           options: [{ label: 'Перекрыть', primary: true }, { label: 'Нет' }],
         });
         if (c !== 0) continue;
