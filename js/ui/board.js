@@ -321,6 +321,8 @@
       }
       UI.pickMode = { indices, resolve };
       UI.renderLocs();
+      const firstPick = document.querySelector('.loc.pickable');
+      if (firstPick) firstPick.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
       // компактная плашка поверх верхней панели — не закрывает подсвеченные локации
       const bar = ZG.html(`<div class="tip panel pick-bar"><span class="pb-ic">${ZG.icon('mappin')}</span><span class="pb-t"><b>${esc(title)}</b><small>Выберите подсвеченную локацию</small></span><button class="btn small ghost">${T('act_cancel')}</button></div>`);
       document.body.appendChild(bar);
@@ -414,7 +416,7 @@
       box.querySelector('.card').outerHTML = cardHtml;
       UI.enc.el.querySelector('.enc-panel').innerHTML = head;
     } else {
-      const el = UI.overlay(`<div class="encounter"><div class="enc-card drop">${cardHtml}<div class="enc-hero">${UI.avatar(mh.id)} ${esc(hd.name.split(' ')[0])}</div></div><div class="enc-panel panel">${head}</div></div>`, 'enc-ov');
+      const el = UI.overlay(`<div class="encounter"><div class="enc-card drop">${cardHtml}<div class="enc-hero">${UI.avatar(mh.id)} ${esc(ZG.heroShort(mh.id))}</div></div><div class="enc-panel panel">${head}</div></div>`, 'enc-ov');
       UI.enc = { el, depth: 1 };
     }
     await ZG.sleep(280);
@@ -559,7 +561,8 @@
       return UI.cardHTML(c, { u: c.u, size: 'sm', cls: inPool ? 'inpool' : okPis.length ? 'playable' : 'unplayable', badge: inPool ? 'в проверке' : badge });
     }).join('');
     const helpers = m.heroes.filter((h) => h !== mh && !h.dead && h.hand.some((c) => (ZG.card(c.id).plays || []).some((p, pi) => g.canPlay(ctx, h, c, pi) || ctx.played.some((x) => x.u === c.u))));
-    const helpHtml = helpers.map((h) => `<div class="sec-label help-head">${UI.avatar(h.id)} ${T('help_cards')}: ${esc(g.hname(h))}${h.loc !== mh.loc ? ' (из другой локации)' : ''} — можно сыграть в эту проверку</div><div class="mini-hand" data-owner="${h.id}">${handCards(h)}</div>`).join('');
+    // помощь соседей — одной лентой: группы карт рядом, над каждой — кто помогает
+    const helpHtml = helpers.length ? `<div class="sec-label help-head">${T('help_cards')} — можно сыграть в эту проверку</div><div class="help-row">${helpers.map((h) => `<div class="help-grp"><div class="help-who">${UI.avatar(h.id)} ${esc(g.hname(h))}${h.loc !== mh.loc ? ' <small>(другая локация)</small>' : ''}</div><div class="mini-hand" data-owner="${h.id}">${handCards(h)}</div></div>`).join('')}</div>` : '';
 
     panel.innerHTML = `
       <div class="sub">${esc(hd.name)} · ${T(KIND_LABEL[ck.kind] || 'check')}</div>
@@ -707,7 +710,7 @@
           return UI.cardHTML(c, { u: c.u, cls: `${used ? 'blocking' : ''} ${used && upMode === 'burn' ? 'burning' : ''} ${red.length ? 'playable' : ''} ${sel.has(c.u) ? 'selected' : ''} ${inf ? 'disabled' : ''}`, badge });
         }).join('');
         const reduced = plays.length ? `<div class="muted">Защита: ${plays.map((p) => esc(ZG.card(p.id).name)).join(', ')}</div>` : '';
-        panel.innerHTML = `<div class="dmg-head"><div class="dmg-num">−${n}</div><div><h2>${T('dmg_title')}: ${esc(hd.name.split(' ')[0])}</h2><div class="mtext" style="margin:0">${opts.source ? esc(opts.source) + '. ' : ''}${opts.dmgType ? `<span style="color:var(--amber)">Тип урона: ${ZG.DMG_TYPES[opts.dmgType]}.</span> ` : ''}${opts.noReduce ? '<span style="color:var(--blood2)">Уязвимость: этот урон нельзя уменьшить.</span> ' : ''}${opts.pierceLight ? '<span style="color:var(--blood2)">Пробивает лёгкую броню: из брони помогает только тяжёлая.</span> ' : ''}${opts.bite ? '<span style="color:var(--toxic)">Укус: если пройдёт 2+ урона — Инфекция.</span> ' : ''}</div>${reduced}</div></div>
+        panel.innerHTML = `<div class="dmg-head"><div class="dmg-num">−${n}</div><div><h2>${T('dmg_title')}: ${esc(ZG.heroShort(mh.id))}</h2><div class="mtext" style="margin:0">${opts.source ? esc(opts.source) + '. ' : ''}${opts.dmgType ? `<span style="color:var(--amber)">Тип урона: ${ZG.DMG_TYPES[opts.dmgType]}.</span> ` : ''}${opts.noReduce ? '<span style="color:var(--blood2)">Уязвимость: этот урон нельзя уменьшить.</span> ' : ''}${opts.pierceLight ? '<span style="color:var(--blood2)">Пробивает лёгкую броню: из брони помогает только тяжёлая.</span> ' : ''}${opts.bite ? '<span style="color:var(--toxic)">Укус: если пройдёт 2+ урона — Инфекция.</span> ' : ''}</div>${reduced}</div></div>
           <div class="mtext" style="margin-top:10px">${need ? `Выберите ${need} ${ZG.plural(need, 'карту', 'карты', 'карт')} для сброса. Карты с защитой можно сыграть, нажав на них.` : T('dmg_none')}</div>
           <div class="hand">${cards || '<span class="muted">Рука пуста</span>'}</div>
           <div class="enc-actions" style="align-items:center;margin-top:8px"><span class="muted">${T('dmg_choose', { a: sel.size, b: need })}</span><button class="btn primary" data-ok ${sel.size === need ? '' : 'disabled'}>${T('dmg_accept')}</button></div>`;
@@ -843,16 +846,15 @@
     el.classList.add('fanned');
     cards.forEach((c, i) => { if (i) c.style.marginLeft = (step - cw) + 'px'; });
   };
-  UI.shortName = function (id) {
-    const n = ZG.HEROES[id].name;
-    const m = n.match(/«(.+?)»/);
-    return m ? m[1] : n.split(' ')[0];
-  };
+  UI.shortName = (id) => ZG.heroShort(id);
   window.addEventListener('resize', () => {
     document.querySelectorAll('#tray .hand, .enc-panel .mini-hand').forEach(UI.fitHand);
   });
   document.addEventListener('keydown', (e) => {
     if (e.key !== 'Escape') return;
+    // Esc отменяет выбор локации («Куда идти?»), если поверх нет окон
+    const pb = document.querySelector('.pick-bar .btn');
+    if (pb && !document.querySelector('#overlay-root > .overlay')) { pb.click(); return; }
     const ovs = document.querySelectorAll('#overlay-root > .overlay');
     const top = ovs[ovs.length - 1];
     if (top) {

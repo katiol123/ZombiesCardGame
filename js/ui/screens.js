@@ -301,7 +301,7 @@
     const hd = ZG.HEROES[ph.id];
     const comp = g.deckComp(ph);
     const reserve = g.reserve();
-    const tabs = camp.party.map((p, i) => `<div class="tab ${p === ph ? 'on' : ''}" data-h="${i}" style="--hc:${ZG.HEROES[p.id].color}">${UI.avatar(p.id)} ${esc(ZG.HEROES[p.id].name.split(' ')[0])}${p.featsPending ? '<span class="dot"></span>' : ''}${!g.deckValid(p) ? '<span class="dot bad"></span>' : ''}</div>`).join('');
+    const tabs = camp.party.map((p, i) => `<div class="tab ${p === ph ? 'on' : ''}" data-h="${i}" style="--hc:${ZG.HEROES[p.id].color}">${UI.avatar(p.id)} ${esc(ZG.heroShort(p.id))}${p.featsPending ? '<span class="dot"></span>' : ''}${!g.deckValid(p) ? '<span class="dot bad"></span>' : ''}</div>`).join('');
     const featBox = ph.featsPending ? `<div class="feat-box"><h4>${ZG.icon('star')} ${T('camp_feat_pick')} (${ph.featsPending})</h4><div class="feat-opts">
       ${ZG.ATTRS.map((a) => {
         const cur = ph.feats.attr[a] || 0;
@@ -338,9 +338,9 @@
           ${hd.powers.map((p) => `<div class="power"><b>${esc(p.name)}.</b> ${esc(p.text)}</div>`).join('')}
           <div class="prof">Владение: ${[...(hd.prof || []), ...(ph.feats.prof || [])].length ? [...(hd.prof || []), ...(ph.feats.prof || [])].map((k) => esc(ZG.PROF[k].name)).join(', ') : 'нет'}</div>
           ${ph.scars.length ? `<div><b class="scar">${T('scars')}:</b>${ph.scars.map((x) => `<div class="scar">${esc(ZG.SCARS.find((y) => y.id === x.id).text)}</div>`).join('')}</div>` : ''}
-          ${featBox}
         </div>
         <div class="deck-section panel">
+          ${featBox}
           <p class="muted" style="margin-top:0">Нажмите на карту колоды, чтобы вернуть её на склад; на карту склада — чтобы взять. Базовые запасы бесконечны.</p>
           ${groups}
         </div>
@@ -380,7 +380,7 @@
       if (k === 'scar') ph.scars.shift();
       ph.featsPending -= cost;
       ZG.FX.burstAt(b, 'gold', 50);
-      UI.toast(`${ZG.icon('star')} ${esc(hd.name.split(' ')[0])}: улучшение получено`, 'loot');
+      UI.toast(`${ZG.icon('star')} ${esc(ZG.heroShort(ph.id))}: улучшение получено`, 'loot');
       g.ensureDecks();
       rerender();
     }));
@@ -419,7 +419,7 @@
       </ol>
       <p>В любой момент своего хода можно играть карты с действием (лечение, разведка, ещё одно исследование) и один раз передать карту соседу по локации.</p>
       <h2>Проверки и кубики</h2>
-      <p>Каждая проверка: кубик навыка героя (d4–d12) + бонус навыка + карты. Сумма должна быть не меньше сложности. В проверку можно сыграть <b>по одной карте каждого типа</b>: оружие, снаряжение, расходник, союзник, решимость. Решимость можно отдать соседу по локации.</p>
+      <p>Каждая проверка: кубик навыка героя (d4–d12) + бонус навыка + карты. Сумма должна быть не меньше сложности. В проверку можно сыграть <b>по одной карте каждого типа от каждого героя</b>: оружие, снаряжение, расходник, союзник, приём, решимость. Решимость можно отдать соседу по локации.</p>
       <ul>
         <li><b>Показать</b> — карта остаётся в руке. <b>Сбросить</b> — в сброс (лечение может вернуть её в колоду). <b>Перезарядить</b> — под низ колоды. <b>Сжечь</b> — карта сгорает навсегда: она не лечится и не возвращается на склад после миссии (так работают все расходники). Опустевшие слоты в лагере заполняются базовыми запасами. <b>Изгнать</b> — навсегда.</li>
         <li>Бой без оружия — Сила, Ловкость или Рукопашная. Оружие задаёт свой навык и добавляет кубики.</li>

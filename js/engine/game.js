@@ -107,7 +107,7 @@
   G.ldef = (loc) => ZG.LOCATIONS[loc.id];
   G.lrule = (loc) => (loc && ZG.LOCATIONS[loc.id].rules) || {};
   G.openLocs = () => G.M().locations.filter((l) => !l.closed);
-  G.hname = (mh) => ZG.HEROES[mh.id].name.split(' ')[0];
+  G.hname = (mh) => ZG.heroShort(mh.id);
 
   G.log = (text, kind) => {
     const m = G.M();
@@ -1063,7 +1063,7 @@
     const diff = ck.dc - res.total;
     const dmg = Math.min(def.halfDmg ? Math.floor(diff / 2) : diff, G.dmgCap(def)) + (def.dmgAdd || 0);
     const taken = await G.damage(mh, dmg, { source: def.name, bite: def.bite, combat: true, dmgType: G.enemyDmgType(def, loc), pierceLight: !!def.pierceLight });
-    if ((def.bite && taken >= 2) || def.infectOnFail) await G.infect(mh); // укус заражает, только если прошло 2+ урона
+    if ((def.bite && G.lastHit >= 2) || def.infectOnFail) await G.infect(mh); // укус заражает, только если 2+ урона прошло через броню и блоки
     if (def.inflict && taken > 0 && !mh.dead) {
       // inflictCheck: сначала проверка, состояние — только при провале
       const ic = def.inflictCheck;
@@ -1532,6 +1532,7 @@
 
   G.damage = async function (mh, n, opts) {
     opts = opts || {};
+    G.lastHit = 0; // урон, прошедший через броню и блоки (для укуса), даже если в руке нечего сбросить
     if (n <= 0 || mh.dead) return 0;
     opts.noReduce = !!(opts.dmgType && G.conds(mh).vuln);
     const pr = opts.noReduce ? 0 : G.passiveReduce(mh, opts);
@@ -1553,7 +1554,8 @@
     });
     r.discards = r.discards.filter((u) => { const c = mh.hand.find((x) => x.u === u); return c && c.id !== 'infection'; });
     r.discards.forEach((u) => G.moveByMode(mh, u, 'discard'));
-    const taken = Math.min(Math.max(0, n - reduce), r.discards.length);
+    G.lastHit = Math.max(0, n - reduce);
+    const taken = Math.min(G.lastHit, r.discards.length);
     G.log(`${G.hname(mh)} получает ${taken} урона${opts.source ? ` (${opts.source})` : ''}.`, taken ? 'bad' : '');
     return taken;
   };

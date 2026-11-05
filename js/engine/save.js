@@ -98,7 +98,7 @@
     },
     summary(s) {
       if (!s) return null;
-      const names = s.campaign.party.map((h) => ZG.HEROES[h.id].name.split(' ')[0]).join(', ');
+      const names = s.campaign.party.map((h) => ZG.heroShort(h.id)).join(', ');
       const m = ZG.MISSIONS[Math.min(s.campaign.progress, ZG.MISSIONS.length - 1)];
       const done = ZG.MISSIONS.filter((_, i) => s.campaign.done[i]).length;
       return { names, mission: done >= ZG.MISSIONS.length ? 'Кампания пройдена' : `Миссия ${m.num}: ${m.name}`, done, date: new Date(s.updated).toLocaleString('ru-RU'), inMission: !!s.mission };
