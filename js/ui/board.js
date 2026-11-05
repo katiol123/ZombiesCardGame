@@ -346,7 +346,7 @@
       const m = G().M();
       const lart = m && m.locations[mh.loc] ? UI.locArtUrl(m.locations[mh.loc].id) : null;
       const lname = m && m.locations[mh.loc] ? ZG.LOCATIONS[m.locations[mh.loc].id].name : '';
-      const el = ZG.html(`<div class="handoff ${lart ? 'has-art' : ''}" style="--hc:${hd.color};${lart ? `background-image:radial-gradient(circle at 50% 45%, rgba(10,10,12,.35), rgba(2,2,3,.93) 75%), url('${lart}')` : ''}">${lart ? `<div class="ho-loc">${ZG.icon('mappin')} ${esc(lname)}</div>` : ''}<div class="k">${T('handoff')}</div>${UI.avatar(mh.id)}<h1>${esc(hd.name)}</h1><div class="role">${esc(hd.role)}</div><button class="btn primary" style="min-width:220px">${T('handoff_ready')}</button></div>`);
+      const el = ZG.html(`<div class="handoff ${lart ? 'has-art' : ''}" style="--hc:${hd.color}">${lart ? `<div class="ho-art" style="background-image:url('${lart}')"></div><div class="ho-loc">${ZG.icon('mappin')} ${esc(lname)}</div>` : ''}<div class="k">${T('handoff')}</div>${UI.avatar(mh.id)}<h1>${esc(hd.name)}</h1><div class="role">${esc(hd.role)}</div><button class="btn primary" style="min-width:220px">${T('handoff_ready')}</button></div>`);
       document.body.appendChild(el);
       el.querySelector('.btn').addEventListener('click', async () => {
         el.style.transition = 'opacity .4s';

@@ -1174,7 +1174,12 @@ body.night .guard-art { filter: brightness(.8) saturate(.6); }
 @keyframes stampIn { to { transform: rotate(-9deg) scale(1); opacity: .95; } }
 .close-show .cs-name { font-family: var(--font-head); font-size: 22px; letter-spacing: .1em; color: #efe5d2; text-transform: uppercase; }
 
-.handoff.has-art { background-color: #050506; background-size: cover; background-position: center; }
+.handoff.has-art { background: radial-gradient(circle at 50% 40%, color-mix(in srgb, var(--hc) 14%, #0b0b0d), #020203 75%); }
+/* картинка локации в родном размере (не больше 1200 px), края растворяются — без растягивания и мыла */
+.handoff .ho-art { position: absolute; left: 50%; top: 50%; width: min(1200px, 100vw); aspect-ratio: 3 / 1; transform: translate(-50%, -62%); background-size: 100% 100%; background-repeat: no-repeat; opacity: .68; pointer-events: none;
+  -webkit-mask-image: radial-gradient(ellipse 50% 50% at 50% 50%, #000 55%, transparent 100%); mask-image: radial-gradient(ellipse 50% 50% at 50% 50%, #000 55%, transparent 100%); }
+.handoff > :not(.ho-art) { position: relative; z-index: 1; }
+.handoff .ho-loc { position: absolute; }
 .handoff .ho-loc { position: absolute; top: 18px; left: 50%; transform: translateX(-50%); font-size: 13px; letter-spacing: .14em; text-transform: uppercase; color: #cfc6b4; opacity: .85; }
 
 .briefing { flex-direction: column; align-items: center; gap: 22px; }
