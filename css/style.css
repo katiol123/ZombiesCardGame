@@ -1131,3 +1131,12 @@ body.night #vignette { background: radial-gradient(ellipse at center, transparen
   .slotbox.multi .sl-name::after { content: ''; }
   .card-row { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); justify-items: center; }
 }
+
+/* модификаторы сложности и броска — раздельно */
+.dc-mods .dc-cap { font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: var(--dim); }
+.dc-mods .m-up::before { content: '▲ '; font-size: 9px; }
+.dc-mods .m-down::before { content: '▼ '; font-size: 9px; }
+.roll-mods { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 6px; margin: 0 10px; font-size: 12px; }
+.roll-mods .rm-cap { font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: var(--dim); }
+.roll-mods .rm { padding: 2px 8px; border-radius: 10px; border: 1px solid rgba(110, 170, 255, .45); background: rgba(80, 130, 220, .14); color: #bcd4ff; white-space: nowrap; }
+.roll-mods .rm.neg { border-color: rgba(255, 120, 100, .45); background: rgba(220, 70, 50, .14); color: #ffb3a6; }

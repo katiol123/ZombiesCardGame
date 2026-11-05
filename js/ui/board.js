@@ -579,11 +579,12 @@
       <div class="sub">${esc(hd.name)} · ${T(KIND_LABEL[ck.kind] || 'check')}</div>
       <h2>${esc(ck.title)}</h2>
       <div class="dc-box"><div class="dc-big"><b>${ck.dc}</b><span>${T('dc')}</span></div>
-        <div class="dc-mods"><div>База: ${ck.base != null ? ck.base : ck.dc}</div>${modsHtml}${pool.parts.map((p) => `<div class="${p.v < 0 ? 'm-up' : 'm-down'}">${esc(p.label)}: ${p.v > 0 ? '+' : ''}${p.v}</div>`).join('')}</div></div>
+        <div class="dc-mods"><div class="dc-cap">Сложность</div><div>База: ${ck.base != null ? ck.base : ck.dc}</div>${modsHtml}</div></div>
       <div class="sec-label">${T('skill_use')}</div>
       <div class="skill-chips">${chips}</div>
       <div class="slots-row">${slots}</div>
       <div class="pool-row" id="pool-row"><div class="dice" id="dice">${dice}</div>
+        ${pool.parts.length ? `<div class="roll-mods"><span class="rm-cap">К броску</span>${pool.parts.map((p) => `<span class="rm ${p.v < 0 ? 'neg' : 'pos'}">${esc(p.label)} ${p.v > 0 ? '+' : '−'}${Math.abs(p.v)}</span>`).join('')}</div>` : ''}
         <div class="pool-sum">${pool.noise ? `<span style="color:var(--amber)">${ZG.icon('noise')} ${T('noise_add')} +${pool.noise}</span>` : `<span>${ZG.icon('noise')} тихо</span>`}<b>${ZG.diceStr(pool.dice.map((x) => x.d), pool.bonus)}</b>≈ ${pool.avg.toFixed(1)}</div></div>
       <div class="chance-lab"><span>Шанс успеха</span><span>${pct}%</span></div><div class="chance"><i style="width:${pct}%"></i></div>
       <div id="check-bottom">
