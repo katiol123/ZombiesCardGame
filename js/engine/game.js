@@ -201,14 +201,6 @@
       l.deck.push(G.inst(villains[i]));
       R.shuffle(l.deck);
     });
-    // особое правило: дополнительные вожаки (несколько в одной локации)
-    if (special.extraHench) {
-      const targets = special.extraHench === 'all' ? m.locations.slice() : R.shuffle(m.locations.slice()).slice(0, Math.min(special.extraHench, m.locations.length));
-      targets.forEach((l) => {
-        l.deck.push(G.inst(def.henchman));
-        R.shuffle(l.deck);
-      });
-    }
 
     // Часы
     const len = G.CLOCK_BY_PARTY[Math.min(4, party.length) - 1] - (S.difficulty === 'hard' ? 4 : 0) + (special.clockMod || 0) + (def.act === 2 ? (party.length >= 3 ? 5 : party.length === 2 ? 3 : 0) : 0);
@@ -499,6 +491,8 @@
     if (p.craft || p.gain || p.time) return true;
     if (p.clearConds && here.some((h) => Object.keys(G.conds(h)).length)) return true;
     if (p.explore) return !loc.closed && loc.deck.length > 0;
+    // карта, снимающая состояние, играется и ради него одного (Антибиотики — Отравление, Консервы — Обречённость)
+    if (p.clearCond && (p.target === 'here' ? here : [mh]).some((h) => G.conds(h)[p.clearCond])) return true;
     if (p.heal) return (p.target === 'here' ? here : [mh]).some((h) => h.discard.length > 0);
     if (p.cure) return (p.target === 'here' ? here : [mh]).some((h) => G.infCount(h) > 0);
     if (p.scout) return G.openLocs().some((l) => l.deck.length);
@@ -723,7 +717,7 @@
       return null;
     }
     if ((p.heal || p.cure || p.clearConds) && p.target === 'here') {
-      const ok = here.filter((h) => (p.heal && h.discard.length) || (p.cure && G.infCount(h)) || (p.clearConds && Object.keys(G.conds(h)).length));
+      const ok = here.filter((h) => (p.heal && h.discard.length) || (p.cure && G.infCount(h)) || (p.clearConds && Object.keys(G.conds(h)).length) || (p.clearCond && G.conds(h)[p.clearCond]));
       target = ok.length === 1 ? ok[0] : await ui.pickHero(p.heal ? 'Кого лечить?' : 'Кого исцелить?', ok);
       if (!target) return null;
     }
@@ -1067,10 +1061,17 @@
       }
       // Как в Pathfinder: заколотить можно только сразу после победы над вожаком.
       // Отказ или провал — шанс упущен, локацию придётся вычищать до пустой колоды.
-      if (def.type === 'henchman' && !loc.closed && !mh.dead && !(loc.deck.length === 0 && m.ts.closeTried)) {
+      const clr = G.lrule(loc);
+      const canPay = !clr.closeCost || mh.hand.some((c) => ZG.card(c.id).type === clr.closeCost);
+      if (def.type === 'henchman' && !loc.closed && !mh.dead && !canPay) {
+        G.log(`Заколотить «${G.ldef(loc).name}» нечем: нужно сбросить ${ZG.T('type_' + clr.closeCost)}. Придётся вычищать колоду.`, 'bad');
+        await ui.banner('Нечем заколотить', `Нужна карта типа «${ZG.T('type_' + clr.closeCost)}» — шанс упущен`, 'warn');
+      }
+      if (def.type === 'henchman' && !loc.closed && !mh.dead && canPay && !(loc.deck.length === 0 && m.ts.closeTried)) {
+        const extra = [clr.closeCost ? `цена: сбросить ${ZG.T('type_' + clr.closeCost)}` : '', clr.closeTwice ? 'нужны 2 успешные проверки подряд' : ''].filter(Boolean).join('; ');
         const c = await ui.choose({
           title: 'Вожак повержен',
-          text: `Попытаться заколотить «${G.ldef(loc).name}» прямо сейчас? (${ZG.cardCheckLineClose(loc)}) Это единственный шанс: если отказаться или провалить проверку, локацию придётся вычищать до пустой колоды.`,
+          text: `Попытаться заколотить «${G.ldef(loc).name}» прямо сейчас? (${ZG.cardCheckLineClose(loc)}${extra ? '; ' + extra : ''}) Это единственный шанс: если отказаться или провалить проверку, локацию придётся вычищать до пустой колоды.`,
           options: [{ label: 'Заколотить', primary: true }, { label: 'Не сейчас' }],
         });
         if (c === 0) return await G.tryClose(mh, loc, true);
@@ -1095,8 +1096,10 @@
       const c = mh.displayed.splice(R.int(mh.displayed.length), 1)[0];
       G.log(`${def.name} срывает выложенную «${ZG.card(c.id).name}».`, 'bad');
       await ui.banner('Ограблен!', `${def.name} забирает «${ZG.card(c.id).name}»`, 'bad');
-    } else if (def.theft && !mh.dead && mh.hand.length) {
-      const c = mh.hand.splice(R.int(mh.hand.length), 1)[0];
+    } else if (def.theft && !mh.dead && mh.hand.some((x) => x.id !== 'infection')) {
+      const pool = mh.hand.filter((x) => x.id !== 'infection'); // Инфекцию не крадут — иначе это бесплатное лечение
+      const c = R.pick(pool);
+      mh.hand.splice(mh.hand.indexOf(c), 1);
       G.log(`${def.name} отбирает «${ZG.card(c.id).name}».`, 'bad');
       await ui.banner('Ограблен!', `${def.name} забирает «${ZG.card(c.id).name}»`, 'bad');
     }
@@ -1272,8 +1275,10 @@
         await ui.banner('Шок', `Сброшены случайные карты из руки`, 'bad');
       }
       if (fx.banishType) {
-        for (const pile of [mh.deck, mh.discard, mh.hand]) {
-          const i = pile.findIndex((c) => ZG.card(c.id).type === fx.banishType);
+        // как в тексте карт: случайная карта этого типа из колоды
+        for (const pile of [mh.deck]) {
+          const idx = pile.map((c, k) => (ZG.card(c.id).type === fx.banishType ? k : -1)).filter((k) => k >= 0);
+          const i = idx.length ? R.pick(idx) : -1;
           if (i >= 0) {
             const c = pile.splice(i, 1)[0];
             G.log(`Изгнано: «${ZG.card(c.id).name}». Это будет сниться.`, 'bad');
@@ -1291,8 +1296,10 @@
         }
       }
       if (fx.banishRandomHand) {
-        if (mh.hand.length) {
-          const c = mh.hand.splice(R.int(mh.hand.length), 1)[0];
+        const pool = mh.hand.filter((x) => x.id !== 'infection');
+        if (pool.length) {
+          const c = R.pick(pool);
+          mh.hand.splice(mh.hand.indexOf(c), 1);
           G.log(`Отдано: «${ZG.card(c.id).name}».`, 'card');
         }
       }
