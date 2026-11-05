@@ -960,3 +960,23 @@ h1, h2, h3 { font-family: var(--font-head); font-weight: 600; letter-spacing: 0.
 .deck-section .feat-box { margin-bottom: 14px; }
 .deck-section .feat-opts { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 6px; }
 .deck-section .feat-opts .choice { padding: 8px 10px; }
+
+/* ---------- Набег банды ---------- */
+.raid-modal { max-width: 900px; width: min(900px, 94vw); }
+.raid-loss { display: flex; flex-wrap: wrap; gap: 14px; margin: 6px 0 12px; }
+.raid-lost { display: flex; flex-direction: column; gap: 6px; align-items: flex-start; }
+.raid-tokens { display: flex; gap: 6px; align-items: center; min-height: 34px; margin: 4px 0 10px; }
+.raid-tok { width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; background: #6b1f1f; border: 1px solid #c0503f; color: #f3d6cf; animation: raidTok .3s ease-out; }
+.raid-tok svg { width: 18px; height: 18px; }
+@keyframes raidTok { from { transform: scale(1.4); opacity: 0; } }
+.raid-row { display: flex; flex-wrap: wrap; gap: 10px; min-height: 40px; }
+.raid-step { display: flex; flex-direction: column; align-items: center; gap: 4px; animation: raidIn .35s ease-out; }
+@keyframes raidIn { from { transform: translateY(-14px) rotateY(80deg); opacity: 0; } }
+.raid-lbl { max-width: 124px; text-align: center; line-height: 1.2; font-size: 11px; letter-spacing: .04em; text-transform: uppercase; padding: 2px 8px; border-radius: 10px; background: #2a2a30; color: #cfcfd6; }
+.raid-step.kill .raid-lbl { background: #5a1a1a; color: #ffb3a8; }
+.raid-step.join .raid-lbl { background: #4a3514; color: #ffd28a; }
+.raid-step.stop .raid-lbl { background: #3a2a55; color: #d6c4ff; }
+.raid-step.kill .card { filter: grayscale(.7) brightness(.7); }
+.raid-step.loot .card { opacity: .75; }
+.raid-sum { margin-top: 10px; }
+@media (max-width: 520px) { .raid-row .card, .raid-loss .card { zoom: .62; } .raid-row, .raid-loss { gap: 6px; } .raid-lbl { max-width: 78px; font-size: 10px; padding: 2px 5px; } .raid-modal { max-height: 92vh; overflow-y: auto; } }

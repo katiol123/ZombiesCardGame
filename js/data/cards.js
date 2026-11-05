@@ -398,7 +398,7 @@
     { id: 'deaddog', type: 'enemy', name: 'Мёртвый пёс', tier: 1, icon: 'paw', dc: 6, bite: true, before: { damage: 1 }, noEvade: true,
       text: 'До проверки: 1 урон. От него нельзя уклониться.',
       flavor: 'Ошейник с биркой «Бадди». Хозяина рядом нет.' },
-    { id: 'looter', type: 'enemy', living: true, name: 'Мародёр', tier: 1, icon: 'raider', dc: 7, theft: true,
+    { id: 'looter', type: 'enemy', living: true, gang: true, name: 'Мародёр', tier: 1, icon: 'raider', dc: 7, theft: true,
       text: 'Человек. Если вы не победили его, он забирает выложенную карту, а если её нет — случайную карту из руки.',
       flavor: '«Рюкзак. Медленно. На землю».' },
     { id: 'swarm', type: 'enemy', name: 'Стая', tier: 1, icon: 'skulls', dc: 9, bite: true, dmgAdd: 1, scatterMargin: 3,
@@ -849,7 +849,7 @@
       text: 'В эфире: при встрече шум локации +2.', flavor: '«…не выходите из домов. С вами ночной эфир. Оставайтесь на волне…»' },
   ]);
   U('m4', [
-    { id: 'biker', type: 'enemy', living: true, name: 'Байкер банды', icon: 'raider', dc: 8, flavor: 'Цепь вместо пояса. Улыбка без зубов.' },
+    { id: 'biker', type: 'enemy', living: true, gang: true, name: 'Байкер банды', icon: 'raider', dc: 8, flavor: 'Цепь вместо пояса. Улыбка без зубов.' },
     { id: 'mechanicz', type: 'enemy', name: 'Сгоревший механик', icon: 'fire', dc: 7, bite: true, dmgType: 'fire', inflict: 'vuln', immune: ['Огонь'], flavor: 'Взорвался вместе с бензоколонкой. Встал.' },
   ]);
   U('m5', [

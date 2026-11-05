@@ -757,6 +757,46 @@
   };
 
   /* ============================== Эффекты событий ============================== */
+  /** Окно «Набега»: жетоны банды, вскрытые карты по одной, итог */
+  UI.raid = async function (li, steps, losses, why) {
+    const m = G().M();
+    const loc = m.locations[li];
+    const lname = ZG.LOCATIONS[loc.id].name;
+    const LBL = { kill: ['убит', 'kill'], join: ['к банде: +1 жетон', 'join'], loot: ['унесли', 'loot'], stop: ['стоп', 'stop'], stay: ['нет жетона', 'stop'] };
+    const tok = (k) => `<span class="raid-tok ${k ? '' : 'none'}">${ZG.icon('raider')}</span>`;
+    const tokRow = (n) => (n > 0 ? Array.from({ length: n }, () => tok(1)).join('') : '<span class="muted">жетонов нет</span>');
+    const lossHtml = losses.length
+      ? `<div class="raid-loss">${losses.map((l) => `<div class="raid-lost"><div class="help-who">${UI.avatar(l.mh.id)} ${esc(ZG.heroShort(l.mh.id))} теряет</div>${UI.cardHTML(l.c, { size: 'sm' })}</div>`).join('')}</div>`
+      : '<div class="mtext muted">Героев здесь нет — грабят только колоду.</div>';
+    const start = steps.length ? steps[0].tokens + (steps[0].res === 'kill' ? 1 : 0) - (steps[0].res === 'join' ? 1 : 0) : 3;
+    const ov = UI.overlay(`<div class="modal panel raid-modal"><h2>${ZG.icon('raider')} Набег банды: ${esc(lname)}</h2>
+      ${lossHtml}
+      <div class="sec-label">Разграбление колоды</div>
+      <div class="raid-tokens">${tokRow(start)}</div>
+      <div class="raid-row"></div>
+      <div class="mtext raid-sum"></div>
+      <div class="enc-actions"><button class="btn primary" data-ok disabled>${T('continue')}</button></div></div>`);
+    ZG.Audio.sfx('growl', 0.5);
+    const row = ov.querySelector('.raid-row');
+    const tk = ov.querySelector('.raid-tokens');
+    for (const st of steps) {
+      await ZG.sleep(450);
+      const [lbl, cls] = LBL[st.res];
+      const el = ZG.html(`<div class="raid-step ${cls}">${UI.cardHTML(st.c, { size: 'sm' })}<div class="raid-lbl">${esc(lbl)}</div></div>`);
+      row.appendChild(el);
+      tk.innerHTML = tokRow(st.tokens);
+    }
+    await ZG.sleep(300);
+    const kills = steps.filter((x) => x.res === 'kill').length;
+    const last = steps[steps.length - 1];
+    const end = why === 'villain' ? `Бандиты наткнулись на «${esc(ZG.card(last.c.id).name)}» и ушли.` : why === 'tokens' ? 'Жетоны кончились — банда уходит.' : steps.length ? 'Колода выпотрошена до дна.' : 'Колода пуста — грабить нечего.';
+    ov.querySelector('.raid-sum').innerHTML = `${end} Колода перемешана.${kills ? ` Стрельба: шум +${kills}.` : ''}`;
+    const ok = ov.querySelector('[data-ok]');
+    ok.disabled = false;
+    await new Promise((res) => ok.addEventListener('click', res, { once: true }));
+    await UI.closeOverlay(ov);
+  };
+
   UI.horde = async function (loc, n, attacked) {
     const i = G().M().locations.indexOf(loc);
     UI.renderBoard();

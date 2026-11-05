@@ -414,6 +414,7 @@
         await UI().banner('Капкан', `В «${G.ldef(to).name}» появился «${ZG.card(sp.trapCard).name}»`, 'bad');
       }
     }
+    if (sp.raidEvery && m.turn > 1 && m.turn % sp.raidEvery === 0) await G.raid(sp.raidTokens || 3);
     if (old === 'night' && m.phase === 'day') {
       m.heroes.forEach((h) => { if (G.conds(h).terror) G.clearConds(h, ['terror']); });
       m.locations.forEach((l) => (l.noise = Math.max(0, l.noise - 1)));
@@ -1635,6 +1636,74 @@
   G.addNoise = function (loc, n) {
     if (loc.closed) return;
     loc.noise = Math.max(0, loc.noise + n);
+  };
+
+  /** «Набег» банды («Закон Кейна»): самая шумная открытая локация.
+   * Герои там захоранивают по случайной карте из руки. Банда с жетонами вскрывает колоду:
+   * первая карта бесплатно, каждая следующая — жетон. Мертвеца убивают за жетон (шум +1, карта изгнана),
+   * свои (gang) уходят с бандой (+1 жетон), остальное уносят. Угроза/вожак или нехватка жетонов — стоп. */
+  G.raid = async function (tokens) {
+    const m = G.M();
+    const open = G.openLocs();
+    if (!open.length) return;
+    const top = Math.max(...open.map((l) => l.noise));
+    const loc = R.pick(open.filter((l) => l.noise === top));
+    const li = m.locations.indexOf(loc);
+    const lname = G.ldef(loc).name;
+    G.log(`НАБЕГ! Банда грабит «${lname}».`, 'bad');
+    // потери героев
+    const losses = [];
+    for (const h of G.heroesAt(li)) {
+      const pool = h.hand.filter((c) => c.id !== 'infection');
+      if (!pool.length) continue;
+      const c = R.pick(pool);
+      h.hand.splice(h.hand.indexOf(c), 1);
+      (h.buried = h.buried || []).push(c);
+      losses.push({ mh: h, c });
+      G.log(`${G.hname(h)}: банда забирает «${ZG.card(c.id).name}» (захоронено до конца миссии).`, 'bad');
+    }
+    // разграбление колоды
+    const steps = [];
+    let kills = 0, n = 0, why = 'deck';
+    while (loc.deck.length) {
+      if (n > 0) {
+        if (tokens < 1) { why = 'tokens'; break; }
+        tokens--;
+      }
+      const c = loc.deck[0];
+      const d = ZG.card(c.id);
+      n++;
+      if (d.type === 'boss' || d.type === 'henchman') { steps.push({ c, res: 'stop', tokens }); why = 'villain'; break; }
+      if (d.type === 'enemy' && !d.living) {
+        if (tokens < 1) { steps.push({ c, res: 'stay', tokens }); why = 'tokens'; break; }
+        tokens--;
+        loc.deck.shift();
+        kills++;
+        steps.push({ c, res: 'kill', tokens });
+        continue;
+      }
+      loc.deck.shift();
+      if (d.gang) { tokens++; steps.push({ c, res: 'join', tokens }); continue; }
+      steps.push({ c, res: 'loot', tokens });
+    }
+    R.shuffle(loc.deck);
+    steps.forEach((st) => {
+      const nm = ZG.card(st.c.id).name;
+      if (st.res === 'kill') G.log(`Бандиты убивают «${nm}».`, 'card');
+      else if (st.res === 'join') G.log(`«${nm}» уходит с бандой.`, 'card');
+      else if (st.res === 'loot') G.log(`Бандиты уносят «${nm}».`, 'card');
+    });
+    const last = steps[steps.length - 1];
+    if (why === 'tokens') G.log('Жетоны кончились — банда уходит.', 'card');
+    if (why === 'villain') G.log(`Бандиты наткнулись на «${ZG.card(last.c.id).name}» и ушли.`, 'bad');
+    await UI().raid(li, steps, losses, why);
+    if (kills) {
+      G.addNoise(loc, kills);
+      UI().fxNoise(loc);
+      G.log(`Стрельба банды: шум +${kills}.`, 'bad');
+    }
+    UI().renderBoard();
+    if (kills) await G.checkHorde(loc);
   };
 
   /** Перемещение вожака между локациями (особые правила миссий) */
