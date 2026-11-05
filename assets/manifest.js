@@ -14,6 +14,8 @@
  * ===================================================================== */
 window.ZG_ART = {
   cards: {
+    acidcoat: 'assets/cards/acidcoat.webp',
+    acidsyringe: 'assets/cards/acidsyringe.webp',
     adrenaline: 'assets/cards/adrenaline.webp',
     alarm: 'assets/cards/alarm.webp',
     alpha: 'assets/cards/alpha.webp',
