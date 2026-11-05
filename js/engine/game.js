@@ -1622,7 +1622,7 @@
   }));
   /** Лёгкая броня: «Броня» без «Тяжёлой брони» */
   G.lightArmor = (def) => !!def && (def.traits || []).includes('Броня') && !(def.traits || []).includes('Тяжёлая броня');
-  G.playBlocks = (pl, opts, def) => !(pl.physical && opts && opts.dmgType) && !(opts && opts.noReduce) && !(opts && opts.pierceLight && G.lightArmor(def)) && (!pl.onlyType || pl.onlyType.includes(opts && opts.dmgType)) && (!pl.combatOnly || (opts && opts.combat));
+  G.playBlocks = (pl, opts, def) => !(pl.nonPhysical && !(opts && opts.dmgType)) && !(pl.physical && opts && opts.dmgType) && !(opts && opts.noReduce) && !(opts && opts.pierceLight && G.lightArmor(def)) && (!pl.onlyType || pl.onlyType.includes(opts && opts.dmgType)) && (!pl.combatOnly || (opts && opts.combat));
   G.damageNeeded = function (mh, n, plays, opts) {
     let reduce = 0;
     let removed = 0;

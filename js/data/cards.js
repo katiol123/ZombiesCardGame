@@ -821,7 +821,7 @@
     { id: 'canary', type: 'ally', name: 'Сторожиха Агата', icon: 'flashlight', traits: ['Горожанин'], acquire: { skills: ['survival', 'persuasion'], dc: 6 },
       plays: [{ on: 'check', mode: 'reveal', kind: ['acquire', 'event'], dice: ['d4'] }], flavor: 'Тридцать лет сторожила контору шахты. Помнит каждый вход и каждый провал.' },
     { id: 'selfrescuer', type: 'item', name: 'Самоспасатель', icon: 'mask', traits: [], acquire: { skills: ['end', 'survival'], dc: 6 },
-      plays: [{ on: 'damage', mode: 'burn', reduce: 'all' }], flavor: 'Сорок минут воздуха.' },
+      plays: [{ on: 'damage', mode: 'burn', reduce: 'all', nonPhysical: true }], flavor: 'Сорок минут воздуха.' },
   ]);
   U('m8', [
     { id: 'canoepaddle', type: 'weapon', name: 'Весло от каноэ', icon: 'waves', traits: ['Ближнее', 'Тихое'], acquire: { skills: ['str', 'survival'], dc: 7 },
