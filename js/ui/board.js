@@ -807,7 +807,7 @@
       <div class="raid-row"></div>
       <div class="mtext raid-sum"></div>
       <div class="enc-actions"><button class="btn primary" data-ok disabled>${T('continue')}</button></div></div>`);
-    ZG.Audio.sfx('growl', 0.5);
+    ZG.Audio.sfx('raid', 0.9);
     const row = ov.querySelector('.raid-row');
     const tk = ov.querySelector('.raid-tokens');
     for (const st of steps) {

@@ -4,8 +4,10 @@
   'use strict';
   const ZG = window.ZG;
   const BASE = 'assets/audio/';
-  const MUSIC = { missions: 'missions.mp3', shelter: 'shelter.mp3' };
-  const SFX = { braam: 'braam.mp3', growl: 'growl.mp3', psychedelic: 'psychedelic.mp3', tension: 'tension.mp3', dice: 'dice.mp3', hammer: 'hammer.mp3', flip: 'flip.mp3', heartbeat: 'heartbeat.mp3', siren: 'siren.mp3' };
+  // у музыки миссий — очередь треков, они сменяют друг друга
+  const MUSIC = { missions: ['missions.mp3', 'echoes.mp3'], shelter: 'shelter.mp3' };
+  const trackIdx = {};
+  const SFX = { braam: 'braam.mp3', growl: 'growl.mp3', psychedelic: 'psychedelic.mp3', tension: 'tension.mp3', dice: 'dice.mp3', hammer: 'hammer.mp3', flip: 'flip.mp3', heartbeat: 'heartbeat.mp3', siren: 'siren.mp3', raid: 'raid.mp3' };
   const AMB = { rain: 'rain.mp3' };
   const SFX_GAP = { growl: 900, braam: 1200, psychedelic: 1500, tension: 1500, dice: 200, flip: 120, heartbeat: 900, siren: 1500 };
 
@@ -46,14 +48,19 @@
     if (old) fade(old.el, 0, 1400, () => { old.el.pause(); });
     A.current = null;
     if (!name || !MUSIC[name]) return;
-    const el = new Audio(BASE + MUSIC[name]);
-    el.loop = true;
-    el.volume = 0;
-    el.preload = 'auto';
-    A.current = { name, el };
-    if (musicVol() > 0) {
-      el.play().then(() => fade(el, musicVol(), 2000)).catch(() => {});
-    }
+    const list = [].concat(MUSIC[name]);
+    const play = () => {
+      const i = trackIdx[name] = ((trackIdx[name] == null ? -1 : trackIdx[name]) + 1) % list.length;
+      const el = new Audio(BASE + list[i]);
+      el.loop = list.length === 1;
+      el.volume = 0;
+      el.preload = 'auto';
+      A.current = { name, el };
+      // трек закончился — следующий из очереди
+      if (list.length > 1) el.addEventListener('ended', () => { if (A.current && A.current.el === el) play(); });
+      if (musicVol() > 0) el.play().then(() => fade(el, musicVol(), 2000)).catch(() => {});
+    };
+    play();
   };
 
   /** Фоновая петля события (дождь) поверх музыки; null — выключить */
