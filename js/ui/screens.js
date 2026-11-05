@@ -10,6 +10,7 @@
   const app = () => document.getElementById('app');
   const show = (html) => {
     document.querySelectorAll('.banner,.tip,.mode-pop,.handoff,.clock-flip').forEach((x) => x.remove());
+    const tb = document.getElementById('toasts'); if (tb) tb.innerHTML = ''; // уведомления не переживают смену экрана
     document.getElementById('overlay-root').innerHTML = '';
     app().innerHTML = html;
     return app().firstElementChild;

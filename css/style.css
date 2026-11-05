@@ -1038,13 +1038,77 @@ body.night .loc .lart .art-icon { color: #9fb4e0; }
 .avatar { position: relative; }
 .avatar .av-fx { position: absolute; inset: 0; border-radius: 50%; pointer-events: none; background-size: cover; background-image: var(--fxc, none), var(--fxv, none); }
 .avatar img { transition: filter .8s ease; }
-.avatar.inf1 { --fxv: url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%20100%20100%27%20fill%3D%27none%27%20stroke-linecap%3D%27round%27%3E%3Cpath%20d%3D%27M50%20100%20C48%2085%2040%2078%2042%2066%20C44%2056%2036%2050%2030%2044%20M42%2066%20C52%2060%2058%2062%2062%2052%20M30%2044%20C26%2040%2020%2041%2016%2036%20M50%20100%20C60%2090%2070%2088%2072%2076%20C74%2066%2082%2062%2086%2054%20M72%2076%20C66%2070%2064%2064%2068%2058%20M0%2070%20C10%2068%2014%2062%2022%2064%20C28%2066%2030%2060%2036%2058%20M100%2066%20C92%2064%2088%2058%2080%2060%27%20stroke%3D%27%237CFF5A%27%20stroke-opacity%3D%27.55%27%20stroke-width%3D%272.2%27/%3E%3C/svg%3E"); }
-.avatar.inf2 { --fxv: url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%20100%20100%27%20fill%3D%27none%27%20stroke-linecap%3D%27round%27%3E%3Cpath%20d%3D%27M50%20100%20C48%2085%2040%2078%2042%2066%20C44%2056%2036%2050%2030%2044%20M42%2066%20C52%2060%2058%2062%2062%2052%20M30%2044%20C26%2040%2020%2041%2016%2036%20M50%20100%20C60%2090%2070%2088%2072%2076%20C74%2066%2082%2062%2086%2054%20M72%2076%20C66%2070%2064%2064%2068%2058%20M0%2070%20C10%2068%2014%2062%2022%2064%20C28%2066%2030%2060%2036%2058%20M100%2066%20C92%2064%2088%2058%2080%2060%20M16%2036%20C12%2030%2014%2024%2010%2018%20M62%2052%20C64%2044%2058%2038%2060%2030%20M86%2054%20C88%2046%2094%2042%2096%2034%20M36%2058%20C40%2050%2034%2044%2038%2036%27%20stroke%3D%27%238BFF62%27%20stroke-opacity%3D%27.9%27%20stroke-width%3D%272.6%27/%3E%3C/svg%3E"); box-shadow: 0 0 10px rgba(110, 255, 80, .35); }
+.avatar.inf1 { --fxv: url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%20100%20100%27%20fill%3D%27none%27%20stroke-linecap%3D%27round%27%3E%3Cpath%20d%3D%27M50%20100%20C48%2085%2040%2078%2042%2066%20C44%2056%2036%2050%2030%2044%20M42%2066%20C52%2060%2058%2062%2062%2052%20M30%2044%20C26%2040%2020%2041%2016%2036%20M50%20100%20C60%2090%2070%2088%2072%2076%20C74%2066%2082%2062%2086%2054%20M72%2076%20C66%2070%2064%2064%2068%2058%20M0%2070%20C10%2068%2014%2062%2022%2064%20C28%2066%2030%2060%2036%2058%20M100%2066%20C92%2064%2088%2058%2080%2060%27%20stroke%3D%27%237CFF5A%27%20stroke-opacity%3D%27.55%27%20stroke-width%3D%273.6%27/%3E%3C/svg%3E"); }
+.avatar.inf2 { --fxv: url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%20100%20100%27%20fill%3D%27none%27%20stroke-linecap%3D%27round%27%3E%3Cpath%20d%3D%27M50%20100%20C48%2085%2040%2078%2042%2066%20C44%2056%2036%2050%2030%2044%20M42%2066%20C52%2060%2058%2062%2062%2052%20M30%2044%20C26%2040%2020%2041%2016%2036%20M50%20100%20C60%2090%2070%2088%2072%2076%20C74%2066%2082%2062%2086%2054%20M72%2076%20C66%2070%2064%2064%2068%2058%20M0%2070%20C10%2068%2014%2062%2022%2064%20C28%2066%2030%2060%2036%2058%20M100%2066%20C92%2064%2088%2058%2080%2060%20M16%2036%20C12%2030%2014%2024%2010%2018%20M62%2052%20C64%2044%2058%2038%2060%2030%20M86%2054%20C88%2046%2094%2042%2096%2034%20M36%2058%20C40%2050%2034%2044%2038%2036%27%20stroke%3D%27%238BFF62%27%20stroke-opacity%3D%27.9%27%20stroke-width%3D%274.2%27/%3E%3C/svg%3E"); box-shadow: 0 0 10px rgba(110, 255, 80, .35); }
 .avatar.inf2 img { filter: saturate(.55) sepia(.25) hue-rotate(45deg); }
-.avatar.inf3 { --fxv: url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%20100%20100%27%20fill%3D%27none%27%20stroke-linecap%3D%27round%27%3E%3Cpath%20d%3D%27M50%20100%20C48%2085%2040%2078%2042%2066%20C44%2056%2036%2050%2030%2044%20M42%2066%20C52%2060%2058%2062%2062%2052%20M30%2044%20C26%2040%2020%2041%2016%2036%20M50%20100%20C60%2090%2070%2088%2072%2076%20C74%2066%2082%2062%2086%2054%20M72%2076%20C66%2070%2064%2064%2068%2058%20M0%2070%20C10%2068%2014%2062%2022%2064%20C28%2066%2030%2060%2036%2058%20M100%2066%20C92%2064%2088%2058%2080%2060%20M16%2036%20C12%2030%2014%2024%2010%2018%20M62%2052%20C64%2044%2058%2038%2060%2030%20M86%2054%20C88%2046%2094%2042%2096%2034%20M36%2058%20C40%2050%2034%2044%2038%2036%27%20stroke%3D%27%238BFF62%27%20stroke-opacity%3D%27.9%27%20stroke-width%3D%272.6%27/%3E%3C/svg%3E"); }
+.avatar.inf3 { --fxv: url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%20100%20100%27%20fill%3D%27none%27%20stroke-linecap%3D%27round%27%3E%3Cpath%20d%3D%27M50%20100%20C48%2085%2040%2078%2042%2066%20C44%2056%2036%2050%2030%2044%20M42%2066%20C52%2060%2058%2062%2062%2052%20M30%2044%20C26%2040%2020%2041%2016%2036%20M50%20100%20C60%2090%2070%2088%2072%2076%20C74%2066%2082%2062%2086%2054%20M72%2076%20C66%2070%2064%2064%2068%2058%20M0%2070%20C10%2068%2014%2062%2022%2064%20C28%2066%2030%2060%2036%2058%20M100%2066%20C92%2064%2088%2058%2080%2060%20M16%2036%20C12%2030%2014%2024%2010%2018%20M62%2052%20C64%2044%2058%2038%2060%2030%20M86%2054%20C88%2046%2094%2042%2096%2034%20M36%2058%20C40%2050%2034%2044%2038%2036%27%20stroke%3D%27%238BFF62%27%20stroke-opacity%3D%27.9%27%20stroke-width%3D%274.2%27/%3E%3C/svg%3E"); }
 .avatar.inf3 img { filter: grayscale(.9) brightness(.8); }
 .avatar.crack1 { --fxc: url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%20100%20100%27%20fill%3D%27none%27%20stroke-linecap%3D%27round%27%3E%3Cpath%20d%3D%27M0%2022%20L12%2026%20L16%2034%20L26%2036%20M100%2030%20L90%2034%20L86%2044%20L78%2046%20M8%2088%20L18%2082%20L22%2074%27%20stroke%3D%27%23E8E2D2%27%20stroke-opacity%3D%27.75%27%20stroke-width%3D%273%27/%3E%3Cpath%20d%3D%27M0%2022%20L12%2026%20L16%2034%20L26%2036%20M100%2030%20L90%2034%20L86%2044%20L78%2046%20M8%2088%20L18%2082%20L22%2074%27%20stroke%3D%27%23000%27%20stroke-opacity%3D%27.6%27%20stroke-width%3D%276%27%20transform%3D%27translate%281%201%29%27/%3E%3C/svg%3E"); }
 .avatar.crack2 { --fxc: url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%20100%20100%27%20fill%3D%27none%27%20stroke-linecap%3D%27round%27%3E%3Cpath%20d%3D%27M0%2022%20L12%2026%20L16%2034%20L26%2036%20M100%2030%20L90%2034%20L86%2044%20L78%2046%20M8%2088%20L18%2082%20L22%2074%20M60%200%20L58%2010%20L64%2016%20L62%2026%20M100%2078%20L88%2076%20L84%2084%20L74%2086%20M34%20100%20L38%2090%20L32%2084%20M0%2052%20L10%2054%20L14%2060%27%20stroke%3D%27%23000%27%20stroke-opacity%3D%27.65%27%20stroke-width%3D%276.5%27%20transform%3D%27translate%281%201%29%27/%3E%3Cpath%20d%3D%27M0%2022%20L12%2026%20L16%2034%20L26%2036%20M100%2030%20L90%2034%20L86%2044%20L78%2046%20M8%2088%20L18%2082%20L22%2074%20M60%200%20L58%2010%20L64%2016%20L62%2026%20M100%2078%20L88%2076%20L84%2084%20L74%2086%20M34%20100%20L38%2090%20L32%2084%20M0%2052%20L10%2054%20L14%2060%27%20stroke%3D%27%23F0E8D8%27%20stroke-opacity%3D%27.9%27%20stroke-width%3D%273.4%27/%3E%3C/svg%3E"); }
 .avatar.crack2 img { filter: brightness(.85) contrast(1.1); }
 .avatar.inf2.crack2 img { filter: saturate(.55) sepia(.25) hue-rotate(45deg) brightness(.85); }
 @keyframes bannerin { 0% { opacity: 0; transform: rotate(-1.2deg) scale(.6, .2); } 10% { opacity: 1; transform: rotate(-1.2deg) scale(1.04); } 16% { transform: rotate(-1.2deg); } 82% { opacity: 1; transform: rotate(-1.2deg); } 100% { opacity: 0; transform: rotate(-1.2deg) translateY(-14px); } }
+
+/* ---------- Визуальный раунд 1 (новый цикл) ---------- */
+/* ночь: фон и виньетка меняются плавно и не темнят интерфейс */
+body.night::before { background:
+    radial-gradient(ellipse at 20% 0%, rgba(120, 30, 20, 0.18), transparent 55%),
+    radial-gradient(ellipse at 80% 100%, rgba(60, 80, 40, 0.12), transparent 60%),
+    radial-gradient(ellipse at 50% 50%, #15171c 0%, #08090b 100%); }
+body::after { content: ''; position: fixed; inset: 0; z-index: -2; pointer-events: none; opacity: 0; transition: opacity 2s ease;
+  background:
+    radial-gradient(ellipse at 70% 0%, rgba(60, 90, 150, 0.18), transparent 55%),
+    radial-gradient(ellipse at 20% 100%, rgba(20, 40, 80, 0.2), transparent 60%),
+    radial-gradient(ellipse at 50% 50%, #0d1220 0%, #05070c 100%); }
+body.night::after { opacity: 1; }
+body.night #vignette { background: radial-gradient(ellipse at center, transparent 55%, rgba(0, 0, 0, 0.55) 100%); }
+
+/* помощь соседа: сыгранная карта — яркая, с меткой; увеличение не наезжает на заголовок */
+.enc-panel .help-row .mini-hand .card.inpool { filter: none; transform: none; }
+.enc-panel .help-row .mini-hand .card.inpool .face { box-shadow: 0 0 0 2px #7fd27a, 0 0 14px rgba(110, 220, 100, .45); }
+@media (min-width: 901px) {
+  .enc-panel .help-row .mini-hand .card:hover { transform: translateY(-4px) scale(1.14); transform-origin: center bottom; }
+  .dmg-modal .hand .card:hover, .dmg-modal .hand .card.selected:hover { transform: translateY(-6px) scale(1.12); transform-origin: center bottom; }
+}
+.slotbox.filled.multi { padding: 3px; gap: 3px; }
+.slotbox .sl-item { width: 100%; border-radius: 6px; padding: 1px 2px; }
+.slotbox.multi .sl-item + .sl-item { border-top: 1px solid rgba(224, 166, 66, .35); padding-top: 3px; }
+.slotbox .sl-item:hover { color: var(--blood2); }
+.slotbox.filled { cursor: default; }
+.slotbox .sl-item { cursor: pointer; }
+
+/* второй ряд локаций: компактнее на невысоких экранах, видна прокрутка */
+@media (min-width: 901px) and (max-height: 960px) {
+  .loc .lart { height: 92px; }
+  .locs.two-rows .loc .lart { height: 74px; }
+}
+.locs { scrollbar-width: thin; scrollbar-color: #5a4a2c transparent; }
+.locs::-webkit-scrollbar { width: 8px; }
+.locs::-webkit-scrollbar-thumb { background: #5a4a2c; border-radius: 4px; }
+
+/* список героев: локация всегда своей строкой */
+.pmini .pstats .ploc { flex-basis: 100%; }
+
+/* портреты: инфекция заметнее */
+.avatar.inf1 { box-shadow: 0 0 8px rgba(110, 255, 80, .35); }
+
+/* телефон: шапка в две строки */
+@media (max-width: 520px) {
+  .topbar { gap: 6px 8px; padding: 6px 10px; }
+  .topbar .mtitle { flex: 1 1 100%; max-width: none; white-space: nowrap; font-size: 15px; }
+  .topbar .mtitle small { display: inline; margin-right: 8px; letter-spacing: .12em; }
+  .topbar .spacer { display: none; }
+  .topbar .clockw { flex: 1 1 auto; padding: 4px 10px; }
+  .topbar .clockw .clab { font-size: 10px; }
+  .topbar .turnev .tet small { display: none; }
+  .topbar .btn.icon { width: 38px; height: 38px; }
+}
+@media (min-width: 901px) and (max-height: 780px) {
+  .loc .lart { height: 66px; }
+  .locs.two-rows .loc .lart { height: 54px; }
+  .locs.two-rows .loc .lbody { padding-top: 6px; padding-bottom: 6px; }
+  .locs.two-rows .loc .lrule { margin-top: 2px; }
+}
+.slotbox .sl-item { display: flex; flex-direction: column; align-items: center; }
+.slotbox.multi .sl-item { display: block; line-height: 1.15; }
+.slotbox.multi .sl-name::after { content: ' · '; font-weight: 400; color: var(--dim); }

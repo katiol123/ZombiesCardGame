@@ -1864,7 +1864,7 @@
     }
     if (lines.length) {
       G.log(`Награда за «${G.ldef(loc).name}»: ${lines.join('; ')}.`, 'loot');
-      await UI().banner('Награда: заколочено', lines.join(' · '), 'good');
+      await UI().banner('Награда', `За «${G.ldef(loc).name}»: ${lines.join(' · ')}`, 'good');
       UI().renderBoard();
     }
   };

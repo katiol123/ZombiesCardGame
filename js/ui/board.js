@@ -159,7 +159,7 @@
       return `<div class="pmini ${i === m.active ? 'active' : ''} ${h.dead ? 'dead' : ''}" data-hero="${i}">
         ${UI.avatar(h.id, h.dead ? 'dead' : '')}
         <div class="pinfo"><div class="pname">${esc(UI.shortName(h.id))}</div>
-        <div class="pstats">${h.dead ? (h.turned ? 'Обращение' : 'Гибель') : `<span title="${T('deck')}">${ZG.icon('cards')} ${h.deck.length}</span><span title="${T('hand')}">${ZG.icon('hand')} ${h.hand.length}</span><span class="inf-pips" title="${T('infection')} ${inf}/3">${[0, 1, 2].map((k) => `<i class="${k < inf ? 'on' : ''}"></i>`).join('')}</span><span title="Локация">${ZG.icon('mappin')} ${esc(loc.name)}</span>${Object.keys(h.conds || {}).map((k) => `<span title="${esc(ZG.CONDS[k].name + ': ' + ZG.CONDS[k].text)}" style="color:#ff9c86">${ZG.icon(ZG.CONDS[k].icon)}</span>`).join('')}${(h.displayed || []).length ? `<span title="Выложено: ${esc(h.displayed.map((c) => ZG.card(c.id).name).join(', '))}" style="color:#9fe0e0">${ZG.icon('star')}${h.displayed.length}</span>` : ''}`}</div></div>
+        <div class="pstats">${h.dead ? (h.turned ? 'Обращение' : 'Гибель') : `<span title="${T('deck')}">${ZG.icon('cards')} ${h.deck.length}</span><span title="${T('hand')}">${ZG.icon('hand')} ${h.hand.length}</span><span class="inf-pips" title="${T('infection')} ${inf}/3">${[0, 1, 2].map((k) => `<i class="${k < inf ? 'on' : ''}"></i>`).join('')}</span><span class="ploc" title="Локация">${ZG.icon('mappin')} ${esc(loc.name)}</span>${Object.keys(h.conds || {}).map((k) => `<span title="${esc(ZG.CONDS[k].name + ': ' + ZG.CONDS[k].text)}" style="color:#ff9c86">${ZG.icon(ZG.CONDS[k].icon)}</span>`).join('')}${(h.displayed || []).length ? `<span title="Выложено: ${esc(h.displayed.map((c) => ZG.card(c.id).name).join(', '))}" style="color:#9fe0e0">${ZG.icon('star')}${h.displayed.length}</span>` : ''}`}</div></div>
       </div>`;
     }).join('');
   };
@@ -552,10 +552,14 @@
     }).join('');
     const slotTypes = ['weapon', 'item', 'consumable', 'ally', 'resolve', 'technique'];
     const slots = slotTypes.map((t) => {
-      const p = ctx.played.find((x) => ZG.card(x.id).type === t);
-      if (!p) return `<div class="slotbox">${T('slot_' + t)}</div>`;
-      const owner = m.heroes.find((h) => h.id === p.owner);
-      return `<div class="slotbox filled" data-unplay="${p.u}" title="Убрать"><span class="sl-name">${esc(ZG.card(p.id).name)}</span>${T('mode_' + g.playDef(p).mode)}${owner !== mh ? ' · ' + esc(g.hname(owner)) : ''}</div>`;
+      // по одной карте типа от каждого героя — показываем все сыгранные
+      const ps = ctx.played.filter((x) => ZG.card(x.id).type === t);
+      if (!ps.length) return `<div class="slotbox">${T('slot_' + t)}</div>`;
+      const one = (p) => {
+        const owner = m.heroes.find((h) => h.id === p.owner);
+        return `<div class="sl-item" data-unplay="${p.u}" title="Убрать"><span class="sl-name">${esc(ZG.card(p.id).name)}</span>${T('mode_' + g.playDef(p).mode)}${owner !== mh ? ' · ' + esc(g.hname(owner)) : ''}</div>`;
+      };
+      return `<div class="slotbox filled ${ps.length > 1 ? 'multi' : ''}">${ps.map(one).join('')}</div>`;
     }).join('');
     const dice = pool.dice.map((x) => `<div class="die ${x.d}"><div class="die-body"><span>${T('die')}${ZG.sides(x.d)}</span></div><small>${esc(x.src.slice(0, 12))}</small></div>`).join('');
     const pct = Math.round(pool.chance * 100);
@@ -684,6 +688,7 @@
       <div class="total-line">${res.rolls.map((r) => r.v).join(' + ')}${res.pool.bonus ? (res.pool.bonus > 0 ? ' + ' : ' − ') + Math.abs(res.pool.bonus) : ''} = <b>${res.total}</b> против ${res.dc}${ok ? '' : ` · разница ${res.dc - res.total}`}</div>
       <div class="enc-actions"><button class="btn ${ok ? 'good' : 'primary'}" data-cont>${T('continue')}</button></div>`;
     ZG.Audio.synth(ok ? 'success' : 'fail');
+    if (window.innerWidth <= 900) { const rb = bottom.querySelector('.result-banner'); if (rb) rb.scrollIntoView({ block: 'center', behavior: 'smooth' }); }
     if (ok) { ZG.FX.flash('green'); ZG.FX.burstAt(panel.querySelector('.result-banner'), 'gold', 40); }
     if (ok && ctx.check && ctx.check.kind === 'combat') UI.comicHit(ctx);
     else { ZG.FX.flash('red'); ZG.FX.shake(UI.cardBox() || undefined); }
