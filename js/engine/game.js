@@ -623,6 +623,7 @@
       if (!paid) {
         m.clockPos = Math.min(m.clock.length, m.clockPos + 1);
         G.log('Обречённость: потеряна карта Часов.', 'bad');
+        UI().renderTop();
         await UI().banner('Обречённость', 'Сброшена карта Часов', 'bad');
       }
     }
@@ -1248,7 +1249,8 @@
       if (fx.clock) {
         const m = G.M();
         m.clockPos = Math.min(m.clock.length, m.clockPos + fx.clock);
-        G.log('Потеряно время: −1 карта Часов.', 'bad');
+        G.log(`Потеряно время: −${fx.clock} ${ZG.plural(fx.clock, 'карта', 'карты', 'карт')} Часов.`, 'bad');
+        ui.renderTop();
         await ui.banner('Время уходит', 'Сброшена карта Часов', 'bad');
       }
       if (fx.gain) {

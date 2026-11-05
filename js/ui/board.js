@@ -878,13 +878,16 @@
     el.classList.remove('fanned');
     cards.forEach((c) => (c.style.marginLeft = ''));
     if (cards.length < 2 || window.innerWidth <= 900) return;
-    const cw = cards[0].offsetWidth;
-    const avail = el.clientWidth - 16;
+    // карты могут быть уменьшены через CSS zoom: меряем реальную ширину на экране
+    const cw = cards[0].getBoundingClientRect().width;
+    const z = cw / (cards[0].offsetWidth || cw) || 1;
+    // в ряду помощи группа сжимается по содержимому — меряем весь ряд
+    const avail = (el.closest('.help-row') || el).getBoundingClientRect().width - 16;
     const gap = 10;
     if (cards.length * (cw + gap) <= avail) return;
     const step = Math.max(cw * 0.32, (avail - cw) / (cards.length - 1));
     el.classList.add('fanned');
-    cards.forEach((c, i) => { if (i) c.style.marginLeft = (step - cw) + 'px'; });
+    cards.forEach((c, i) => { if (i) c.style.marginLeft = (step - cw) / z + 'px'; });
   };
   UI.shortName = (id) => ZG.heroShort(id);
   window.addEventListener('resize', () => {
