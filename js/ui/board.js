@@ -557,7 +557,7 @@
       if (!ps.length) return `<div class="slotbox">${T('slot_' + t)}</div>`;
       const one = (p) => {
         const owner = m.heroes.find((h) => h.id === p.owner);
-        return `<div class="sl-item" data-unplay="${p.u}" title="Убрать"><span class="sl-name">${esc(ZG.card(p.id).name)}</span>${T('mode_' + g.playDef(p).mode)}${owner !== mh ? ' · ' + esc(g.hname(owner)) : ''}</div>`;
+        return `<div class="sl-item" data-unplay="${p.u}" title="Убрать"><span class="sl-name">${esc(ZG.card(p.id).name)}</span><span class="sl-mode">${T('mode_' + g.playDef(p).mode)}${owner !== mh ? ' · ' + esc(g.hname(owner)) : ''}</span></div>`;
       };
       return `<div class="slotbox filled ${ps.length > 1 ? 'multi' : ''}">${ps.map(one).join('')}</div>`;
     }).join('');
@@ -647,7 +647,7 @@
     const word = pool[Math.floor(Math.random() * pool.length)];
     const box = document.querySelector('.enc-ov .enc-card .card') || (UI.cardBox && UI.cardBox());
     const r = box && box.offsetParent !== null ? box.getBoundingClientRect() : { left: innerWidth / 2 - 100, top: innerHeight / 3, width: 200, height: 200 };
-    const el = ZG.html(`<div class="comic-hit" style="left:${Math.round(r.left + r.width / 2)}px;top:${Math.round(r.top + Math.min(r.height * 0.32, 150))}px;--rot:${(Math.random() * 16 - 8).toFixed(1)}deg"><div class="ch-burst"></div><b>${word}</b></div>`);
+    const el = ZG.html(`<div class="comic-hit" style="left:${Math.round(r.left + r.width / 2)}px;top:${Math.round(Math.max(90, Math.min(innerHeight - 90, r.top + Math.min(r.height * 0.32, 150))))}px;--rot:${(Math.random() * 16 - 8).toFixed(1)}deg"><div class="ch-burst"></div><b>${word}</b></div>`);
     document.body.appendChild(el);
     setTimeout(() => el.remove(), 1500);
   };
@@ -922,6 +922,41 @@
     cards.forEach((c, i) => { if (i) c.style.marginLeft = (step - cw) / z + 'px'; });
   };
   UI.shortName = (id) => ZG.heroShort(id);
+  /* Чёткий просмотр карты в окнах проверки и урона: вместо масштабирования (оно размывает уменьшенные карты)
+     рядом показывается крупная копия карты в полном размере. */
+  const PEEK_SEL = '.enc-panel .hand .card, .enc-panel .mini-hand .card, .dmg-modal .hand .card';
+  let peekEl = null, peekFor = null;
+  const hidePeek = () => { if (peekEl) peekEl.remove(); peekEl = null; peekFor = null; };
+  const findInst = (u) => {
+    const m = ZG.Game.M && ZG.Game.M();
+    if (!m) return null;
+    for (const h of m.heroes) for (const pile of [h.hand, h.displayed || []]) { const c = pile.find((x) => x.u === u); if (c) return c; }
+    return null;
+  };
+  document.addEventListener('mouseover', (e) => {
+    if (window.innerWidth <= 900 || !window.matchMedia('(hover: hover)').matches) return;
+    const el = e.target.closest && e.target.closest(PEEK_SEL);
+    if (!el) { if (peekEl && !(e.target.closest && e.target.closest('.card-peek'))) hidePeek(); return; }
+    if (peekFor === el) return;
+    hidePeek();
+    const inst = findInst(+el.dataset.u);
+    if (!inst) return;
+    peekFor = el;
+    peekEl = ZG.html(`<div class="card-peek">${UI.cardHTML(inst, { size: 'big' })}</div>`);
+    document.body.appendChild(peekEl);
+    const r = el.getBoundingClientRect();
+    const W = 260, H = 372, pad = 10;
+    // справа от карты, иначе слева; по вертикали — вровень с картой, в пределах экрана
+    let x = r.right + 14;
+    if (x + W > innerWidth - pad) x = r.left - 14 - W;
+    if (x < pad) x = Math.min(innerWidth - W - pad, Math.max(pad, r.left + r.width / 2 - W / 2));
+    let y = r.top + r.height / 2 - H / 2;
+    y = Math.max(pad, Math.min(innerHeight - H - pad, y));
+    peekEl.style.left = Math.round(x) + 'px';
+    peekEl.style.top = Math.round(y) + 'px';
+  });
+  document.addEventListener('mousedown', hidePeek, true);
+  window.addEventListener('scroll', hidePeek, true);
   window.addEventListener('resize', () => {
     document.querySelectorAll('#tray .hand, .enc-panel .mini-hand').forEach(UI.fitHand);
   });

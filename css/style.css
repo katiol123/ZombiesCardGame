@@ -1112,3 +1112,22 @@ body.night #vignette { background: radial-gradient(ellipse at center, transparen
 .slotbox .sl-item { display: flex; flex-direction: column; align-items: center; }
 .slotbox.multi .sl-item { display: block; line-height: 1.15; }
 .slotbox.multi .sl-name::after { content: ' · '; font-weight: 400; color: var(--dim); }
+
+/* ---------- Чёткий просмотр карты при наведении (окна проверки и урона) ---------- */
+.card-peek { position: fixed; z-index: 2600; pointer-events: none; animation: peekIn .12s ease-out; filter: drop-shadow(0 18px 40px rgba(0, 0, 0, .85)); }
+@keyframes peekIn { from { opacity: 0; transform: translateY(6px); } }
+@media (min-width: 901px) and (hover: hover) {
+  .enc-panel .hand .card:hover, .enc-panel .mini-hand .card:hover, .enc-panel .help-row .mini-hand .card:hover,
+  .dmg-modal .hand .card:hover, .dmg-modal .hand .card.selected:hover { transform: translateY(-4px); transition: transform .12s ease; }
+  .enc-panel .hand .card:hover .face, .enc-panel .mini-hand .card:hover .face, .dmg-modal .hand .card:hover .face { outline: 2px solid rgba(239, 229, 210, .55); outline-offset: 1px; }
+}
+/* своя сыгранная карта в окне проверки — как в ряду помощи: яркая с зелёной рамкой */
+.enc-panel .hand .card.inpool { filter: none; transform: none; }
+.enc-panel .hand .card.inpool .face { box-shadow: 0 0 0 2px #7fd27a, 0 0 14px rgba(110, 220, 100, .45); }
+.enc-panel .mini-hand .card.inpool { filter: none; transform: none; }
+.enc-panel .mini-hand .card.inpool .face { box-shadow: 0 0 0 2px #7fd27a, 0 0 14px rgba(110, 220, 100, .45); }
+@media (max-width: 520px) {
+  .slotbox.multi .sl-mode { display: none; }
+  .slotbox.multi .sl-name::after { content: ''; }
+  .card-row { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); justify-items: center; }
+}
