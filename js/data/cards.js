@@ -451,7 +451,7 @@
     { id: 'veteran', type: 'henchman', name: 'Ветеран-мертвец', tier: 2, icon: 'ghost', dc: 12, bite: true, armor: 2, deathBlast: { skills: ['dex'], dc: 6, die: 'd4' },
       text: 'Вожак. Проверки Силой и Рукопашной против него −2. Граната на поясе: когда его побеждают, каждый герой в локации проходит проверку Ловкости 6 — при провале 1d4 урона огнём. Победив его, можно сразу попытаться заколотить локацию.',
       flavor: 'Медали звенят при каждом шаге.' },
-    { id: 'colossus', type: 'boss', name: 'Колосс', tier: 2, icon: 'bossskull', dc: 16, bite: true, dmgAdd: 1, hits: 2,
+    { id: 'colossus', type: 'boss', name: 'Колосс', tier: 2, icon: 'bossskull', dc: 13, bite: true, dmgAdd: 1, hits: 2,
       text: 'Угроза. Нужно победить в двух проверках подряд. Урон от него +1.',
       flavor: 'Сросшиеся тела десятков мертвецов. Мост дрожит под его шагами.' },
   ]);
@@ -533,7 +533,7 @@
     { id: 'flamer', type: 'weapon', name: 'Самодельный огнемёт', tier: 3, icon: 'fire', traits: ['Огонь', 'Самоделка'],
       acquire: { skills: ['tech'], dc: 10 },
       plays: [
-        { on: 'check', mode: 'recharge', kind: COMBAT, weapon: ['tech', 'dex', 'shooting'], dice: ['d8', 'd8'], noise: 3 },
+        { on: 'check', mode: 'recharge', kind: COMBAT, weapon: ['tech', 'dex', 'shooting'], dice: ['d8', 'd6'], noise: 3 },
         { on: 'check', mode: 'burn', kind: COMBAT, weapon: ['tech', 'dex', 'shooting'], dice: ['d8', 'd8', 'd8', 'd8'], noise: 5 },
       ],
       flavor: 'Баллон от барбекю и садовый распылитель. Рэй гордится.' },
@@ -541,7 +541,7 @@
       acquire: { skills: ['str', 'end'], dc: 9 },
       plays: [
         { on: 'damage', mode: 'reveal', reduce: 2 },
-        { on: 'damage', mode: 'recharge', reduce: 'all' },
+        { on: 'damage', mode: 'recharge', reduce: 4 },
       ],
       flavor: 'Надпись «ПОЛИЦИЯ» стёрта когтями.' },
     { id: 'stim', type: 'consumable', name: 'Боевой стимулятор', tier: 3, icon: 'syringe', traits: ['Медицина'],
@@ -626,8 +626,8 @@
       text: 'Угроза. При встрече: шум +3 (школьный звонок).', flavor: '«Опоздавших не пускаем».' },
     { id: 'guardz', type: 'henchman', name: 'Охрана «Хейл Биомед»', tier: 3, icon: 'ghost', dc: 15, bite: true, armor: 2, alarm: 1,
       text: 'Вожак. Броня: Сила и Рукопашная −2. Тревога: если вы не победили его, сбросьте карту Часов. Победив его, можно сразу попытаться заколотить локацию.', flavor: 'Пропуск уровня 4. Доступ куда угодно.' },
-    { id: 'patientzero', type: 'boss', name: 'Чистильщик', tier: 3, icon: 'shield', dc: 17, hits: 2, mutates: true, mutateName: 'Адаптация',
-      text: 'Угроза, машина. Нужно победить в двух проверках подряд. Каждый раз, когда его не победили, боевая система адаптируется: +1 к сложности до конца миссии.',
+    { id: 'patientzero', type: 'boss', name: 'Чистильщик', tier: 3, icon: 'shield', dc: 17, hits: 2, mutates: true, mutateName: 'Адаптация', secondPerHench: { v: -1, label: 'Пропуска охраны' },
+      text: 'Угроза, машина. Нужно победить в двух проверках подряд. Вторая проверка −1 за каждую побеждённую в этой миссии Охрану «Хейл Биомед»: их пропуска открывают сервисный люк экзоскелета. Каждый раз, когда его не победили, боевая система адаптируется: +1 к сложности до конца миссии.',
       flavor: 'Экзоскелет зачистки «Хейл Биомед». Оператор внутри умер неделю назад. Протокол продолжает работу.' },
   ]);
 

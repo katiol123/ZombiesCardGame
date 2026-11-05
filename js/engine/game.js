@@ -889,6 +889,9 @@
       const fh = m.heroes[m.active];
       if (fh && G.infCount(fh) > 0) mods.push({ label: 'Фильтрация: есть Инфекция', v: def.filtration });
     }
+    // вторая проверка подряд против Угрозы с двумя «жизнями» — она уже ранена
+    if (i === 1 && def.second) mods.push({ label: def.second.label, v: def.second.dc });
+    if (i === 1 && def.secondPerHench && m.henchKills) mods.push({ label: `${def.secondPerHench.label}: ${m.henchKills}`, v: def.secondPerHench.v * m.henchKills });
     const dc = def.dc + ZG.sum(mods.map((x) => x.v));
     return {
       kind: 'combat', skills: ['str', 'dex', 'melee'], dc, base: def.dc, mods, enemy: def, cardId: def.id,
@@ -1059,6 +1062,7 @@
         const tr = await G.doCheck(mh, G.eventCheck(def.toxic, loc, `${def.name}: брызги заразы`, def));
         if (!tr.success) await G.infect(mh);
       }
+      if (def.type === 'henchman') m.henchKills = (m.henchKills || 0) + 1;
       // Как в Pathfinder: заколотить можно только сразу после победы над вожаком.
       // Отказ или провал — шанс упущен, локацию придётся вычищать до пустой колоды.
       const clr = G.lrule(loc);
@@ -1366,9 +1370,10 @@
     if (plr.stealthBonus && (ck.kind === 'evade' || skill === 'stealth')) { bonus += plr.stealthBonus; parts.push({ label: 'Локация: укрытие', v: plr.stealthBonus }); }
     if (mh.id === 'grom') {
       if (ck.kind === 'combat' && wp) dice.push({ d: 'd4', src: 'Боевой опыт' });
-      if (wp && (G.playDef(wp).noise || 0) > 0) { noise += 1; if (ck.kind === 'combat') dice.push({ d: 'd4', src: 'Громкий' }); } // «Громкий»: шум +1, но и +1d4
+      if (wp && (G.playDef(wp).noise || 0) > 0) { noise += 1; if (ck.kind === 'combat') dice.push({ d: 'd6', src: 'Громкий' }); } // «Громкий»: шум +1, но и +1d6
     }
     if (mh.id === 'marina' && skill === 'medicine' && ck.kind !== 'combat') dice.push({ d: 'd4', src: 'Твёрдая рука' });
+    if (mh.id === 'marina' && ck.kind === 'combat' && wp && ZG.card(wp.id).traits.includes('Тихое')) dice.push({ d: 'd4', src: 'Твёрдая рука' });
     if (mh.id === 'palych') {
       if (ck.kind === 'close') dice.push({ d: 'd4', src: 'Золотые руки' });
       if (ck.kind === 'combat' && wp && ZG.card(wp.id).traits.includes('Инструмент')) dice.push({ d: 'd4', src: 'Золотые руки' });
