@@ -187,6 +187,12 @@ window.ZG_ART = {
     pharmacy: 'assets/locations/pharmacy.webp',
     boiler: 'assets/locations/boiler.webp',
     ambulance: 'assets/locations/ambulance.webp',
+    salesfloor: 'assets/locations/salesfloor.webp',
+    storage: 'assets/locations/storage.webp',
+    butchery: 'assets/locations/butchery.webp',
+    security: 'assets/locations/security.webp',
+    loading: 'assets/locations/loading.webp',
+    parking: 'assets/locations/parking.webp',
   },
   missions: {},
 };
