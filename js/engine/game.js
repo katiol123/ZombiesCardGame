@@ -1810,8 +1810,7 @@
       await UI().banner(T('boss_hiding'), `Локация остаётся открытой. Всё остальное вычищено (${banished}) — в колоде осталась только Угроза.`, 'bad', true);
       return null;
     }
-    await G.closeLoc(loc);
-    return null;
+    return await G.closeLoc(loc);
   };
 
   /** Карты-цели (канистры) не изгоняются: они переносятся в другую открытую локацию или сразу засчитываются */
@@ -1843,6 +1842,14 @@
     G.log(T('barricade_done', { loc: G.ldef(loc).name }), 'good');
     await UI().barricade(loc);
     await G.closeReward(loc);
+    // «Последний автобус»: Угроза уже уничтожена, а недостающее топливо нашлось при зачистке — победа
+    const m = G.M();
+    const ob = G.special().objective;
+    if (ob && m.bossDown && (m.obj || 0) >= ob.need) {
+      await UI().banner('Можно уезжать!', `${ob.label} собрано, Угроза уничтожена`, 'win');
+      return 'win';
+    }
+    return null;
   };
 
   G.closeReward = async function (loc) {
