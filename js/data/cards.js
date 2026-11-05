@@ -399,7 +399,7 @@
       text: 'До проверки: 1 урон. От него нельзя уклониться.',
       flavor: 'Ошейник с биркой «Бадди». Хозяина рядом нет.' },
     { id: 'looter', type: 'enemy', living: true, gang: true, name: 'Мародёр', tier: 1, icon: 'raider', dc: 7, theft: true,
-      text: 'Человек. Если вы не победили его, он забирает выложенную карту, а если её нет — случайную карту из руки.',
+      text: 'Человек. Если вы не победили его, он забирает случайную карту из руки.',
       flavor: '«Рюкзак. Медленно. На землю».' },
     { id: 'swarm', type: 'enemy', name: 'Стая', tier: 1, icon: 'skulls', dc: 9, bite: true, dmgAdd: 1, scatterMargin: 3,
       text: 'Урон от неё +1. Победа с перевесом меньше 3: стая разбегается и уходит под низ колоды локации.',
@@ -445,7 +445,7 @@
       text: 'Вожак, человек. Охота на одиночек: если вы одни в локации, сложность +3. Победив его, можно сразу попытаться заколотить локацию.',
       flavor: '«Кейн передаёт привет».' },
     { id: 'kane', type: 'boss', living: true, name: 'Главарь Кейн', tier: 2, icon: 'bossskull', dc: 15, theft: true, before: { damage: 2 },
-      text: 'Угроза, человек. До проверки: 2 урона. Если вы не победили его, он забирает выложенную карту, а если её нет — случайную карту из руки.',
+      text: 'Угроза, человек. До проверки: 2 урона. Если вы не победили его, он забирает случайную карту из руки.',
       flavor: 'Бывший помощник шерифа. Теперь закон — он.' },
 
     { id: 'veteran', type: 'henchman', name: 'Ветеран-мертвец', tier: 2, icon: 'ghost', dc: 12, bite: true, armor: 2, deathBlast: { skills: ['dex'], dc: 6, die: 'd4' },
@@ -607,7 +607,7 @@
       text: 'Вожак, человек. Огнемёт: в начале боя каждый герой в локации проходит проверку Ловкость / Выживание 7 — при провале 1d3 урона огнём. Победив его, можно сразу попытаться заколотить локацию.',
       flavor: 'Огнемёты, противогазы, приказ: «Никого не выпускать».' },
     { id: 'ridge', type: 'boss', living: true, name: 'Полковник Ридж', tier: 3, icon: 'bossskull', dc: 16, before: { damage: 2 }, theft: true,
-      text: 'Угроза, человек. До проверки: 2 урона. Если вы не победили его, он изымает выложенную карту, а если её нет — случайную карту из руки.',
+      text: 'Угроза, человек. До проверки: 2 урона. Если вы не победили его, он изымает случайную карту из руки.',
       flavor: '«Карантин — это не тюрьма. Это фильтр»' },
     { id: 'foreman', type: 'henchman', name: 'Бригадир смены', tier: 3, icon: 'ghost', dc: 12, bite: true, armor: 1, callShift: 'blindminer',
       text: 'Вожак. Каска: Сила и Рукопашная −1. Свисток смены: если вы не победили его, в эту локацию приходит Слепой шахтёр. Победив его, можно сразу попытаться заколотить локацию.', flavor: 'Табельная книжка всё ещё в кармане.' },
@@ -738,7 +738,8 @@
   ]);
   U('m2', [
     { id: 'cart', type: 'item', name: 'Тележка из супермаркета', icon: 'store', traits: [], acquire: { skills: ['str'], dc: 5 },
-      plays: [{ on: 'action', mode: 'display' }], displayed: { hand: 1 }, flavor: 'Одно колесо скрипит. Зато влезает всё.' },
+      text: 'Сбросьте при получении находки: заберите ещё одну случайную находку того же типа.',
+      plays: [], flavor: 'Одно колесо скрипит. Зато влезает всё.' },
     { id: 'propane', type: 'consumable', name: 'Баллон пропана', icon: 'fire', traits: ['Огонь'], acquire: { skills: ['str', 'tech'], dc: 6 },
       plays: [{ on: 'check', mode: 'burn', kind: COMBAT, dice: ['d6', 'd6', 'd6'], noise: 4 }], flavor: 'Для гриля. Был.' },
     { id: 'cleaver', type: 'weapon', name: 'Тесак мясника', icon: 'knife', traits: ['Ближнее'], acquire: { skills: ['str', 'melee'], dc: 6 },
@@ -778,7 +779,7 @@
   ]);
   U('m6', [
     { id: 'hazmatsuit', type: 'item', name: 'Костюм химзащиты', icon: 'mask', traits: ['Броня'], acquire: { skills: ['end', 'tech'], dc: 7 },
-      plays: [{ on: 'infect', mode: 'recharge' }, { on: 'action', mode: 'display' }], displayed: { reduce: 1 }, flavor: 'Жёлтый. Душный. Живой внутри.' },
+      plays: [{ on: 'damage', mode: 'reveal', reduce: 2, onlyType: ['acid'] }, { on: 'infect', mode: 'recharge' }], flavor: 'Жёлтый. Душный. Живой внутри.' },
     { id: 'filterpass', type: 'item', name: 'Пропуск фильтрации', icon: 'badge', traits: [], acquire: { skills: ['stealth', 'wit'], dc: 7 },
       plays: [{ on: 'action', mode: 'burn', time: 2 }], flavor: 'Штамп «ЧИСТ». Чужая фотография.' },
     { id: 'serum7b', type: 'consumable', name: 'Сыворотка 7-Б', icon: 'vial', traits: ['Медицина'], acquire: { skills: ['medicine'], dc: 8 },
@@ -880,16 +881,12 @@
   ]);
 
   /* ============================== ДОПОЛНЕНИЯ К КАРТАМ ==============================
-   * Тяжёлая броня, выложенные карты, состояния, уязвимости, стойкость, иммунитеты врагов. */
+   * Тяжёлая броня, состояния, уязвимости, стойкость, иммунитеты врагов. */
   const AUG = {
     // тяжёлая броня (требует владения)
     riotgear: { traits: ['Броня', 'Тяжёлая броня'] },
-    vest: { traits: ['Броня', 'Тяжёлая броня'], displayed: { reduce: 1, combatOnly: true } },
+    vest: { traits: ['Броня', 'Тяжёлая броня'] },
     tacshield: { traits: ['Броня', 'Щит', 'Тяжёлая броня'] },
-    helmet: { displayed: { reduce: 1, combatOnly: true } },
-    // выложенные карты
-    nvg: { displayed: { check: { kind: 'any', night: true, dice: ['d6'] } } },
-    minerlamp: { displayed: { check: { kind: 'noncombat', dice: ['d4'] } } },
     // состояния и типы урона врагов
     runner: { inflict: 'poison', resist: { 'Тяжёлое': 2 } },
     deaddog: { inflict: 'poison', resist: { 'Тяжёлое': 2 } },
@@ -922,10 +919,6 @@
   // грамматический род врагов (по умолчанию мужской): f — женский, n — средний
   const GENDER = { swarm: 'f', matriarch: 'f', holt: 'f', guardz: 'f', shopper: 'f', echo: 'n', coldbody: 'n' };
   Object.keys(GENDER).forEach((id) => { if (C[id]) C[id].g = GENDER[id]; });
-  // карты, которые можно выложить
-  ['vest', 'helmet', 'nvg', 'minerlamp'].forEach((id) => {
-    if (C[id] && !C[id].plays.some((p) => p.mode === 'display')) C[id].plays.push({ on: 'action', mode: 'display' });
-  });
   // состояния от препятствий
   const evFail = { glass: [{ damage: 1 }, { cond: 'poison' }], smokefill: [{ damage: 1, dmgType: 'fire' }, { cond: 'vuln' }], nursery: [{ cond: 'decay' }, { shock: 1 }], tripwire: [{ damage: 'd4', dmgType: 'fire' }, { cond: 'numb' }, { noise: 2 }], fire: [{ damage: 2, dmgType: 'fire' }, { cond: 'vuln' }, { noise: 2 }], rubble: [{ clock: 1 }, { cond: 'numb' }], quarantine: [{ infect: 1 }, { cond: 'poison' }], silence: [{ summon: true }, { cond: 'terror' }] };
   const evText = { glass: 'Провал: 1 урон и Отравление (грязная рана).', smokefill: 'Провал: 1 урон огнём и Уязвимость.', nursery: 'Успех: найдите Решимость. Провал: Распад, сбросьте 1 случайную карту из руки.', tripwire: 'Провал: 1d4 урона огнём, Онемение, шум +2.', fire: 'Провал: 2 урона огнём, Уязвимость, шум +2.', rubble: 'Провал: сбросьте карту Часов и получите Онемение.', quarantine: 'Успех: случайный Расходник. Провал: Инфекция и Отравление.', silence: 'Провал: встреча с мертвецом из темноты и Ночной ужас.' };

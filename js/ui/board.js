@@ -45,13 +45,6 @@
         }
         return;
       }
-      const dc = e.target.closest('[data-disp]');
-      if (dc) {
-        const m = G().M();
-        const owner = m.heroes.find((h) => (h.displayed || []).some((c) => c.u === +dc.dataset.disp));
-        if (owner) UI.inspect(owner.displayed.find((c) => c.u === +dc.dataset.disp));
-        return;
-      }
       const hc = e.target.closest('#tray .hand .card');
       if (hc) UI.onHandCard(+hc.dataset.u, hc);
     });
@@ -159,7 +152,7 @@
       return `<div class="pmini ${i === m.active ? 'active' : ''} ${h.dead ? 'dead' : ''}" data-hero="${i}">
         ${UI.avatar(h.id, h.dead ? 'dead' : '')}
         <div class="pinfo"><div class="pname">${esc(UI.shortName(h.id))}</div>
-        <div class="pstats">${h.dead ? (h.turned ? 'Обращение' : 'Гибель') : `<span title="${T('deck')}">${ZG.icon('cards')} ${h.deck.length}</span><span title="${T('hand')}">${ZG.icon('hand')} ${h.hand.length}</span><span class="inf-pips" title="${T('infection')} ${inf}/3">${[0, 1, 2].map((k) => `<i class="${k < inf ? 'on' : ''}"></i>`).join('')}</span><span class="ploc" title="Локация">${ZG.icon('mappin')} ${esc(loc.name)}</span>${Object.keys(h.conds || {}).map((k) => `<span title="${esc(ZG.CONDS[k].name + ': ' + ZG.CONDS[k].text)}" style="color:#ff9c86">${ZG.icon(ZG.CONDS[k].icon)}</span>`).join('')}${(h.displayed || []).length ? `<span title="Выложено: ${esc(h.displayed.map((c) => ZG.card(c.id).name).join(', '))}" style="color:#9fe0e0">${ZG.icon('star')}${h.displayed.length}</span>` : ''}`}</div></div>
+        <div class="pstats">${h.dead ? (h.turned ? 'Обращение' : 'Гибель') : `<span title="${T('deck')}">${ZG.icon('cards')} ${h.deck.length}</span><span title="${T('hand')}">${ZG.icon('hand')} ${h.hand.length}</span><span class="inf-pips" title="${T('infection')} ${inf}/3">${[0, 1, 2].map((k) => `<i class="${k < inf ? 'on' : ''}"></i>`).join('')}</span><span class="ploc" title="Локация">${ZG.icon('mappin')} ${esc(loc.name)}</span>${Object.keys(h.conds || {}).map((k) => `<span title="${esc(ZG.CONDS[k].name + ': ' + ZG.CONDS[k].text)}" style="color:#ff9c86">${ZG.icon(ZG.CONDS[k].icon)}</span>`).join('')}`}</div></div>
       </div>`;
     }).join('');
   };
@@ -204,7 +197,6 @@
         <div class="hp-top">${UI.avatar(mh.id)}<div><div class="hp-name">${esc(hd.name)}</div><div class="hp-role">${esc(hd.role)}</div></div><button class="btn small ghost tray-toggle" data-act="traytoggle">${UI.trayCollapsed ? 'Рука ▴' : 'Свернуть ▾'}</button></div>
         ${UI.statsHTML(ph)}
         ${Object.keys(mh.conds || {}).length ? `<div class="cond-row">${Object.keys(mh.conds).map((k) => `<span class="cond" title="${esc(ZG.CONDS[k].text)}">${ZG.icon(ZG.CONDS[k].icon)} ${esc(ZG.CONDS[k].name)}</span>`).join('')}</div>` : ''}
-        ${(mh.displayed || []).length ? `<div class="disp-row">${mh.displayed.map((c) => `<span class="disp" data-disp="${c.u}" title="${esc(ZG.cardRules(ZG.card(c.id)).join(' '))}">${ZG.icon('star')} ${esc(ZG.card(c.id).name)}</span>`).join('')}</div>` : ''}
         <div class="piles">
           <div class="pile ${mh.deck.length <= 2 ? 'warn' : ''}" title="Колода — это здоровье"><b>${mh.deck.length}</b>${T('deck')}</div>
           <div class="pile"><b>${mh.discard.length}</b>${T('discard')}</div>

@@ -108,7 +108,7 @@
       if (def.before && def.before.damage) lines.push(`До проверки: ${def.before.damage} урон.`);
       if (def.noEvade) lines.push('От него нельзя уклониться.');
       if (def.armor) lines.push(`Броня: проверки Силой и Рукопашной против него −${def.armor}.`);
-      if (def.theft) lines.push(`Если вы не победили ${ZG.gf(def, 'его', 'её', 'его')}, ${ZG.gf(def, 'он', 'она', 'оно')} забирает выложенную карту, а если её нет — случайную карту из руки.`);
+      if (def.theft) lines.push(`Если вы не победили ${ZG.gf(def, 'его', 'её', 'его')}, ${ZG.gf(def, 'он', 'она', 'оно')} забирает случайную карту из руки.`);
     }
     if (ZG.isEnemy(def) && def.dmgType) lines.push(`Урон: ${ZG.DMG_TYPES[def.dmgType]}.`);
     if (ZG.isEnemy(def)) lines.push(`Провал: урон = ${def.halfDmg ? 'половина разницы, с округлением вниз' : 'разница'} (макс. ${ZG.Game.dmgCap(def)}${def.dmgAdd ? `, +${def.dmgAdd}` : ''})${def.bite ? '. Укус (2+ урона) → Инфекция' : ''}${def.inflict ? (def.inflictCheck ? `. Рана → проверка ${skillsList(def.inflictCheck.skills)} ${def.inflictCheck.dc}, при провале — ${ZG.CONDS[def.inflict].name}` : `. Рана → ${ZG.CONDS[def.inflict].name}`) : ''}.`);

@@ -1100,11 +1100,7 @@
       if (!avoid) await G.addCond(mh, def.inflict);
       else G.log(`${G.hname(mh)}: рана чистая — без состояния «${ZG.CONDS[def.inflict].name}».`, 'good');
     }
-    if (def.theft && !mh.dead && (mh.displayed || []).length) {
-      const c = mh.displayed.splice(R.int(mh.displayed.length), 1)[0];
-      G.log(`${def.name} срывает выложенную «${ZG.card(c.id).name}».`, 'bad');
-      await ui.banner('Ограблен!', `${def.name} забирает «${ZG.card(c.id).name}»`, 'bad');
-    } else if (def.theft && !mh.dead && mh.hand.some((x) => x.id !== 'infection')) {
+    if (def.theft && !mh.dead && mh.hand.some((x) => x.id !== 'infection')) {
       const pool = mh.hand.filter((x) => x.id !== 'infection'); // Инфекцию не крадут — иначе это бесплатное лечение
       const c = R.pick(pool);
       mh.hand.splice(mh.hand.indexOf(c), 1);
@@ -1206,6 +1202,18 @@
       G.S().campaign.stats.finds++;
       G.log(T('acquired', { name: def.name }), 'loot');
       UI().fxLoot();
+      // «Тележка из супермаркета»: сбросить, чтобы забрать ещё одну находку того же типа
+      const cart = mh.hand.find((c) => c.id === 'cart' && c !== inst);
+      if (cart && ZG.isBoon(def)) {
+        const k = await UI().choose({ title: 'Тележка из супермаркета', text: `Сбросить Тележку и забрать ещё одну случайную находку типа «${ZG.T('type_' + def.type)}»?`, options: [{ label: 'Сбросить Тележку', primary: true }, { label: 'Не сейчас' }] });
+        if (k === 0) {
+          G.moveByMode(mh, cart.u, 'discard');
+          const extra = G.inst(ZG.boxPick(def.type, G.def().tier), { l: 1 });
+          mh.hand.push(extra);
+          G.log(`Тележка: ещё «${ZG.card(extra.id).name}».`, 'loot');
+          await UI().gain(extra, 'Тележка!');
+        }
+      }
       const sp = G.def().special || {};
       if (sp.bonusConsumable && def.type === 'consumable') {
         const extra = G.inst(ZG.boxPick('consumable', G.def().tier), { l: 1 });

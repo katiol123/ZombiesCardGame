@@ -22,6 +22,8 @@
       if (!raw) return null;
       try {
         const s = JSON.parse(raw);
+        // выкладывание убрано из игры: выложенные карты возвращаются в колоду
+        if (s && s.mission && s.mission.heroes) s.mission.heroes.forEach((h) => { if (h.displayed && h.displayed.length) { h.deck.push(...h.displayed); h.displayed = []; } });
         return s && s.v ? s : null;
       } catch (e) { return null; }
     },
