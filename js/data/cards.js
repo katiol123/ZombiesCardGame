@@ -803,8 +803,8 @@
       plays: [{ on: 'damage', mode: 'burn', reduce: 'all' }], flavor: 'Сорок минут воздуха.' },
   ]);
   U('m8', [
-    { id: 'compoundbow', type: 'weapon', name: 'Блочный лук', icon: 'crossbow', traits: ['Дальнее', 'Тихое'], acquire: { skills: ['dex', 'shooting'], dc: 8 },
-      plays: [{ on: 'check', mode: 'recharge', kind: COMBAT, weapon: ['dex', 'shooting'], dice: ['d8'] }], flavor: 'Тихо. Точно. Насмерть.' },
+    { id: 'canoepaddle', type: 'weapon', name: 'Весло от каноэ', icon: 'waves', traits: ['Ближнее', 'Тихое'], acquire: { skills: ['str', 'survival'], dc: 7 },
+      plays: [{ on: 'check', mode: 'recharge', kind: COMBAT, weapon: ['str', 'melee'], dice: ['d8'], bonus: 1 }], flavor: 'На лопасти выжжено: «Сосновый ручей — отряд „Бобры“». Бобры бы гордились.' },
     { id: 'beartrap', type: 'item', name: 'Медвежий капкан', icon: 'lock', traits: [], acquire: { skills: ['survival', 'str'], dc: 7 },
       plays: [{ on: 'check', mode: 'discard', kind: COMBAT, dice: ['d6', 'd6'] }, { on: 'evade', mode: 'discard' }], flavor: 'Щёлк.' },
     { id: 'counselor', type: 'ally', name: 'Рыбак Эрл', icon: 'waves', traits: ['Горожанин'], acquire: { skills: ['persuasion'], dc: 7 },
@@ -940,8 +940,11 @@
   ZG.CARDS = C;
 
   /** Определение карты по id (поддерживает динамических «обращённых» героев) */
+  // старые id карт, заменённых новыми (чтобы не ломались сохранения)
+  const ALIAS = { compoundbow: 'canoepaddle' };
   ZG.card = function (id) {
     if (C[id]) return C[id];
+    if (ALIAS[id]) return C[ALIAS[id]];
     if (id && id.startsWith('turned_')) {
       const hid = id.slice(7);
       const h = ZG.HEROES[hid];
