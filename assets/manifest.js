@@ -193,6 +193,12 @@ window.ZG_ART = {
     security: 'assets/locations/security.webp',
     loading: 'assets/locations/loading.webp',
     parking: 'assets/locations/parking.webp',
+    hillfoot: 'assets/locations/hillfoot.webp',
+    rangerhut: 'assets/locations/rangerhut.webp',
+    generator: 'assets/locations/generator.webp',
+    trail: 'assets/locations/trail.webp',
+    transformer: 'assets/locations/transformer.webp',
+    mastbase: 'assets/locations/mastbase.webp',
   },
   missions: {},
 };
