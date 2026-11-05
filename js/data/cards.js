@@ -387,6 +387,15 @@
 
   /* ============================== МЕРТВЕЦЫ И ЛЮДИ ============================== */
   add([
+    { id: 'scavenger', type: 'enemy', name: 'Падальщик', tier: 1, icon: 'skull', dc: 7, bite: true, woundDc: 3,
+      text: 'Чует слабых: сложность +1 за каждые 3 карты в вашем сбросе. Если сложность из-за этого выросла, от него нельзя уклониться.',
+      flavor: 'Идёт по следу. По вашему.' },
+    { id: 'beltdriver', type: 'enemy', name: 'Пристёгнутый водитель', tier: 1, missions: ['m4', 'm5'], icon: 'skull', dc: 8, bite: true, bypass: { banish: true, noise: 3 },
+      text: 'Сигнализация: можно не сражаться — он изгоняется из колоды локации, но шум +3.',
+      flavor: 'Ремень держит крепко. Фары мигают. Сирена воет на всю улицу.' },
+    { id: 'hanged', type: 'enemy', name: 'Повешенный', tier: 1, icon: 'skull', dc: 7, bite: true, noMelee: true, bypass: { bottom: true },
+      text: 'Сверху: в бою нельзя играть оружие «Ближнее», приёмы и карты «Рукопашный». Можно пройти мимо без проверки — тогда он уходит под низ колоды локации.',
+      flavor: 'Верёвка скрипит. Ноги ещё дёргаются.' },
     { id: 'shambler', type: 'enemy', name: 'Шатун', tier: 0, icon: 'skull', dc: 6, bite: true,
       flavor: 'Когда-то он продавал страховки.' },
     { id: 'crawler', type: 'enemy', name: 'Ползун', tier: 0, icon: 'skull', dc: 4, bite: true, infectOnFail: true,

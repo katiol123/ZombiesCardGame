@@ -238,7 +238,7 @@
   const RULES = {
     lobby: { exploreNoise: 1 },
     wards: { nightExtra: true },
-    morgue: { enemyDmgType: 'cold' },
+    morgue: { enemyDmgType: 'cold', closeBurn: true },
     pharmacy: { findsStay: true, closeFail: [{ damage: 1 }] },
     boiler: { enemyDmgType: 'fire', stealthBonus: 2 },
     ambulance: { closeCost: 'item' },

@@ -466,7 +466,7 @@
     const a = {
       move: !ts.explored && !ts.moved && m.locations.length > 1,
       explore: ts.explores > 0 && !loc.closed && loc.deck.length > 0,
-      close: !loc.closed && loc.deck.length === 0 && !ts.closeTried && (!G.lrule(loc).closeCost || mh.hand.some((c) => ZG.card(c.id).type === G.lrule(loc).closeCost)),
+      close: !loc.closed && loc.deck.length === 0 && !ts.closeTried && (!G.lrule(loc).closeCost || mh.hand.some((c) => ZG.card(c.id).type === G.lrule(loc).closeCost)) && (!G.lrule(loc).closeBurn || mh.hand.some((c) => c.id !== 'infection')),
       give: !ts.gave && !G.lrule(loc).noGive && others.length > 0 && mh.hand.some((c) => c.id !== 'infection'),
       // «Разведка» Тени: только до исследования и за перезарядку карты из руки (не Инфекции)
       scout: mh.id === 'ten' && !ts.scouted && !ts.explored && mh.hand.some((c) => c.id !== 'infection') && G.openLocs().some((l) => l.deck.length),
@@ -882,6 +882,12 @@
       const li = m.locations.indexOf(loc);
       if (m.heroes.filter((h) => !h.dead && h.loc === li).length <= 1) mods.push({ label: 'Охота на одиночек', v: def.loneDc });
     }
+    if (def.woundDc) {
+      // «Чует слабых»: +1 за каждые N карт в сбросе героя
+      const wh = m.heroes[m.active];
+      const k = wh ? Math.floor(wh.discard.length / def.woundDc) : 0;
+      if (k) mods.push({ label: 'Чует раны', v: k });
+    }
     if (def.packDc) {
       // «Охотятся вместе»: +1 за каждого другого непобеждённого такого же врага в открытых локациях
       const others = ZG.sum(G.openLocs().map((l) => l.deck.filter((c) => c.id === def.id).length));
@@ -949,8 +955,27 @@
       G.log(`${def.name} поднимает шум (+${def.noiseOnEncounter}).`, 'bad');
       ui.fxNoise(loc);
     }
+    // «Сигнализация» / «Сверху»: можно не сражаться
+    if (def.bypass && !opts.horde) {
+      const b = def.bypass;
+      const sub = b.banish ? `Он изгоняется, но шум +${b.noise || 0}` : 'Без проверки; он уходит под низ колоды локации';
+      const k = await ui.choose({ title: def.name, text: def.text, options: [{ label: 'Сражаться', sub: '', primary: true }, { label: 'Пройти мимо', sub }], keepCard: true });
+      if (k === 1) {
+        if (b.banish) {
+          G.log(`${G.hname(mh)} проходит мимо: ${def.name} изгнан, но воет сигнализация (шум +${b.noise}).`, 'bad');
+          if (b.noise) { G.addNoise(loc, b.noise); ui.fxNoise(loc); }
+          await ui.banner('Сигнализация!', `${def.name} изгнан. Шум +${b.noise}`, 'warn');
+        } else {
+          loc.deck.push(inst);
+          G.log(`${G.hname(mh)} проходит мимо: ${def.name} уходит под низ колоды локации.`, 'move');
+          await ui.banner('Прошли мимо', `${def.name} остаётся в колоде — под низом`, 'warn');
+        }
+        return null;
+      }
+    }
     // уклонение
-    if (!isBoss && !def.noEvade && !opts.noEvade) {
+    const smelt = def.woundDc && Math.floor(mh.discard.length / def.woundDc) > 0; // Падальщик почуял раны — не уйти
+    if (!isBoss && !def.noEvade && !opts.noEvade && !smelt && !def.bypass) {
       const options = [];
       const dcNow = G.enemyCheck(def, loc, 0, 1).dc;
       const evadeDc = dcNow + 2; // «Ускользнуть»: на 2 сложнее, чем победить
@@ -1070,10 +1095,11 @@
       // Как в Pathfinder: заколотить можно только сразу после победы над вожаком.
       // Отказ или провал — шанс упущен, локацию придётся вычищать до пустой колоды.
       const clr = G.lrule(loc);
-      const canPay = !clr.closeCost || mh.hand.some((c) => ZG.card(c.id).type === clr.closeCost);
+      const canPay = (!clr.closeCost || mh.hand.some((c) => ZG.card(c.id).type === clr.closeCost)) && (!clr.closeBurn || mh.hand.some((c) => c.id !== 'infection'));
       if (def.type === 'henchman' && !loc.closed && !mh.dead && !canPay) {
-        G.log(`Заколотить «${G.ldef(loc).name}» нечем: нужно сбросить ${ZG.T('type_' + clr.closeCost)}. Придётся вычищать колоду.`, 'bad');
-        await ui.banner('Нечем заколотить', `Нужна карта типа «${ZG.T('type_' + clr.closeCost)}» — шанс упущен`, 'warn');
+        const need = clr.closeCost ? `карта типа «${ZG.T('type_' + clr.closeCost)}»` : 'карта в руке, чтобы сжечь';
+        G.log(`Заколотить «${G.ldef(loc).name}» нечем: нужна ${need}. Придётся вычищать колоду.`, 'bad');
+        await ui.banner('Нечем заколотить', `Нужна ${need} — шанс упущен`, 'warn');
       }
       if (def.type === 'henchman' && !loc.closed && !mh.dead && canPay && !(loc.deck.length === 0 && m.ts.closeTried)) {
         const extra = [clr.closeCost ? `цена: сбросить ${ZG.T('type_' + clr.closeCost)}` : '', clr.closeTwice ? 'нужны 2 успешные проверки подряд' : ''].filter(Boolean).join('; ');
@@ -1168,6 +1194,7 @@
 
   ZG.cardCheckLineClose = (loc) => {
     const c = ZG.LOCATIONS[loc.id].close;
+    if (G.lrule(loc).closeBurn) return 'Без проверки: сожгите карту из руки';
     return `${c.skills.map(ZG.skillName).join(' / ')} ${c.dc + (G.special().closeDcMod || 0)}`;
   };
 
@@ -1487,6 +1514,11 @@
     if (!pl || pl.on !== 'check') return false;
     const ck = ctx.check;
     if (pl.helpOnly && owner === ctx.mh) return false; // только в проверку соседа
+    // «Сверху» (Повешенный): нельзя ближнее оружие, приёмы и «Рукопашный»
+    if (ck.kind === 'combat' && ck.enemy && ck.enemy.noMelee) {
+      const tr = def.traits || [];
+      if (def.type === 'technique' || tr.includes('Рукопашный') || (def.type === 'weapon' && tr.includes('Ближнее'))) return false;
+    }
     if (owner !== ctx.mh) {
       if (!pl.help || owner.dead || (owner.loc !== ctx.mh.loc && !pl.helpAnyLoc) || G.conds(owner).detained) return false;
     }
@@ -1828,7 +1860,18 @@
       const us = await UI().pickCards(mh, 1, 'Цена попытки', `Сбросьте карту типа «${ZG.T('type_' + t)}», чтобы попытаться заколотить.`, false, (c) => ZG.card(c.id).type === t);
       us.forEach((u) => G.moveByMode(mh, u, 'discard'));
     }
-    let res = await G.doCheck(mh, G.closeCheck(loc));
+    let res;
+    if (lr.closeBurn) {
+      // заколачивается без проверки: сожгите карту из руки на выбор
+      const ok = (c) => c.id !== 'infection';
+      if (!mh.hand.some(ok)) {
+        await UI().banner('Нечем заколотить', 'Нужно сжечь карту из руки', 'warn');
+        return null;
+      }
+      const us = await UI().pickCards(mh, 1, `Заколотить: ${G.ldef(loc).name}`, 'Без проверки: сожгите карту из руки на выбор.', false, ok);
+      us.forEach((u) => { const c = mh.hand.find((x) => x.u === u); G.moveByMode(mh, u, 'burn'); G.log(`${G.hname(mh)} сжигает «${ZG.card(c.id).name}», чтобы заколотить «${G.ldef(loc).name}».`, 'card'); });
+      res = { success: true };
+    } else res = await G.doCheck(mh, G.closeCheck(loc));
     if (res.success && lr.closeTwice) {
       await UI().banner('Ещё одна доска', 'Нужна вторая успешная проверка', 'warn');
       res = await G.doCheck(mh, G.closeCheck(loc, `${T('check_close')}: ${G.ldef(loc).name} (2/2)`));
