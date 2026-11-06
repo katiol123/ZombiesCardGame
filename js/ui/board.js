@@ -779,7 +779,7 @@
         const usedU = new Set(plays.map((p) => p.u));
         const cards = mh.hand.map((c) => {
           const d = ZG.card(c.id);
-          const red = (d.plays || []).map((p, pi) => (isRed(p, d) && !usedU.has(c.u) && !plays.some((x) => ZG.card(x.id).type === d.type) ? pi : -1)).filter((x) => x >= 0);
+          const red = (d.plays || []).map((p, pi) => (isRed(p, d) && !usedU.has(c.u) && !plays.some((x) => G().blockSlot(ZG.card(x.id)) === G().blockSlot(d)) ? pi : -1)).filter((x) => x >= 0);
           const used = usedU.has(c.u);
           const burnArmor = red.length && G().missingProf(mh, c.id).includes('heavyarmor');
           const inf = c.id === 'infection';
@@ -806,7 +806,7 @@
             return render();
           }
           const red = (d.plays || []).map((p, pi) => (isRed(p, d) ? pi : -1)).filter((x) => x >= 0);
-          if (red.length && !plays.some((x) => ZG.card(x.id).type === d.type) && !sel.has(u)) {
+          if (red.length && !plays.some((x) => G().blockSlot(ZG.card(x.id)) === G().blockSlot(d)) && !sel.has(u)) {
             const opts2 = red.map((pi) => ({ label: T('mode_' + d.plays[pi].mode), sub: ZG.playText(d.plays[pi]), pi }));
             opts2.push({ label: 'Сбросить как урон', sub: '', pi: -2 });
             const pi = await UI.modePop(el, opts2);

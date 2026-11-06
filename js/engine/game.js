@@ -1631,6 +1631,8 @@
     const dd = ZG.card(c.id).displayed;
     return dd && dd.reduce && (!dd.combatOnly || (opts && opts.combat)) ? dd.reduce : 0;
   }));
+  /** Слот блока в окне урона: по одной карте каждого типа, но щит («Щит») — отдельно от прочего снаряжения */
+  G.blockSlot = (def) => (def.type === 'item' && (def.traits || []).includes('Щит') ? 'shield' : def.type);
   /** Лёгкая броня: «Броня» без «Тяжёлой брони» */
   G.lightArmor = (def) => !!def && (def.traits || []).includes('Броня') && !(def.traits || []).includes('Тяжёлая броня');
   G.playBlocks = (pl, opts, def) => !(pl.nonPhysical && !(opts && opts.dmgType)) && !(pl.physical && opts && opts.dmgType) && !(opts && opts.noReduce) && !(opts && opts.pierceLight && G.lightArmor(def)) && (!pl.onlyType || pl.onlyType.includes(opts && opts.dmgType)) && (!pl.combatOnly || (opts && opts.combat));
@@ -1668,6 +1670,7 @@
     let reduce = 0;
     if (opts.noReduce) r.plays = [];
     r.plays = r.plays.filter((p) => G.playBlocks(G.playDef(p), opts, ZG.card(p.id)));
+    { const seen = new Set(); r.plays = r.plays.filter((p) => { const k = G.blockSlot(ZG.card(p.id)); if (seen.has(k)) return false; seen.add(k); return true; }); }
     r.plays.forEach((p) => {
       const pl = G.playDef(p);
       reduce = pl.reduce === 'all' ? Infinity : reduce + pl.reduce;
