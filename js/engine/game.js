@@ -1117,11 +1117,10 @@
       }
       if (def.type === 'henchman' && !loc.closed && !mh.dead && canPay && !(loc.deck.length === 0 && m.ts.closeTried)) {
         const extra = [clr.closeCost ? `цена: сбросить ${ZG.T('type_' + clr.closeCost)}` : '', clr.closeTwice ? 'нужны 2 успешные проверки подряд' : ''].filter(Boolean).join('; ');
-        const c = await ui.choose({
-          title: 'Вожак повержен',
-          text: `Попытаться заколотить «${G.ldef(loc).name}» прямо сейчас? (${ZG.cardCheckLineClose(loc)}${extra ? '; ' + extra : ''}) Это единственный шанс: если отказаться или провалить проверку, локацию придётся вычищать до пустой колоды.`,
-          options: [{ label: 'Заколотить', primary: true }, { label: 'Не сейчас' }],
-        });
+        const htext = `Попытаться заколотить локацию прямо сейчас?${extra ? ' (' + extra[0].toUpperCase() + extra.slice(1) + '.)' : ''} Это единственный шанс: если отказаться или провалить проверку, локацию придётся вычищать до пустой колоды. В колоде осталось карт: ${loc.deck.length}.`;
+        const c = ui.guardAsk
+          ? await ui.guardAsk(mh, loc, G.closeInfo(mh, loc), { title: `Вожак повержен: заколотить «${G.ldef(loc).name}»?`, text: htext, ok: 'Заколотить', no: 'Не сейчас' })
+          : await ui.choose({ title: 'Вожак повержен', text: htext, options: [{ label: 'Заколотить', primary: true }, { label: 'Не сейчас' }] });
         if (c === 0) return await G.tryClose(mh, loc, true);
       }
       if (isBoss) return await G.bossDefeated(mh, inst, loc);
@@ -1983,6 +1982,17 @@
     }
   };
 
+  /** Данные для окна решения «заколотить/перекрыть»: проверка, лучший навык, шанс, полезные карты */
+  G.closeInfo = function (h, l, title) {
+    const lc = G.ldef(l).close;
+    const ck = G.closeCheck(l, title);
+    const ctx = { check: ck, mh: h, played: [] };
+    const pool = G.pool(ctx);
+    const playable = h.hand.filter((c) => (ZG.card(c.id).plays || []).some((p, pi) => G.canPlay(ctx, h, c, pi))).map((c) => c.u);
+    const line = G.lrule(l).closeBurn ? 'Без проверки: сжечь карту' : `${lc.skills.map(ZG.skillName).join(' / ')} ${ck.dc}`;
+    return { line, skill: `${ZG.skillName(pool.skill)} ${ZG.diceStr(pool.dice.map((x) => x.d), pool.bonus)}`, chance: G.lrule(l).closeBurn ? 1 : pool.chance, playable };
+  };
+
   /** Временное перекрытие путей перед боем с Угрозой (не в её локации) */
   G.villainGuards = async function (mh, loc) {
     const m = G.M();
@@ -1998,11 +2008,10 @@
         await ui.tip('guard');
         const lc = G.ldef(l).close;
         const gck = G.closeCheck(l, `Перекрыть: ${G.ldef(l).name}`);
-        const pool = G.pool({ check: gck, mh: h, played: [] });
-        const gctx = { check: gck, mh: h, played: [] };
-        const playable = h.hand.filter((c) => (ZG.card(c.id).plays || []).some((p, pi) => G.canPlay(gctx, h, c, pi))).map((c) => c.u);
+        const ginfo = G.closeInfo(h, l, `Перекрыть: ${G.ldef(l).name}`);
+        ginfo.line = `${lc.skills.map(ZG.skillName).join(' / ')} ${gck.dc}`; // перекрытие — всегда обычная проверка
         const c = ui.guardAsk
-          ? await ui.guardAsk(h, l, { line: `${lc.skills.map(ZG.skillName).join(' / ')} ${gck.dc}`, skill: `${ZG.skillName(pool.skill)} ${ZG.diceStr(pool.dice.map((x) => x.d), pool.bonus)}`, chance: pool.chance, playable })
+          ? await ui.guardAsk(h, l, ginfo)
           : await ui.choose({ title: 'Перекрыть путь', text: `${G.hname(h)}: перекрыть «${G.ldef(l).name}»?`, options: [{ label: 'Перекрыть', primary: true }, { label: 'Нет' }] });
         ui.trayHero = null;
         ui.renderBoard();
@@ -2068,6 +2077,8 @@
       }
       ui.renderBoard();
     }
+    // Где Угрозы точно нет: открытые локации, куда она не могла сбежать (перекрытые и та, где её победили)
+    m.bossFree = G.openLocs().filter((l) => !remaining.includes(l)).map((l) => m.locations.indexOf(l));
     // Бегство: Угроза и «Ложные следы» — по одной карте в каждую неперекрытую открытую локацию
     await UI().escapeAnim(m.locations.indexOf(loc), remaining.map((l) => m.locations.indexOf(l)));
     const cards = R.shuffle([inst, ...Array(remaining.length - 1).fill(0).map(() => G.inst('falsetrail'))]);

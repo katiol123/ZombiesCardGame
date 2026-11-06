@@ -139,9 +139,11 @@
       const rings = !l.closed && l.noise > 0 ? `<div class="nrings" style="--rd:${rd}s;--rh:${Math.round(42 - 42 * lvl)};--ra:${(0.35 + 0.5 * lvl).toFixed(2)}">${[0, 1, 2].map((k) => `<i style="animation-delay:${-ph - (k * rd * 1000) / 3}ms"></i>`).join('')}</div>` : '';
       const rules = ZG.locationRules(ld).map((t) => `<div class="lrule">${esc(t)}</div>`).join('');
       const pick = UI.pickMode && UI.pickMode.indices.includes(i);
-      return `<div class="loc ${l.closed ? 'closed' : ''} ${alarm ? 'alarm' : ''} ${active && active.loc === i ? 'here' : ''} ${pick ? 'pickable' : ''} ${UI.closingLoc === i ? 'closing' : ''}" data-i="${i}" style="--hc:${active ? ZG.HEROES[active.id].color : ''}">
+      const free = !l.closed && (m.bossFree || []).includes(i);
+      return `<div class="loc ${l.closed ? 'closed' : ''} ${free ? 'boss-free' : ''} ${alarm ? 'alarm' : ''} ${active && active.loc === i ? 'here' : ''} ${pick ? 'pickable' : ''} ${UI.closingLoc === i ? 'closing' : ''}" data-i="${i}" style="--hc:${active ? ZG.HEROES[active.id].color : ''}">
         <div class="lart" style="--lt:${UI.locTint(ld.icon)}">${ZG.art('locations', ld.id, ld.icon)}${rings}
-          ${l.closed ? '' : `<div class="lstack" title="Карт в колоде локации">${ZG.icon('cards')} ${l.deck.length}</div>`}</div>
+          ${l.closed ? '' : `<div class="lstack" title="Карт в колоде локации">${ZG.icon('cards')} ${l.deck.length}</div>`}
+          ${free ? `<div class="boss-free-tag" title="Угроза сбежала не сюда: локация была перекрыта или заколочена во время её побега">${ZG.icon('shield')} Угрозы нет</div>` : ''}</div>
         ${l.closed ? '<div class="planks"><div class="plank p1"></div><div class="plank p2"></div></div>' : ''}
         <div class="lbody">
           <h3>${esc(ld.name)}</h3>
@@ -892,7 +894,8 @@
   UI.locArtUrl = (id) => (window.ZG_ART && window.ZG_ART.locations && window.ZG_ART.locations[id]) || null;
 
   /** Окно «Перекрыть путь»: решает герой h — показываем его руку, колоду, состояния и шанс */
-  UI.guardAsk = function (h, l, info) {
+  UI.guardAsk = function (h, l, info, opt) {
+    opt = opt || {};
     return new Promise((resolve) => {
       const g = G();
       const hd = ZG.HEROES[h.id];
@@ -901,15 +904,15 @@
       const art = UI.locArtUrl(l.id);
       const ov = UI.overlay(`<div class="modal panel guard-modal">
         ${art ? `<div class="guard-art" style="background-image:url('${art}')"></div>` : ''}
-        <h2>${ZG.icon('hammer')} Перекрыть путь: ${esc(g.ldef(l).name)}</h2>
-        <div class="mtext">Перед боем с Угрозой можно перекрыть эту локацию, чтобы Угрозе некуда было бежать. Награда «Когда заколочено» при этом не срабатывает.</div>
+        <h2>${ZG.icon('hammer')} ${esc(opt.title || 'Перекрыть путь: ' + g.ldef(l).name)}</h2>
+        <div class="mtext">${esc(opt.text || 'Перед боем с Угрозой можно перекрыть эту локацию, чтобы Угрозе некуда было бежать. Награда «Когда заколочено» при этом не срабатывает.')}</div>
         <div class="guard-hero" style="--hc:${hd.color}">${UI.avatar(h.id)}
           <div><b>${esc(hd.name)}</b> <span class="muted">решает и проходит проверку</span>
           <div class="guard-stats"><span>${ZG.icon('cards')} Колода ${h.deck.length}</span><span>Сброс ${h.discard.length}</span><span>${ZG.icon('hand')} Рука ${h.hand.length}</span><span>☣ ${g.infCount(h)}/3</span>${conds ? `<span class="cond-row">${conds}</span>` : ''}</div></div></div>
         <div class="guard-check"><div><span class="muted">Проверка</span><b>${esc(info.line)}</b></div><div><span class="muted">Лучший навык</span><b>${esc(info.skill)}</b></div><div><span class="muted">Шанс без карт</span><b class="${pct >= 60 ? 'good' : pct >= 35 ? 'mid' : 'bad'}">${pct}%</b></div></div>
         <div class="sec-label">Рука — подсвечены карты, которыми можно усилить проверку</div>
         <div class="hand">${h.hand.map((c) => UI.cardHTML(c, { u: c.u, size: 'sm', cls: (info.playable || []).includes(c.u) ? 'playable' : 'unplayable' })).join('') || '<span class="muted">Рука пуста</span>'}</div>
-        <div class="enc-actions"><button class="btn ghost" data-no>Не перекрывать</button><button class="btn primary" data-ok>Перекрыть</button></div></div>`);
+        <div class="enc-actions"><button class="btn ghost" data-no>${esc(opt.no || 'Не перекрывать')}</button><button class="btn primary" data-ok>${esc(opt.ok || 'Перекрыть')}</button></div></div>`);
       if (UI.fitHand) requestAnimationFrame(() => UI.fitHand(ov.querySelector('.hand')));
       const done = async (v) => { await UI.closeOverlay(ov); resolve(v); };
       ov.querySelector('[data-ok]').addEventListener('click', () => done(0));

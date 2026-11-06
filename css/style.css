@@ -1215,12 +1215,12 @@ body.night .guard-art { filter: brightness(.8) saturate(.6); }
 .weather { grid-area: locs; position: relative; pointer-events: none; z-index: 4; overflow: hidden; }
 .weather i { position: absolute; inset: -20%; opacity: 0; transition: opacity 1.5s ease; }
 /* ливень: косые струи двух слоёв, капли на картинках темнее */
-.weather .w-rain { background: repeating-linear-gradient(105deg, transparent 0 14px, rgba(190, 210, 235, .22) 14px 15px, transparent 15px 31px); background-size: 120px 120px; animation: rainFall .45s linear infinite; }
-.weather .w-rain.w2 { background: repeating-linear-gradient(105deg, transparent 0 22px, rgba(170, 195, 230, .14) 22px 23px, transparent 23px 45px); background-size: 180px 180px; animation-duration: .7s; }
-@keyframes rainFall { from { background-position: 0 0; } to { background-position: -30px 120px; } }
+.weather .w-rain { background: repeating-linear-gradient(100deg, transparent 0 26px, rgba(190, 210, 235, .09) 26px 27px, transparent 27px 58px); background-size: 240px 240px; animation: rainFall 2.4s linear infinite; }
+.weather .w-rain.w2 { background: repeating-linear-gradient(100deg, transparent 0 40px, rgba(170, 195, 230, .06) 40px 41px, transparent 41px 90px); background-size: 360px 360px; animation-duration: 3.6s; }
+@keyframes rainFall { from { background-position: 0 0; } to { background-position: -42px 240px; } }
 .board.w-rain .weather .w-rain { opacity: 1; }
-.board.w-rain .loc .lart img { filter: brightness(.8) saturate(.75) contrast(1.05) !important; }
-.board.w-rain .loc .lart::before { content: ''; position: absolute; inset: 0; z-index: 1; background: linear-gradient(180deg, rgba(60, 80, 110, .3), transparent); pointer-events: none; }
+.board.w-rain .loc .lart img { filter: brightness(.9) saturate(.85) !important; }
+.board.w-rain .loc .lart::before { content: ''; position: absolute; inset: 0; z-index: 1; background: linear-gradient(180deg, rgba(60, 80, 110, .16), transparent); pointer-events: none; }
 /* туман: дымка ползёт по полю */
 .weather .w-fog { background: radial-gradient(ellipse 35% 25% at 20% 40%, rgba(210, 210, 200, .34), transparent 70%), radial-gradient(ellipse 30% 22% at 70% 65%, rgba(210, 210, 200, .3), transparent 70%), radial-gradient(ellipse 40% 25% at 50% 20%, rgba(210, 210, 200, .26), transparent 70%); animation: fogMove 40s linear infinite alternate; }
 .weather .w-fog.f2 { animation-duration: 55s; animation-direction: alternate-reverse; transform: scaleX(-1); }
@@ -1263,3 +1263,16 @@ body.night .guard-art { filter: brightness(.8) saturate(.6); }
 .power-tip .pt-head { font-family: var(--font-head); font-size: 15px; letter-spacing: .05em; color: var(--hc); margin-bottom: 6px; display: flex; gap: 6px; align-items: center; }
 .power-tip .pt-text { font-size: 13.5px; line-height: 1.45; color: #e2dac8; }
 .power-tip .pt-who { margin-top: 8px; font-size: 10px; letter-spacing: .18em; text-transform: uppercase; color: var(--dim); }
+
+/* локация, где Угрозы точно нет (после её побега) */
+.loc .boss-free-tag { position: absolute; left: 8px; top: 8px; z-index: 3; display: flex; align-items: center; gap: 5px; padding: 3px 9px; border-radius: 12px; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: #cfeec9; background: rgba(20, 60, 25, .85); border: 1px solid rgba(130, 210, 120, .6); box-shadow: 0 2px 8px rgba(0,0,0,.5); }
+.loc.boss-free .lart img { filter: grayscale(.55) brightness(.75); }
+.loc.boss-free { border-color: rgba(130, 210, 120, .35); }
+/* приподнятая карта в окнах проверки и урона не размывается: сдвиг без transform (без перерастеризации слоя) */
+@media (min-width: 901px) and (hover: hover) {
+  .enc-panel .hand .card:hover, .enc-panel .mini-hand .card:hover, .enc-panel .help-row .mini-hand .card:hover,
+  .dmg-modal .hand .card:hover, .dmg-modal .hand .card.selected:hover, .guard-modal .hand .card:hover { transform: none !important; position: relative; top: -4px; transition: none; will-change: auto; }
+  .enc-panel .hand .card, .enc-panel .mini-hand .card, .dmg-modal .hand .card, .guard-modal .hand .card { transition: box-shadow .15s, filter .15s; }
+}
+/* зерно плёнки мешает читать мелкий текст карт — прячем, пока открыто окно боя/проверки/выбора */
+body:has(#overlay-root > .overlay) #grain, body:has(.enc-ov) #grain { display: none; }
