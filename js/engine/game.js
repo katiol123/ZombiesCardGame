@@ -1429,7 +1429,6 @@
       noiseOthers += pl.noiseOthers || 0;
       noiseMod += pl.noiseMod || 0;
     });
-    if (mh.id === 'ten' && ck.kind === 'combat' && wp && ZG.card(wp.id).traits.includes('Тихое')) dice.push({ d: 'd4', src: 'Бесшумная' });
     const plr = G.lrule(G.loc(mh));
     if (plr.firearmNoise && wp && ZG.card(wp.id).traits.includes('Огнестрел')) noise += plr.firearmNoise;
     if (plr.stealthBonus && (ck.kind === 'evade' || skill === 'stealth')) { bonus += plr.stealthBonus; parts.push({ label: 'Локация: укрытие', v: plr.stealthBonus }); }
