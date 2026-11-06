@@ -201,7 +201,7 @@
     { id: 'silencer', type: 'item', name: 'Самодельный глушитель', tier: 1, icon: 'can', traits: ['Самоделка'],
       acquire: { skills: ['tech'], dc: 6 },
       plays: [{ on: 'check', mode: 'reveal', kind: COMBAT, trait: 'Огнестрел', noiseMod: -3, bonus: 0 }],
-      flavor: 'Масляный фильтр и немного изоленты.' },
+      flavor: 'Собран в гараже по видео из интернета. Работает.' },
     { id: 'gasmask', type: 'item', name: 'Противогаз', tier: 1, icon: 'mask', traits: ['Броня'],
       acquire: { skills: ['end', 'survival'], dc: 6 },
       plays: [{ on: 'infect', mode: 'discard' }, { on: 'damage', mode: 'recharge', reduce: 2, onlyType: ['acid'] }],
@@ -405,7 +405,7 @@
       text: 'До проверки: 1 урон. От него нельзя уклониться.',
       flavor: 'Свежий. Быстрый. Злой.' },
     { id: 'patient', type: 'enemy', name: 'Пациент', tier: 0, icon: 'skull', dc: 5, bite: true,
-      flavor: 'Капельница всё ещё волочится за ним.' },
+      flavor: 'Палата 14. Выписан не туда.' },
     { id: 'bloater', type: 'enemy', name: 'Толстяк', tier: 0, icon: 'skull', dc: 7, toxic: { skills: ['end', 'survival'], dc: 5 },
       text: 'После победы над ним: проверка Выдержки или Выживания 5, при провале — Инфекция.',
       flavor: 'Раздутый, как утопленник. Лучше не протыкать.' },
@@ -432,7 +432,7 @@
       flavor: 'Чёрная слизь летит на два метра.' },
     { id: 'soldierz', type: 'enemy', name: 'Солдат-мертвец', tier: 2, icon: 'skull', dc: 10, bite: true, armor: 2,
       text: 'Бронежилет: проверки Силой и Рукопашной против него −2.',
-      flavor: 'Нашивка Нацгвардии. Каска пробита.' },
+      flavor: 'Каска, очки, бронежилет. Устав никто не отменял.' },
     { id: 'brute', type: 'enemy', name: 'Громила', tier: 2, icon: 'skull', dc: 11, bite: true, dmgAdd: 1,
       text: 'Урон от него +1.',
       flavor: 'При жизни он был вышибалой. Ничего не изменилось.' },
@@ -445,7 +445,7 @@
   add([
     { id: 'orderly', type: 'henchman', name: 'Санитар', tier: 0, icon: 'ghost', dc: 8, bite: true,
       text: 'Вожак. Победив его, можно сразу попытаться заколотить локацию.',
-      flavor: 'Ключи от всех дверей на поясе.' },
+      flavor: 'Ключи от всех дверей — в нагрудном кармане.' },
     { id: 'drhale', type: 'boss', name: 'Доктор Хейл', tier: 0, icon: 'bossskull', dc: 12, bite: true, before: { damage: 1 },
       text: 'Угроза. До проверки: 1 урон (скальпелем).',
       flavor: 'Главврач больницы Святой Анны. Он знал, что вводит пациентам.' },
@@ -484,7 +484,7 @@
   add([
     { id: 'rubble', type: 'event', name: 'Заваленный коридор', tier: 0, icon: 'alert',
       check: { skills: ['str', 'survival'], dc: 6 }, fail: [{ clock: 1 }],
-      text: 'Провал: вы теряете время — сбросьте верхнюю карту Часов.', flavor: 'Каталки, стулья, чьё-то тело.' },
+      text: 'Провал: вы теряете время — сбросьте верхнюю карту Часов.', flavor: 'Каталки, стулья, обломки. Кто-то строил здесь баррикаду.' },
     { id: 'cans', type: 'event', name: 'Растяжка с банками', tier: 0, icon: 'alert',
       check: { skills: ['dex', 'stealth'], dc: 6 }, fail: [{ noise: 3 }],
       text: 'Провал: шум локации +3.', flavor: 'Кто-то здесь уже держал оборону.' },
@@ -633,7 +633,7 @@
       flavor: 'Двадцать литров. Пахнет домом.' },
 
     { id: 'hazmat', type: 'enemy', name: 'Мертвец в химзащите', tier: 3, icon: 'mask', dc: 11, bite: true, armor: 2,
-      text: 'Костюм: проверки Силой и Рукопашной против него −2.', flavor: 'Жёлтая резина, внутри — бульон.' },
+      text: 'Костюм: проверки Силой и Рукопашной против него −2.', flavor: 'Резина треснула. Внутри — бульон.' },
     { id: 'mutant', type: 'enemy', name: 'Мутант', tier: 3, icon: 'skull', dc: 12, bite: true, dmgAdd: 1,
       text: 'Урон от него +1.', flavor: 'Сыворотка 7-Б делала их сильнее. И голоднее.' },
     { id: 'stalker', type: 'enemy', name: 'Сталкер', tier: 3, icon: 'skull', dc: 10, bite: true, before: { damage: 2 }, noEvade: true,
@@ -660,7 +660,7 @@
     { id: 'alpha', type: 'boss', name: 'Егерь Кроули', tier: 3, icon: 'bossskull', dc: 18, bite: true,
       text: 'Угроза. Капканы: каждые 3 хода в случайную открытую локацию замешивается «Медвежий капкан».', flavor: 'Лесничий, который открыл вольеры. Теперь стая слушается только его.' },
     { id: 'hallmonitor', type: 'henchman', name: 'Школьный сторож', tier: 3, icon: 'ghost', dc: 15, bite: true, halfDmg: true,
-      text: 'Вожак. Победив его, можно сразу попытаться заколотить локацию.', flavor: 'Связка ключей звенит в каждом коридоре.' },
+      text: 'Вожак. Победив его, можно сразу попытаться заколотить локацию.', flavor: 'Бейдж на груди. Обход по расписанию — даже сейчас.' },
     { id: 'principal', type: 'boss', name: 'Директор Брэдшоу', tier: 3, icon: 'bossskull', dc: 16, bite: true, noiseOnEncounter: 3,
       text: 'Угроза. При встрече: шум +3 (школьный звонок).', flavor: '«Опоздавших не пускаем».' },
     { id: 'guardz', type: 'henchman', name: 'Охрана «Хейл Биомед»', tier: 3, icon: 'ghost', dc: 15, bite: true, armor: 2, alarm: 1,
@@ -803,7 +803,7 @@
     { id: 'tireiron', type: 'weapon', name: 'Баллонный ключ', icon: 'wrench', traits: ['Ближнее', 'Инструмент'], acquire: { skills: ['str', 'tech'], dc: 6 },
       plays: [{ on: 'check', mode: 'recharge', kind: COMBAT, weapon: ['str', 'melee'], dice: ['d8'] }, { on: 'check', mode: 'recharge', kind: ['close'], dice: ['d4'] }], flavor: 'Тяжёлый. Удобный. Честный.' },
     { id: 'nitro', type: 'consumable', name: 'Канистра нитро', icon: 'fuel', traits: ['Огонь'], acquire: { skills: ['tech', 'survival'], dc: 7 },
-      plays: [{ on: 'check', mode: 'burn', kind: COMBAT, dice: ['d8', 'd8'], noise: 3 }], flavor: 'С гоночной машины Кейна.' },
+      plays: [{ on: 'check', mode: 'burn', kind: COMBAT, dice: ['d8', 'd8'], noise: 3 }], flavor: 'Из грузовика банды Кейна. Лучше не спрашивать, зачем им.' },
     { id: 'cagekey', type: 'item', name: 'Ключ от клетки', icon: 'lock', traits: [], acquire: { skills: ['stealth', 'dex'], dc: 7 },
       plays: [{ on: 'action', mode: 'burn', gain: 'ally' }], flavor: 'В клетке ещё живые.' },
     { id: 'prisoner', type: 'ally', name: 'Официантка Мэгги', icon: 'coffee', traits: ['Горожанин'], acquire: { skills: ['persuasion'], dc: 6 },
@@ -830,7 +830,7 @@
       plays: [
         { on: 'check', mode: 'recharge', kind: COMBAT, dice: ['d8'], noise: 2, enemyLiving: false },
         { on: 'check', mode: 'reveal', kind: COMBAT, dice: ['d8'], noise: 2, enemyLiving: true, text: 'Если враг — живой человек, вместо этого покажите карту.' },
-      ], flavor: 'Оранжевая роба, сорванные наручники. Из изолятора вышел только он.' },
+      ], flavor: 'Тюремная роба, разорванные наручники. Из изолятора вышел только он.' },
   ]);
   U('m7', [
     { id: 'dynamite', type: 'consumable', name: 'Динамит', icon: 'bomb', traits: ['Огонь'], acquire: { skills: ['tech', 'survival'], dc: 7 },
@@ -844,7 +844,7 @@
   ]);
   U('m8', [
     { id: 'canoepaddle', type: 'weapon', name: 'Весло от каноэ', icon: 'waves', traits: ['Ближнее', 'Тихое'], acquire: { skills: ['str', 'survival'], dc: 7 },
-      plays: [{ on: 'check', mode: 'recharge', kind: COMBAT, weapon: ['str', 'melee'], dice: ['d8'], bonus: 1 }], flavor: 'На лопасти выжжено: «Сосновый ручей — отряд „Бобры“». Бобры бы гордились.' },
+      plays: [{ on: 'check', mode: 'recharge', kind: COMBAT, weapon: ['str', 'melee'], dice: ['d8'], bonus: 1 }], flavor: 'Из лодочного сарая лагеря «Сосновый ручей». Отряд «Бобры» гордился бы.' },
     { id: 'beartrap', type: 'item', name: 'Медвежий капкан', icon: 'lock', traits: [], eventOnly: true, acquire: { skills: ['dex', 'survival'], dc: 7 },
       trap: { skills: ['dex', 'survival'], dc: 7, fail: [{ damage: 'd4' }, { cond: 'numb' }] },
       text: 'Ставит Егерь Кроули. В локации: успех — обезврежен, заберите в руку; провал — 1d4 урона и Онемение.',
@@ -877,7 +877,7 @@
 
   /* Уникальные враги миссий (обычные, не вожаки) */
   U('m1', [
-    { id: 'surgeonz', type: 'enemy', name: 'Мёртвый хирург', icon: 'knife', dc: 6, bite: true, inflict: 'poison', inflictCheck: { skills: ['survival'], dc: 7 }, flavor: 'Маска на лице. Скальпель в руке. Привычка.' },
+    { id: 'surgeonz', type: 'enemy', name: 'Мёртвый хирург', icon: 'knife', dc: 6, bite: true, inflict: 'poison', inflictCheck: { skills: ['survival'], dc: 7 }, flavor: 'Маска сползла на подбородок. Руки всё ещё ищут пациента.' },
     { id: 'coldbody', type: 'enemy', name: 'Тело из холодильника', icon: 'skull', dc: 6, bite: true, dmgType: 'cold', inflict: 'numb', weak: { 'Огонь': 'd6' }, flavor: 'Иней на ресницах. Холодные пальцы.' },
   ]);
   U('m2', [
@@ -891,7 +891,7 @@
       text: 'В эфире: при встрече шум локации +2.', flavor: '«…не выходите из домов. С вами ночной эфир. Оставайтесь на волне…»' },
   ]);
   U('m4', [
-    { id: 'biker', type: 'enemy', living: true, gang: true, name: 'Байкер банды', icon: 'raider', dc: 8, flavor: 'Цепь вместо пояса. Улыбка без зубов.' },
+    { id: 'biker', type: 'enemy', living: true, gang: true, name: 'Байкер банды', icon: 'raider', dc: 8, flavor: 'Маска вместо лица. За спиной — что-то тяжёлое.' },
     { id: 'mechanicz', type: 'enemy', name: 'Сгоревший механик', icon: 'fire', dc: 7, bite: true, dmgType: 'fire', inflict: 'vuln', immune: ['Огонь'], flavor: 'Взорвался вместе с бензоколонкой. Встал.' },
   ]);
   U('m5', [
