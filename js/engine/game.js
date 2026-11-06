@@ -272,7 +272,8 @@
     const comp = G.deckComp(ph);
     ZG.CARD_TYPES.forEach((t) => {
       let have = ZG.count(ph.deck, (id) => ZG.card(id).type === t);
-      const cands = pool.filter((id) => ZG.card(id).type === t && G.cardUsable(ph.id, id)).sort((a, b) => G.cardValue(b) - G.cardValue(a));
+      // сначала подходящие герою, затем остальные карты этого типа со склада (без владения тоже можно играть); базовые — только когда склад пуст
+      const cands = pool.filter((id) => ZG.card(id).type === t).sort((a, b) => (G.cardUsable(ph.id, b) - G.cardUsable(ph.id, a)) || (G.cardValue(b) - G.cardValue(a)));
       while (have < comp[t]) {
         let id = cands.shift();
         if (id) pool.splice(pool.indexOf(id), 1);
