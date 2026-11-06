@@ -1589,6 +1589,8 @@
   G.doCheck = async function (mh, check) {
     const ctx = { mh, check, played: [], skill: null };
     const res = await UI().check(ctx);
+    // «Патроны»: оружие, которое перезарядилось бы, вместо этого показывается (остаётся в руке)
+    const weaponReveal = ctx.played.some((p) => G.playDef(p).weaponReveal);
     // применить режимы сыгранных карт
     ctx.played.forEach((p) => {
       const owner = G.M().heroes.find((h) => h.id === p.owner);
@@ -1607,6 +1609,10 @@
         mode = okR ? 'recharge' : mode;
         G.log(`«${ZG.card(p.id).name}»: ${ZG.skillName(sk)} ${roll}/${rc.dc} — ${okR ? 'перезаряжен' : 'в сброс'}.`, okR ? 'good' : 'bad');
         UI().toast(`«${ZG.esc(ZG.card(p.id).name)}» ${okR ? 'перезаряжен' : 'в сброс'} (${roll}/${rc.dc})`, okR ? 'loot' : 'bad');
+      }
+      if (weaponReveal && mode === 'recharge' && ZG.card(p.id).type === 'weapon') {
+        mode = 'reveal';
+        G.log(`Патроны: «${ZG.card(p.id).name}» остаётся в руке вместо перезарядки.`, 'card');
       }
       if (pl.noiseAtOwner) { const ol = G.loc(owner); G.addNoise(ol, pl.noiseAtOwner); UI().fxNoise(ol); }
       G.moveByMode(owner, p.u, mode);

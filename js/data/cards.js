@@ -235,7 +235,7 @@
       flavor: 'Туго. Ещё туже.' },
     { id: 'ammo', type: 'consumable', name: 'Патроны', tier: 0, basic: true, icon: 'ammo', traits: [],
       acquire: { skills: ['dex', 'survival'], dc: 4 },
-      plays: [{ on: 'check', mode: 'burn', kind: COMBAT, trait: 'Огнестрел', dice: ['d6'] }],
+      plays: [{ on: 'check', mode: 'burn', kind: COMBAT, trait: 'Огнестрел', dice: ['d6'], weaponReveal: true, text: 'Сожгите для боевой проверки с оружием «Огнестрел»: +1d6. Вместо перезарядки карты оружия покажите её.' }],
       flavor: 'Считай каждый.' },
     { id: 'painkillers', type: 'consumable', name: 'Обезболивающее', tier: 0, icon: 'pill', traits: ['Медицина'],
       acquire: { skills: ['medicine', 'wit', 'persuasion'], dc: 4 },
