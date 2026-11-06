@@ -1666,6 +1666,7 @@
     }
     await UI().tip('damage');
     if (opts.dmgType) await UI().tip('nonphys');
+    if (mh.hand.some((c) => (ZG.card(c.id).plays || []).some((p) => p.on === 'damage'))) await UI().tip('block');
     const r = await UI().damage(mh, n, opts);
     let reduce = 0;
     if (opts.noReduce) r.plays = [];
