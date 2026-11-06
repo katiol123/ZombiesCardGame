@@ -1437,7 +1437,6 @@
       if (ck.kind === 'combat' && wp) dice.push({ d: 'd4', src: 'Боевой опыт' });
       if (wp && (G.playDef(wp).noise || 0) > 0) { noise += 1; if (ck.kind === 'combat') dice.push({ d: 'd6', src: 'Громкий' }); } // «Громкий»: шум +1, но и +1d6
     }
-    if (mh.id === 'marina' && skill === 'medicine' && ck.kind !== 'combat') dice.push({ d: 'd4', src: 'Твёрдая рука' });
     if (mh.id === 'marina' && ck.kind === 'combat' && wp && ZG.card(wp.id).traits.includes('Тихое')) dice.push({ d: 'd4', src: 'Твёрдая рука' });
     if (mh.id === 'palych') {
       if (ck.kind === 'close') dice.push({ d: 'd4', src: 'Золотые руки' });
