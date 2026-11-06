@@ -69,9 +69,9 @@
       attrs: { str: 'd10', dex: 'd8', wit: 'd4', end: 'd8', will: 'd6' },
       skills: { melee: 2, shooting: 3, survival: 1 },
       hand: 4,
-      deck: { weapon: 4, item: 3, consumable: 3, ally: 1, resolve: 2, technique: 2 },
+      deck: { weapon: 4, item: 3, consumable: 4, ally: 1, resolve: 2, technique: 2 },
       prof: ['firearms', 'heavyweapons', 'heavyarmor'],
-      start: ['pistol', 'pistol', 'bat', 'knife', 'jacket', 'jacket', 'flashlight', 'ammo', 'ammo', 'bandage', 'trucker', 'hope', 'hope', 'doubletap', 'headshot'],
+      start: ['pistol', 'pistol', 'bat', 'knife', 'jacket', 'jacket', 'flashlight', 'ammo', 'ammo', 'bandage', 'bandage', 'trucker', 'hope', 'hope', 'doubletap', 'headshot'],
       powers: [
         { id: 'veteran', name: 'Боевой опыт', text: 'Ваши боевые проверки с оружием получают +1d4.' },
         { id: 'loud', name: 'Громкий', text: 'Если ваше оружие шумит, шум этой проверки +1, но и боевая проверка получает +1d6.' },
