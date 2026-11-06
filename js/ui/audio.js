@@ -7,7 +7,7 @@
   // у музыки миссий — очередь треков, они сменяют друг друга
   const MUSIC = { missions: ['missions.mp3', 'echoes.mp3'], shelter: 'shelter.mp3' };
   const trackIdx = {};
-  const SFX = { braam: 'braam.mp3', growl: 'growl.mp3', psychedelic: 'psychedelic.mp3', tension: 'tension.mp3', dice: 'dice.mp3', hammer: 'hammer.mp3', flip: 'flip.mp3', heartbeat: 'heartbeat.mp3', siren: 'siren.mp3', raid: 'raid.mp3' };
+  const SFX = { braam: 'braam.mp3', growl: 'growl.mp3', psychedelic: 'psychedelic.mp3', tension: 'tension.mp3', dice: 'dice.mp3', hammer: 'hammer.mp3', flip: 'flip.mp3', heartbeat: 'heartbeat.mp3', siren: 'siren.mp3', raid: 'raid.mp3', steps: 'steps.mp3' };
   const AMB = { rain: 'rain.mp3' };
   const SFX_GAP = { growl: 900, braam: 1200, psychedelic: 1500, tension: 1500, dice: 200, flip: 120, heartbeat: 900, siren: 1500 };
 
@@ -63,18 +63,35 @@
     play();
   };
 
-  /** Фоновая петля события (дождь) поверх музыки; null — выключить */
+  /** Фоновая петля события (дождь) поверх музыки; null — выключить.
+   * Бесшовно: за 2,5 с до конца файла запускается следующая копия, и они плавно перекрываются. */
   A.ambient = function (name) {
     if (A.amb && A.amb.name === name) return;
     const old = A.amb;
-    if (old) fade(old.el, 0, 1200, () => old.el.pause());
+    if (old) { old.stop = true; old.els.forEach((el) => fade(el, 0, 1200, () => el.pause())); }
     A.amb = null;
     if (!name || !AMB[name] || A.disabled || !A.unlocked || sfxVol() <= 0) return;
-    const el = new Audio(BASE + AMB[name]);
-    el.loop = true;
-    el.volume = 0;
-    A.amb = { name, el };
-    el.play().then(() => fade(el, Math.min(1, sfxVol() * 0.5), 1800)).catch(() => {});
+    const amb = { name, els: [], stop: false };
+    A.amb = amb;
+    const XF = 2.5;
+    const vol = () => Math.min(1, sfxVol() * 0.5);
+    const start = (fadeIn) => {
+      if (amb.stop) return;
+      const el = new Audio(BASE + AMB[name]);
+      el.volume = 0;
+      amb.els.push(el);
+      let next = false;
+      el.addEventListener('timeupdate', () => {
+        if (next || amb.stop || !el.duration) return;
+        if (el.duration - el.currentTime <= XF) {
+          next = true;
+          start(XF * 1000);
+          fade(el, 0, XF * 1000, () => { el.pause(); amb.els = amb.els.filter((x) => x !== el); });
+        }
+      });
+      el.play().then(() => fade(el, vol(), fadeIn)).catch(() => {});
+    };
+    start(1800);
   };
 
   /** Короткий звук */

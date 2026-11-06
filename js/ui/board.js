@@ -18,6 +18,7 @@
     app.innerHTML = `<div class="board screen" id="board">
       <div class="topbar" id="topbar"></div>
       <div class="locs" id="locs"></div>
+      <div class="weather" id="weather"><i class="w-rain"></i><i class="w-rain w2"></i><i class="w-fog"></i><i class="w-fog f2"></i></div>
       <div class="side"><div class="party" id="party"></div><div class="loglist" id="log"></div></div>
       <div class="tray" id="tray"></div>
     </div>`;
@@ -62,6 +63,10 @@
   UI.renderTop = function () {
     const m = G().M();
     ZG.Audio.ambient && ZG.Audio.ambient(m.turnEvent && m.turnEvent.id === 'rain' && !m.over ? 'rain' : null);
+    // погода события хода — на поле весь ход
+    const b = document.getElementById('board');
+    const ev = m.turnEvent && !m.over ? m.turnEvent.id : null;
+    if (b) ['rain', 'fog'].forEach((w) => b.classList.toggle('w-' + w, ev === w));
     const def = G().def();
     const left = m.clock.length - m.clockPos;
     const night = m.phase === 'night' && m.turn > 0;
@@ -81,6 +86,21 @@
   };
 
   /** Плашка «событие хода» в верхней панели */
+  /** Разовый эффект события хода на поле (сирена, вой, голод, радио, рассвет) */
+  UI.eventFx = async function (id, locIdx) {
+    const b = document.getElementById('board');
+    if (!b) return;
+    const cls = 'fx-' + id;
+    b.classList.remove(cls); void b.offsetWidth; b.classList.add(cls);
+    if (id === 'howl' && locIdx != null) {
+      const el = document.querySelector(`.loc[data-i="${locIdx}"]`);
+      if (el) { el.classList.remove('howl-shake'); void el.offsetWidth; el.classList.add('howl-shake'); }
+    }
+    if (id === 'howl') ZG.Audio.sfx('growl', 0.7);
+    await ZG.sleep(id === 'siren' ? 1700 : 1100);
+    b.classList.remove(cls);
+  };
+
   UI.turnEventChip = function (m) {
     const e = m.turnEvent;
     if (!e) return '';

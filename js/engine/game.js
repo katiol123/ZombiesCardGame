@@ -419,6 +419,8 @@
     if (c.id !== 'calm') G.log(`Часы: ${cd.name}. ${cd.text}`, 'clock');
     // событие хода — видно в верхней панели весь ход
     m.turnEvent = { id: c.id, name: c.id === 'calm' ? (c.name || 'Тишина') : cd.name, turn: m.turn, detail: '' };
+    UI().renderTop && UI().renderTop();
+    if (UI().eventFx && c.id !== 'calm' && c.id !== 'howl') await UI().eventFx(c.id);
     switch (c.id) {
       case 'siren':
         ZG.Audio.sfx('siren', 0.7);
@@ -439,6 +441,7 @@
           R.shuffle(l.deck);
           G.log(`В локацию «${G.ldef(l).name}» пришёл мертвец.`, 'bad');
           m.turnEvent.detail = `Мертвец пришёл в «${G.ldef(l).name}».`;
+          if (UI().eventFx) UI().eventFx('howl', m.locations.indexOf(l));
           await UI().flyIn(m.locations.indexOf(l), 1);
         }
         break;
@@ -508,6 +511,7 @@
   /** Переход героя в локацию (с проверкой входа, если она есть) */
   G.enterLoc = async function (mh, i, verb) {
     mh.loc = i;
+    if (!verb || verb === 'идёт') ZG.Audio.sfx('steps', 0.8);
     G.log(`${G.hname(mh)} ${verb || 'идёт'} в «${G.ldef(G.loc(mh)).name}».`, 'move');
     UI().renderBoard();
     const ec = G.lrule(G.loc(mh)).enterCheck;
