@@ -1195,3 +1195,12 @@ body.night .guard-art { filter: brightness(.8) saturate(.6); }
 .briefing { justify-content: flex-start; overflow-y: auto; }
 .briefing > .brief-box { margin-top: auto; flex: none; }
 .briefing > .brief-locs { margin-bottom: auto; flex: none; }
+
+/* брифинг: карточки Угрозы и вожака вместо текста */
+.brief-foes { display: flex; flex-wrap: wrap; gap: 18px 26px; align-items: flex-start; }
+.brief-foes .bf { display: flex; flex-direction: column; gap: 6px; }
+.brief-foes .bf-n { color: var(--amber); margin-left: 4px; }
+.brief-foes .bf-note { font-size: 12px; }
+@media (max-width: 520px) { .brief-foes { gap: 12px; justify-content: center; } .brief-foes .card { zoom: .82; } }
+.brief-facts .brief-foes { grid-column: 1 / -1; flex-direction: row; }
+.brief-facts .fact { align-self: start; }

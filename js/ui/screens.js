@@ -215,8 +215,10 @@
       <div class="brief-facts" id="facts">
         <div class="fact"><div class="k">${T('brief_goal')}</div>${esc(m.goal)}</div>
         <div class="fact"><div class="k">${T('brief_rule')}</div>${esc(m.rule)}</div>
-        <div class="fact"><div class="k">${T('brief_threat')}</div><b>${esc(boss.name)}</b> — сложность ${boss.dc}${boss.hits ? ' ×' + boss.hits : ''}. ${esc(boss.text || '')}</div>
-        <div class="fact"><div class="k">${T('brief_minion')}</div><b>${esc(hen.name)}</b> ×${n - 1 + (m.special && m.special.extraHench ? (m.special.extraHench === 'all' ? n : Math.min(m.special.extraHench, n)) : 0)} — сложность ${hen.dc}. Локаций: ${n}.</div>
+        <div class="fact brief-foes">
+          <div class="bf"><div class="k">${T('brief_threat')}</div>${UI.cardHTML(m.boss, { size: 'mid' })}</div>
+          <div class="bf"><div class="k">${T('brief_minion')} <b class="bf-n">×${n - 1}</b></div>${UI.cardHTML(m.henchman, { size: 'mid' })}<div class="muted bf-note">Локаций в миссии: ${n}</div></div>
+        </div>
       </div>
       <div class="enc-actions"><button class="btn ghost" data-back>${T('to_map')}</button><button class="btn primary" data-go>${ZG.icon('skull')} ${T('brief_start')}</button></div>
     </div>
