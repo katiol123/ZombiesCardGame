@@ -294,6 +294,7 @@
   /* ============================== Лагерь ============================== */
   UI.campHero = 0;
   UI.showCamp = function (refresh) {
+    if (!refresh) UI.campOpen = new Set(); // при входе в лагерь все ряды склада свёрнуты
     ZG.Audio.music('shelter');
     setTimeout(() => UI.tip('camp'), 600);
     const S = ZG.Save.current;
@@ -327,7 +328,7 @@
       const empties = Array.from({ length: Math.max(0, comp[t] - cnt) }, () => `<div class="empty-slot">Пустой слот<br>${esc(T('slot_' + t))}</div>`).join('');
       return `<div class="type-group"><h4>${esc(T('type_' + t))} <span class="cnt ${ok ? 'ok' : 'bad'}">${cnt}/${comp[t]}</span></h4>
         <div class="card-row">${mine.map((x) => UI.cardHTML(x.id, { size: 'mini', title: 'Убрать в склад', badge: g.cardWarn(ph.id, x.id) }).replace('class="card', `data-rm="${x.i}" class="card`)).join('')}${empties}</div>
-        ${uniq.length ? `<div class="sec-label" style="margin-top:8px">${T('camp_vault')}: ${uniq.length} ${ZG.plural(uniq.length, 'вид', 'вида', 'видов')}</div><div class="card-row">${uniq.map((id) => UI.cardHTML(id, { size: 'mini', cls: 'out', badge: '×' + ZG.count(avail, (x) => x === id) + (g.cardWarn(ph.id, id) ? ' · ' + g.cardWarn(ph.id, id) : ''), title: g.cardWarn(ph.id, id) ? 'Герою не подходит: ' + g.cardWarn(ph.id, id) : 'Взять в колоду' }).replace('class="card', `data-add="${id}" class="card`)).join('')}</div>` : ''}
+        ${uniq.length ? `<button class="vault-toggle ${UI.campOpen.has(t) ? 'open' : ''}" data-vt="${t}">${ZG.icon('backpack')} ${T('camp_vault')}: ${uniq.length} ${ZG.plural(uniq.length, 'вид', 'вида', 'видов')} <span class="vt-arrow">${UI.campOpen.has(t) ? '▴ свернуть' : '▾ показать'}</span></button><div class="card-row vault-row" ${UI.campOpen.has(t) ? '' : 'hidden'}>${uniq.map((id) => UI.cardHTML(id, { size: 'mini', cls: 'out', badge: '×' + ZG.count(avail, (x) => x === id) + (g.cardWarn(ph.id, id) ? ' · ' + g.cardWarn(ph.id, id) : ''), title: g.cardWarn(ph.id, id) ? 'Герою не подходит: ' + g.cardWarn(ph.id, id) : 'Взять в колоду' }).replace('class="card', `data-add="${id}" class="card`)).join('')}</div>` : ''}
         ${uniq.length
           ? `<div class="sec-label muted" style="margin-top:6px">${T('camp_supply')}: только когда на складе не осталось карт этого типа</div>`
           : `<div class="sec-label" style="margin-top:6px">${T('camp_supply')}: ${G().BASICS[t].map((id) => `<a href="#" data-basic="${id}" style="color:var(--amber)">${esc(ZG.card(id).name)}</a>`).join(', ')}</div>`}
@@ -349,7 +350,7 @@
         </div>
         <div class="deck-section panel">
           ${featBox}
-          <p class="muted" style="margin-top:0">Нажмите на карту колоды, чтобы вернуть её на склад; на карту склада — чтобы взять. Базовые запасы бесконечны, но брать их можно, только когда на складе не осталось карт этого типа.</p>
+          <p class="muted" style="margin-top:0">Нажмите на карту колоды, чтобы вернуть её на склад. Чтобы взять карту со склада, откройте его кнопкой «Общий склад» под нужным рядом. Базовые запасы бесконечны, но брать их можно, только когда на складе не осталось карт этого типа.</p>
           ${groups}
         </div>
       </div>
@@ -360,6 +361,14 @@
     }
     const rerender = () => { ZG.Save.persist(); UI.showCamp(true); };
     s.querySelectorAll('[data-h]').forEach((t) => t.addEventListener('click', () => { UI.campHero = +t.dataset.h; UI.showCamp(true); }));
+    s.querySelectorAll('[data-vt]').forEach((b) => b.addEventListener('click', () => {
+      const t = b.dataset.vt;
+      if (UI.campOpen.has(t)) UI.campOpen.delete(t); else UI.campOpen.add(t);
+      const open = UI.campOpen.has(t);
+      b.classList.toggle('open', open);
+      b.querySelector('.vt-arrow').textContent = open ? '▴ свернуть' : '▾ показать';
+      b.nextElementSibling.hidden = !open;
+    }));
     s.querySelectorAll('[data-rm]').forEach((c) => c.addEventListener('click', () => { ph.deck.splice(+c.dataset.rm, 1); rerender(); }));
     s.querySelectorAll('[data-add]').forEach((c) => c.addEventListener('click', () => {
       const id = c.dataset.add;
