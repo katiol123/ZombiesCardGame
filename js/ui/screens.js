@@ -328,7 +328,9 @@
       return `<div class="type-group"><h4>${esc(T('type_' + t))} <span class="cnt ${ok ? 'ok' : 'bad'}">${cnt}/${comp[t]}</span></h4>
         <div class="card-row">${mine.map((x) => UI.cardHTML(x.id, { size: 'mini', title: 'Убрать в склад', badge: g.cardWarn(ph.id, x.id) }).replace('class="card', `data-rm="${x.i}" class="card`)).join('')}${empties}</div>
         ${uniq.length ? `<div class="sec-label" style="margin-top:8px">${T('camp_vault')}: ${uniq.length} ${ZG.plural(uniq.length, 'вид', 'вида', 'видов')}</div><div class="card-row">${uniq.map((id) => UI.cardHTML(id, { size: 'mini', cls: 'out', badge: '×' + ZG.count(avail, (x) => x === id) + (g.cardWarn(ph.id, id) ? ' · ' + g.cardWarn(ph.id, id) : ''), title: g.cardWarn(ph.id, id) ? 'Герою не подходит: ' + g.cardWarn(ph.id, id) : 'Взять в колоду' }).replace('class="card', `data-add="${id}" class="card`)).join('')}</div>` : ''}
-        <div class="sec-label" style="margin-top:6px">${T('camp_supply')}: ${G().BASICS[t].map((id) => `<a href="#" data-basic="${id}" style="color:var(--amber)">${esc(ZG.card(id).name)}</a>`).join(', ')}</div>
+        ${uniq.some((id) => g.cardUsable(ph.id, id))
+          ? `<div class="sec-label muted" style="margin-top:6px">${T('camp_supply')}: только когда на складе не осталось подходящих карт этого типа</div>`
+          : `<div class="sec-label" style="margin-top:6px">${T('camp_supply')}: ${G().BASICS[t].map((id) => `<a href="#" data-basic="${id}" style="color:var(--amber)">${esc(ZG.card(id).name)}</a>`).join(', ')}</div>`}
       </div>`;
     }).join('');
     const s = show(`<div class="screen"><div class="page">
@@ -347,7 +349,7 @@
         </div>
         <div class="deck-section panel">
           ${featBox}
-          <p class="muted" style="margin-top:0">Нажмите на карту колоды, чтобы вернуть её на склад; на карту склада — чтобы взять. Базовые запасы бесконечны.</p>
+          <p class="muted" style="margin-top:0">Нажмите на карту колоды, чтобы вернуть её на склад; на карту склада — чтобы взять. Базовые запасы бесконечны, но брать их можно, только когда на складе не осталось подходящих карт этого типа.</p>
           ${groups}
         </div>
       </div>
@@ -371,6 +373,7 @@
       const id = a.dataset.basic;
       const t = ZG.card(id).type;
       if (ZG.count(ph.deck, (x) => ZG.card(x).type === t) >= comp[t]) return UI.toast('Слоты этого типа заполнены', 'bad');
+      if (g.reserve().some((x) => ZG.card(x).type === t && g.cardUsable(ph.id, x))) return UI.toast('Сначала возьмите карты этого типа со склада', 'bad');
       camp.vault.push(id);
       ph.deck.push(id);
       rerender();
