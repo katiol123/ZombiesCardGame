@@ -1483,7 +1483,12 @@
     // кислота проедает броню
     const acid = ck.kind === 'combat' && playedTraits.has('Кислота');
     const ignoreArmor = acid || ctx.played.some((p) => G.playDef(p).ignoreArmor);
-    if (ignoreArmor && ck.enemy && ck.enemy.armor) parts.push({ label: acid ? 'Кислота: броня врага не действует' : 'Броня врага не действует', v: 0 });
+    if (ignoreArmor && ck.enemy && (ck.enemy.armor || ck.enemy.bulletproof)) parts.push({ label: acid ? 'Кислота: броня врага не действует' : 'Броня врага не действует', v: 0 });
+    // «Пуленепробиваемость» (бронежилет Бёрка): штраф к атаке огнестрелом, кислота его тоже проедает
+    if (!ignoreArmor && ck.enemy && ck.enemy.bulletproof && playedTraits.has('Огнестрел')) {
+      bonus -= ck.enemy.bulletproof;
+      parts.push({ label: 'Бронежилет держит пули', v: -ck.enemy.bulletproof });
+    }
     if (!ignoreArmor && ck.enemy && ck.enemy.armor && (skill === 'melee' || ZG.attrOf(skill) === 'str')) {
       bonus -= ck.enemy.armor;
       parts.push({ label: 'Броня врага', v: -ck.enemy.armor });

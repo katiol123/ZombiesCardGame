@@ -453,8 +453,8 @@
     { id: 'butcher', type: 'henchman', name: 'Мясник', tier: 1, icon: 'ghost', dc: 9, bite: true, dmgAdd: 1, lastSwing: { skills: ['dex', 'stealth'], dc: 7, damage: 2 },
       text: 'Вожак. Урон от него +1. Последний взмах: победив его, пройдите проверку Ловкость / Скрытность 7 — при провале 2 урона. Победив его, можно сразу попытаться заколотить локацию.',
       flavor: 'Фартук всё ещё белый. Местами.' },
-    { id: 'burke', type: 'boss', name: 'Охранник Бёрк', tier: 1, icon: 'bossskull', dc: 13, bite: true, armor: 3,
-      text: 'Угроза. Бронежилет: проверки Силой и Рукопашной против него −3.',
+    { id: 'burke', type: 'boss', name: 'Охранник Бёрк', tier: 1, icon: 'bossskull', dc: 13, bite: true, bulletproof: 3,
+      text: 'Угроза. Бронежилет держит пули: боевые проверки с оружием «Огнестрел» против него −3. Бейте вблизи.',
       flavor: 'Сорок лет охранял «Фэйрвью». Продолжает.' },
 
     { id: 'echo', type: 'henchman', name: 'Эхо', tier: 1, icon: 'ghost', dc: 9, bite: true, noiseOnEncounter: 2,
@@ -952,7 +952,6 @@
     bloater: { weak: { 'Огонь': 'd8' }, resist: { 'Ближнее': 2 } },
     blindminer: { weak: { 'Тихое': 'd6' } },
     soldierz: { dmgType: 'electric', weak: { 'Огонь': 'd4' } },
-    burke: { weak: { 'Огнестрел': 'd6' } },
     hazmat: { dmgType: 'acid', immune: ['Огонь', 'Кислота'] },
     alpha: { inflict: 'terror', resist: { 'Тяжёлое': 3 }, weak: { 'Огонь': 'd6' } },
     patientzero: { inflict: 'numb', dmgType: 'electric', immune: ['Огонь'], resist: { 'Ближнее': 2 }, weak: { 'Электричество': 'd8' } },
