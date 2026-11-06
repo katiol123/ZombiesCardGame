@@ -141,6 +141,20 @@
     const cols = n <= 4 ? n : n <= 6 ? 3 : 4;
     locsEl.style.setProperty('--cols', cols);
     locsEl.classList.toggle('two-rows', n > cols);
+    UI.fitLocText(locsEl);
+  };
+
+  /** Текст правил локаций: один размер для всех карточек — самый крупный, при котором поле помещается без прокрутки */
+  UI.fitLocText = function (locsEl) {
+    locsEl.style.removeProperty('--lfs');
+    if (window.innerWidth <= 900) return;
+    const fits = () => locsEl.scrollHeight <= locsEl.clientHeight + 1;
+    if (!fits()) return; // уже тесно — оставляем базовый размер
+    for (const fs of [16, 15, 14, 13.5]) {
+      locsEl.style.setProperty('--lfs', fs + 'px');
+      if (fits()) return;
+    }
+    locsEl.style.removeProperty('--lfs');
   };
 
   UI.renderParty = function () {
@@ -995,6 +1009,7 @@
   document.addEventListener('mousedown', hidePeek, true);
   window.addEventListener('scroll', hidePeek, true);
   window.addEventListener('resize', () => {
+    const le = document.getElementById('locs'); if (le && UI.fitLocText) UI.fitLocText(le);
     document.querySelectorAll('#tray .hand, .enc-panel .mini-hand').forEach(UI.fitHand);
   });
   document.addEventListener('keydown', (e) => {
