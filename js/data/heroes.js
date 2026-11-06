@@ -50,9 +50,9 @@
       attrs: { str: 'd4', dex: 'd8', wit: 'd12', end: 'd6', will: 'd8' },
       skills: { medicine: 3, persuasion: 2 },
       hand: 5,
-      deck: { weapon: 1, item: 2, consumable: 5, ally: 2, resolve: 3, technique: 2 },
+      deck: { weapon: 2, item: 2, consumable: 4, ally: 2, resolve: 3, technique: 2 },
       prof: [],
-      start: ['acidsyringe', 'flashlight', 'jacket', 'bandage', 'bandage', 'painkillers', 'antibiotics', 'cannedfood', 'neighbor', 'rex', 'hope', 'hope', 'prayer', 'triage', 'suture'],
+      start: ['acidsyringe', 'knife', 'flashlight', 'jacket', 'bandage', 'bandage', 'painkillers', 'antibiotics', 'neighbor', 'rex', 'hope', 'hope', 'prayer', 'triage', 'suture'],
       powers: [
         { id: 'fieldmed', name: 'Полевая медицина', text: 'Вместо первого исследования за ход покажите карту с признаком «Медицина» и выберите героя в своей локации (можно себя). На выбор: он перетасовывает 1d4+1 случайных карт из сброса в колоду, или изгоняет 1 Инфекцию, или снимает все состояния. Показанная карта сбрасывается.' },
         { id: 'steady', name: 'Твёрдая рука', text: 'В бою с оружием «Тихое» +1d4, и можно бросать кубик Смекалки вместо Ловкости (без бонуса Медицины).' },
