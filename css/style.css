@@ -1228,8 +1228,8 @@ body.night .guard-art { filter: brightness(.8) saturate(.6); }
 .board.w-fog .weather .w-fog { opacity: 1; }
 .board.w-fog .loc .lart img { filter: contrast(.85) brightness(1.05) saturate(.7) blur(.4px) !important; }
 /* сирена: красно-синие вспышки по полю */
-.board.fx-siren .weather { animation: sirenFlash 1.6s steps(1) both; }
-@keyframes sirenFlash { 0%, 50% { box-shadow: inset 0 0 160px rgba(230, 40, 30, .55); background: rgba(200, 30, 20, .1); } 25%, 75% { box-shadow: inset 0 0 160px rgba(60, 110, 255, .5); background: rgba(40, 80, 220, .08); } 100% { box-shadow: none; background: none; } }
+.board.fx-siren .weather { animation: sirenFlash 1.5s steps(1) both; }
+@keyframes sirenFlash { 0%, 40%, 80% { box-shadow: inset 0 0 160px rgba(230, 40, 30, .55); background: rgba(200, 30, 20, .1); } 20%, 60% { box-shadow: inset 0 0 160px rgba(60, 110, 255, .5); background: rgba(40, 80, 220, .08); } 99.9% { box-shadow: inset 0 0 160px rgba(230, 40, 30, .55); } 100% { box-shadow: none; background: none; } }
 /* вой: красная пульсация и дрожь локации, куда пришёл мертвец */
 .board.fx-howl .weather { animation: howlPulse 1.1s ease-out both; }
 @keyframes howlPulse { 0% { box-shadow: inset 0 0 0 rgba(150, 0, 0, 0); } 30% { box-shadow: inset 0 0 200px rgba(150, 0, 0, .55); } 100% { box-shadow: inset 0 0 0 rgba(150, 0, 0, 0); } }
@@ -1251,3 +1251,15 @@ body.night .guard-art { filter: brightness(.8) saturate(.6); }
 .auto-cont { height: 4px; margin: 12px auto 4px; width: min(320px, 70%); border-radius: 3px; background: rgba(255,255,255,.08); overflow: hidden; cursor: pointer; }
 .auto-cont i { display: block; height: 100%; background: var(--amber); transform-origin: left; animation: autoCont linear forwards; }
 @keyframes autoCont { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+
+/* способности героя — столбиком в панели, описание во всплывающем окне */
+.power-list { display: flex; flex-direction: column; gap: 4px; margin-top: 6px; }
+.power-chip { display: flex; align-items: center; gap: 6px; padding: 4px 9px; border-radius: 7px; border: 1px solid color-mix(in srgb, var(--hc) 45%, transparent); background: color-mix(in srgb, var(--hc) 10%, transparent); color: #e8dfcf; font-family: var(--font-head); font-size: 12px; letter-spacing: .06em; text-transform: uppercase; text-align: left; cursor: help; transition: background .2s, border-color .2s; }
+.power-chip .ic { color: var(--hc); font-size: 11px; }
+.power-chip:hover { background: color-mix(in srgb, var(--hc) 22%, transparent); border-color: var(--hc); }
+.power-tip { position: fixed; z-index: 2700; width: min(320px, 92vw); padding: 12px 14px 10px; border-radius: 10px; pointer-events: none;
+  background: linear-gradient(180deg, #1b1d22, #111216); border: 1px solid color-mix(in srgb, var(--hc) 60%, #333); box-shadow: 0 16px 40px rgba(0,0,0,.75), 0 0 0 1px rgba(0,0,0,.6), inset 0 1px 0 rgba(255,255,255,.05); animation: ptIn .15s ease-out; }
+@keyframes ptIn { from { opacity: 0; transform: translateY(4px); } }
+.power-tip .pt-head { font-family: var(--font-head); font-size: 15px; letter-spacing: .05em; color: var(--hc); margin-bottom: 6px; display: flex; gap: 6px; align-items: center; }
+.power-tip .pt-text { font-size: 13.5px; line-height: 1.45; color: #e2dac8; }
+.power-tip .pt-who { margin-top: 8px; font-size: 10px; letter-spacing: .18em; text-transform: uppercase; color: var(--dim); }

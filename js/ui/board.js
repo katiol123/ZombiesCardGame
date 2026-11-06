@@ -91,6 +91,7 @@
     const b = document.getElementById('board');
     if (!b) return;
     const cls = 'fx-' + id;
+    if (id === 'siren') ZG.Audio.sfx('siren', 0.7); // звук и вспышки — одновременно
     b.classList.remove(cls); void b.offsetWidth; b.classList.add(cls);
     if (id === 'howl' && locIdx != null) {
       const el = document.querySelector(`.loc[data-i="${locIdx}"]`);
@@ -231,6 +232,7 @@
       <div class="hero-panel" style="--hc:${hd.color}">
         <div class="hp-top">${UI.avatar(mh.id)}<div><div class="hp-name">${esc(hd.name)}</div><div class="hp-role">${esc(hd.role)}</div></div><button class="btn small ghost tray-toggle" data-act="traytoggle">${UI.trayCollapsed ? 'Рука ▴' : 'Свернуть ▾'}</button></div>
         ${UI.statsHTML(ph)}
+        <div class="power-list">${hd.powers.map((p, i) => `<button class="power-chip" data-power="${i}" style="--hc:${hd.color}">${ZG.icon('star')} ${esc(p.name)}</button>`).join('')}</div>
         ${Object.keys(mh.conds || {}).length ? `<div class="cond-row">${Object.keys(mh.conds).map((k) => `<span class="cond" title="${esc(ZG.CONDS[k].text)}">${ZG.icon(ZG.CONDS[k].icon)} ${esc(ZG.CONDS[k].name)}</span>`).join('')}</div>` : ''}
         <div class="piles">
           <div class="pile ${mh.deck.length <= 2 ? 'warn' : ''}" title="Колода — это здоровье"><b>${mh.deck.length}</b>${T('deck')}</div>
@@ -240,7 +242,7 @@
         </div>
       </div>
       <div class="hand-wrap">
-        <div class="hand-label"><span>${T('hand')} · ${mh.hand.length}/${hs}</span><span>${esc(hd.powers.map((p) => p.name).join(' · '))}</span></div>
+        <div class="hand-label"><span>${T('hand')} · ${mh.hand.length}/${hs}</span></div>
         <div class="hand">${hand || '<div class="muted" style="padding:30px">Рука пуста</div>'}</div>
       </div>
       <div class="actions">
@@ -1005,6 +1007,33 @@
     cards.forEach((c, i) => { if (i) c.style.marginLeft = (step - cw) / z + 'px'; });
   };
   UI.shortName = (id) => ZG.heroShort(id);
+  /* Всплывающее описание способности героя (панель внизу справа) */
+  let powTip = null;
+  const hidePow = () => { if (powTip) powTip.remove(); powTip = null; };
+  const showPow = (chip) => {
+    hidePow();
+    const m = ZG.Game.M && ZG.Game.M();
+    if (!m) return;
+    const mh = UI.trayHero || m.heroes[m.active];
+    const hd = ZG.HEROES[mh.id];
+    const p = hd.powers[+chip.dataset.power];
+    if (!p) return;
+    powTip = ZG.html(`<div class="power-tip" style="--hc:${hd.color}"><div class="pt-head">${ZG.icon('star')} ${ZG.escape ? ZG.escape(p.name) : p.name}</div><div class="pt-text"></div><div class="pt-who">${hd.name}</div></div>`);
+    powTip.querySelector('.pt-text').textContent = p.text;
+    powTip.querySelector('.pt-head').lastChild.textContent = ' ' + p.name;
+    powTip._chip = chip; powTip._t = Date.now();
+    document.body.appendChild(powTip);
+    const r = chip.getBoundingClientRect();
+    const w = powTip.offsetWidth, h = powTip.offsetHeight;
+    let x = r.left - w - 12;
+    if (x < 8) x = Math.min(innerWidth - w - 8, r.left);
+    let y = Math.max(8, Math.min(innerHeight - h - 8, r.top + r.height / 2 - h / 2));
+    if (x === r.left) y = Math.max(8, r.top - h - 10);
+    powTip.style.left = x + 'px'; powTip.style.top = y + 'px';
+  };
+  document.addEventListener('mouseover', (e) => { const c = e.target.closest && e.target.closest('.power-chip'); if (c) showPow(c); });
+  document.addEventListener('mouseout', (e) => { const c = e.target.closest && e.target.closest('.power-chip'); if (c && !(e.relatedTarget && c.contains(e.relatedTarget))) hidePow(); });
+  document.addEventListener('click', (e) => { const c = e.target.closest && e.target.closest('.power-chip'); if (c) { e.stopPropagation(); if (powTip && powTip._chip === c && Date.now() - powTip._t > 400) hidePow(); else if (!powTip || powTip._chip !== c) showPow(c); } else hidePow(); }, true);
   /* Чёткий просмотр карты в окнах проверки и урона: вместо масштабирования (оно размывает уменьшенные карты)
      рядом показывается крупная копия карты в полном размере. */
   const PEEK_SEL = '.enc-panel .hand .card, .enc-panel .mini-hand .card, .dmg-modal .hand .card';

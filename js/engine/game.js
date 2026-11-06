@@ -423,7 +423,6 @@
     if (UI().eventFx && c.id !== 'calm' && c.id !== 'howl') await UI().eventFx(c.id);
     switch (c.id) {
       case 'siren':
-        ZG.Audio.sfx('siren', 0.7);
         for (const l of G.openLocs()) { G.addNoise(l, 1); }
         for (const l of G.openLocs()) await G.checkHorde(l);
         break;
