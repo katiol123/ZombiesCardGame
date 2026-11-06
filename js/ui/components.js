@@ -146,9 +146,11 @@
 
   UI.banner = async function (title, sub, kind, long) {
     const el = ZG.html(`<div class="banner ${kind || ''} ${long ? 'long' : ''}"><h2>${esc(title)}</h2>${sub ? `<p>${esc(sub)}</p>` : ''}</div>`);
-    el.style.animationDuration = ((long ? 3.4 : 2.4) * Math.max(ZG.speed, 0.3)) + 's';
+    // баннер должен успеть прочитаться и в «быстром» режиме: анимация и ожидание — одной длины
+    const k = ZG.params.get('fast') ? Math.max(ZG.speed, 0.3) : Math.max(ZG.speed, 0.85);
+    el.style.animationDuration = ((long ? 3.4 : 2.4) * k) + 's';
     document.body.appendChild(el);
-    await ZG.sleep(long ? 3200 : 2200);
+    await new Promise((r) => setTimeout(r, (long ? 3300 : 2300) * k));
     el.remove();
   };
 

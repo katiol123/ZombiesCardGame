@@ -1899,6 +1899,7 @@
     const villains = loc.deck.filter((i) => ZG.card(i.id).type === 'boss');
     if (villains.length) {
       const banished = loc.deck.length - villains.length;
+      if (UI().encounterDismiss) await UI().encounterDismiss(); // зачистка и баннер — на поле, не поверх окна боя
       await UI().purgeAnim(G.M().locations.indexOf(loc), banished);
       G.rescueObjectives(loc, loc.deck.filter((c) => ZG.card(c.id).type === 'objective'));
       loc.deck = R.shuffle(villains);
@@ -1931,6 +1932,8 @@
   };
 
   G.closeLoc = async function (loc) {
+    // окно боя (например, с побеждённым вожаком) убираем: заколачивание и награда показываются на поле
+    if (UI().encounterDismiss) await UI().encounterDismiss();
     const purged = loc.deck.filter((c) => ZG.card(c.id).type !== 'objective').length;
     if (purged) await UI().purgeAnim(G.M().locations.indexOf(loc), purged);
     G.rescueObjectives(loc, loc.deck.filter((c) => ZG.card(c.id).type === 'objective'));
@@ -1976,7 +1979,7 @@
     }
     if (lines.length) {
       G.log(`Награда за «${G.ldef(loc).name}»: ${lines.join('; ')}.`, 'loot');
-      await UI().banner('Награда', `За «${G.ldef(loc).name}»: ${lines.join(' · ')}`, 'good');
+      await UI().banner('Награда', `За «${G.ldef(loc).name}»: ${lines.join(' · ')}`, 'good', true);
       UI().renderBoard();
     }
   };

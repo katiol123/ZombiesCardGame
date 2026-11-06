@@ -717,21 +717,33 @@
     spin = false;
     await ZG.sleep(250);
     const ok = res.success;
+    // после успешного боя игра продолжает сама через пару секунд (клик или Enter — сразу)
+    const auto = ok && ctx.check && ctx.check.kind === 'combat'; // только успешный бой; провал — по кнопке
+    const AUTO_MS = Math.round(2200 * Math.max(ZG.speed, 0.3));
     bottom.innerHTML = `<div class="result-banner ${ok ? 'ok' : 'bad'}">${ok ? T('success') : T('fail')}</div>
       <div class="total-line">${res.rolls.map((r) => r.v).join(' + ')}${res.pool.bonus ? (res.pool.bonus > 0 ? ' + ' : ' − ') + Math.abs(res.pool.bonus) : ''} = <b>${res.total}</b> против ${res.dc}${ok ? '' : ` · разница ${res.dc - res.total}`}</div>
-      <div class="enc-actions"><button class="btn ${ok ? 'good' : 'primary'}" data-cont>${T('continue')}</button></div>`;
+      ${auto ? `<div class="auto-cont"><i style="animation-duration:${AUTO_MS}ms"></i></div>` : `<div class="enc-actions"><button class="btn ${ok ? 'good' : 'primary'}" data-cont>${T('continue')}</button></div>`}`;
     ZG.Audio.synth(ok ? 'success' : 'fail');
     if (window.innerWidth <= 900) { const rb = bottom.querySelector('.result-banner'); if (rb) rb.scrollIntoView({ block: 'center', behavior: 'smooth' }); }
     if (ok) { ZG.FX.flash('green'); ZG.FX.burstAt(panel.querySelector('.result-banner'), 'gold', 40); }
     if (ok && ctx.check && ctx.check.kind === 'combat') UI.comicHit(ctx);
-    else { ZG.FX.flash('red'); ZG.FX.shake(UI.cardBox() || undefined); }
-    const btn = bottom.querySelector('[data-cont]');
-    UI.keyRoll = () => btn.click();
-    btn.addEventListener('click', () => {
+    if (!ok) { ZG.FX.flash('red'); ZG.FX.shake(UI.cardBox() || undefined); }
+    let done = false;
+    const go = () => {
+      if (done) return;
+      done = true;
       UI.keyRoll = null;
       finish(res);
-    });
-    if (ZG.params.get('fast')) btn.focus();
+    };
+    UI.keyRoll = go;
+    if (auto) {
+      const t = setTimeout(go, AUTO_MS);
+      bottom.addEventListener('click', () => { clearTimeout(t); go(); }, { once: true });
+    } else {
+      const btn = bottom.querySelector('[data-cont]');
+      btn.addEventListener('click', go);
+      if (ZG.params.get('fast')) btn.focus();
+    }
   };
 
   /* ============================== Урон ============================== */
