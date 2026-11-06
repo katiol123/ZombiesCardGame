@@ -47,7 +47,7 @@
       role: 'Фельдшер скорой',
       icon: 'cross',
       color: '#5fb3a1',
-      attrs: { str: 'd6', dex: 'd8', wit: 'd10', end: 'd6', will: 'd8' },
+      attrs: { str: 'd6', dex: 'd8', wit: 'd12', end: 'd6', will: 'd8' },
       skills: { medicine: 3, persuasion: 2 },
       hand: 5,
       deck: { weapon: 2, item: 3, consumable: 4, ally: 2, resolve: 3, technique: 1 },
