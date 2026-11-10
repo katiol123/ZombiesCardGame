@@ -1125,7 +1125,7 @@
         if (r >= 5) {
           const extra = G.inst(ZG.boxPick('consumable', G.def().tier), { l: 1 });
           mh.hand.push(extra);
-          G.log(`Мародёр (d6 = ${r}): Клык обыскивает тело — «${ZG.card(extra.id).name}».`, 'loot');
+          G.log(`Мародёр (d6 = ${r}): ${G.hname(mh)} обыскивает тело — «${ZG.card(extra.id).name}».`, 'loot');
           await ui.gain(extra, `Мародёр: d6 = ${r}`);
         } else G.note(`Мародёр (d6 = ${r}): у тела ничего полезного.`, '');
       }
@@ -1485,7 +1485,7 @@
     if (mh.id === 'kremen') {
       // «Адреналин»: чем больше карт в сбросе, тем злее
       const ad = ZG.adrenalineDie(mh.discard.length);
-      if (ad && ck.kind === 'combat') dice.push({ d: ad, src: `Адреналин (сброс ${mh.discard.length})` });
+      if (ad && ck.kind === 'combat') dice.push({ d: ad, src: 'Адреналин' });
       // «Кулаки»: бой без оружия +1d4
       if (ck.kind === 'combat' && !wp) dice.push({ d: 'd4', src: 'Кулаки' });
     }

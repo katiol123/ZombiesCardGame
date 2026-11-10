@@ -142,8 +142,8 @@
     if (tr.includes('Тяжёлая броня')) lines.push('Без владения: сгорает после блока.');
     if (ZG.isEnemy(def)) {
       const tt = [];
-      if (def.weak) Object.keys(def.weak).forEach((t) => tt.push(`уязвим: ${t} +${ZG.diceStr([def.weak[t]])}`));
-      if (def.resist) Object.keys(def.resist).forEach((t) => tt.push(`стойкий: ${t} −${def.resist[t]}`));
+      if (def.weak && Object.keys(def.weak).length) tt.push('уязвим: ' + Object.keys(def.weak).map((t) => `${t} +${ZG.diceStr([def.weak[t]])}`).join(', '));
+      if (def.resist && Object.keys(def.resist).length) tt.push('стойкий: ' + Object.keys(def.resist).map((t) => `${t} −${def.resist[t]}`).join(', '));
       if (def.immune && def.immune.length) tt.push(`иммунитет: ${def.immune.join(', ')}`);
       if (tt.length) { const x = tt.join(' · '); lines.push(x[0].toUpperCase() + x.slice(1) + '.'); }
     }

@@ -599,7 +599,7 @@
       };
       return `<div class="slotbox filled ${ps.length > 1 ? 'multi' : ''}">${ps.map(one).join('')}</div>`;
     }).join('');
-    const dice = pool.dice.map((x) => `<div class="die ${x.d}"><div class="die-body"><span>${T('die')}${ZG.sides(x.d)}</span></div><small>${esc(x.src.slice(0, 12))}</small></div>`).join('');
+    const dice = pool.dice.map((x) => `<div class="die ${x.d}"><div class="die-body"><span>${T('die')}${ZG.sides(x.d)}</span></div><small title="${esc(x.src)}">${esc(x.src.length > 12 ? x.src.slice(0, 11) + '…' : x.src)}</small></div>`).join('');
     const pct = Math.round(pool.chance * 100);
     const handCards = (owner) => owner.hand.map((c) => {
       const d = ZG.card(c.id);
