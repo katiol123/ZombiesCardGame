@@ -143,7 +143,7 @@
 
   /* ============================== Создание миссии ============================== */
   G.LOC_SIZE = 7;
-  // как в Pathfinder: 30 карт Часов при любом составе отряда
+  // 30 карт Часов при любом составе отряда
   G.CLOCK_BY_PARTY = [30, 30, 30, 30];
   G.enemyDmgType = (def, loc) => def.dmgType || ((G.ldef(loc).rules || {}).enemyDmgType) || null;
   G.dmgCap = (def) => def.maxDmg || (def.type === 'boss' ? 5 : def.type === 'henchman' ? 4 : 3);
@@ -610,7 +610,7 @@
       G.log(`Распад (d4 = ${r}: ${LBL[r]}): захоронено ${gone.length}.`, gone.length ? 'bad' : '');
       if (gone.length) await UI().banner(`Распад: d4 = ${r}`, `${LBL[r]} из сброса захоронены: ${gone.length}`, 'bad');
     }
-    // Обновить руку (как в Pathfinder): можно сбросить любые карты, лишние сверх размера руки — обязательно, затем добрать
+    // Обновить руку: можно сбросить любые карты, лишние сверх размера руки — обязательно, затем добрать
     const hs = G.handSizeMh(mh);
     const m = G.M();
     let us = m.ts && m.ts.refreshPick;
@@ -1169,7 +1169,7 @@
         if (!tr.success) await G.infect(mh);
       }
       if (def.type === 'henchman') m.henchKills = (m.henchKills || 0) + 1;
-      // Как в Pathfinder: заколотить можно только сразу после победы над вожаком.
+      // заколотить можно только сразу после победы над вожаком.
       // Отказ или провал — шанс упущен, локацию придётся вычищать до пустой колоды.
       const clr = G.lrule(loc);
       const canPay = (!clr.closeCost || mh.hand.some((c) => ZG.card(c.id).type === clr.closeCost)) && (!clr.closeBurn || mh.hand.some((c) => c.id !== 'infection'));
@@ -1973,7 +1973,7 @@
 
   /* ============================== Баррикады и угроза ============================== */
   /** Выполнить условие «При закрытии» локации: цена, проверка (или сжигание карты), двойная проверка, штраф за провал.
-   * Одинаково и для окончательного заколачивания, и для временного перекрытия перед боем с Угрозой (как в Pathfinder). */
+   * Одинаково и для окончательного заколачивания, и для временного перекрытия перед боем с Угрозой. */
   G.closeAttempt = async function (mh, loc, verb) {
     const lr = G.lrule(loc);
     const name = G.ldef(loc).name;
