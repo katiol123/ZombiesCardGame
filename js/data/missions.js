@@ -215,7 +215,7 @@
    * condsHere — снять состояния героев на локации */
   const ON_CLOSE = {
     lobby: [{ time: 1 }], wards: [{ healHere: 3 }], morgue: [{ gain: 'weapon' }], pharmacy: [{ cureHere: 1 }], boiler: [{ quiet: 2 }], ambulance: [{ gain: 'ally' }],
-    salesfloor: [{ gain: 'consumable' }], storage: [{ gain: 'item' }], butchery: [{ gain: 'weapon' }], security: [{ time: 1 }], loading: [{ gain: 'ally' }], parking: [{ quiet: 2 }],
+    salesfloor: [{ gainCard: 'cannedfood' }], storage: [{ gain: 'item' }], butchery: [{ gain: 'weapon' }], security: [{ time: 1 }], loading: [{ gain: 'ally' }], parking: [{ quiet: 2 }],
     hillfoot: [{ healHere: 2 }], rangerhut: [{ gain: 'weapon' }], generator: [{ time: 1 }], trail: [{ quiet: 2 }], transformer: [{ gain: 'item' }], mastbase: [{ condsHere: true }, { healHere: 2 }],
     gasstation: [{ gain: 'consumable' }], junkyard: [{ gain: 'item' }], gangcamp: [{ gain: 'ally' }], motel: [{ healHere: 3 }], highway: [{ time: 1 }], diner: [{ condsHere: true }, { healHere: 1 }],
     checkpoint: [{ gain: 'weapon' }], jam: [{ time: 1 }], pylons: [{ quiet: 3 }], fieldhospital: [{ cureHere: 1 }, { healHere: 2 }], embankment: [{ gain: 'resolve' }], evac: [{ time: 2 }],

@@ -201,6 +201,7 @@
       if (f.condsHere) parts.push('снять состояния героев здесь');
       if (f.quiet) parts.push(`шум всех локаций −${f.quiet}`);
       if (f.gain) parts.push(`случайное ${TYPE_GEN[f.gain] || f.gain}`);
+      if (f.gainCard) parts.push(`получите «${ZG.card(f.gainCard).name}»`);
     });
     return parts.join(', ');
   };

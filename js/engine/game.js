@@ -2091,6 +2091,11 @@
       if (f.cureHere) here.forEach((h) => { const n = G.cure(h, f.cureHere); if (n) lines.push(`${G.hname(h)}: −${n} Инфекция`); });
       if (f.condsHere) here.forEach((h) => { if (G.clearConds(h)) lines.push(`${G.hname(h)}: состояния сняты`); });
       if (f.quiet) { m.locations.forEach((l) => (l.noise = Math.max(0, l.noise - f.quiet))); lines.push(`Шум всех локаций −${f.quiet}`); }
+      if (f.gainCard && closer) {
+        const c = G.inst(f.gainCard, { l: 1 });
+        closer.hand.push(c);
+        lines.push(`${G.hname(closer)} получает «${ZG.card(c.id).name}»`);
+      }
       if (f.gain && closer) {
         const c = G.inst(ZG.boxPick(f.gain, G.def().tier), { l: 1 });
         closer.hand.push(c);
