@@ -95,19 +95,29 @@
   };
 
   /** Короткий звук */
-  A.sfx = function (name, vol) {
+  A.sfx = function (name, vol, o) {
+    o = o || {};
     if (A.disabled || !A.unlocked || !SFX[name] || sfxVol() <= 0) return;
     const now = performance.now();
-    if (A.lastSfx[name] && now - A.lastSfx[name] < (SFX_GAP[name] || 300)) return;
-    A.lastSfx[name] = now;
+    const key = o.key || name; // свой ключ — свой интервал повторов (тихий вариант не глушит основной)
+    if (A.lastSfx[key] && now - A.lastSfx[key] < (o.gap != null ? o.gap : SFX_GAP[name] || 300)) return;
+    A.lastSfx[key] = now;
     if (!A.cache[name]) {
       A.cache[name] = new Audio(BASE + SFX[name]);
       A.cache[name].preload = 'auto';
     }
     const el = A.cache[name].cloneNode();
     el.volume = Math.max(0, Math.min(1, sfxVol() * (vol || 1)));
+    if (o.rate) {
+      // другая высота тона: без сохранения высоты playbackRate меняет и тон
+      el.preservesPitch = false; el.mozPreservesPitch = false; el.webkitPreservesPitch = false;
+      el.playbackRate = o.rate;
+    }
     el.play().catch(() => {});
   };
+
+  /** Карта садится в руку: тот же звук, что при открытии карты, но тише и каждый раз чуть другой высоты */
+  A.cardLand = () => A.sfx('flip', 0.38, { key: 'flipLand', gap: 40, rate: 0.9 + Math.random() * 0.22 });
 
   /** Применить изменения настроек громкости */
   A.apply = function () {

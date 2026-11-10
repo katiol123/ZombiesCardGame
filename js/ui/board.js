@@ -431,6 +431,7 @@
           UI._handFlying.delete(u);
           const e = document.querySelector(`#tray .hand .card[data-u="${u}"]`);
           if (e) e.style.visibility = '';
+          ZG.Audio.cardLand && ZG.Audio.cardLand();
         }));
       });
     }
