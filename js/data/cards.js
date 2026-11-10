@@ -151,7 +151,7 @@
       acquire: { skills: ['str', 'survival'], dc: 4 },
       plays: [
         { on: 'damage', mode: 'recharge', reduce: 1, combatOnly: true, physical: true },
-        { on: 'check', mode: 'reveal', kind: COMBAT, enemyLiving: true, bonus: 1, text: 'Покажите для боевой проверки против человека: +1.' },
+        { on: 'check', mode: 'reveal', kind: COMBAT, enemyLiving: true, dice: ['d4'], text: 'Покажите для боевой проверки против человека: +1d4.' },
       ],
       flavor: 'Пули звенят о красный восьмиугольник.' },
     { id: 'jacket', type: 'item', name: 'Кожаная куртка', tier: 0, basic: true, icon: 'shield', traits: ['Броня'],
@@ -255,7 +255,7 @@
     { id: 'whiskey', type: 'consumable', name: 'Фляжка виски', tier: 0, basic: true, icon: 'bottle', traits: [],
       acquire: { skills: ['survival', 'persuasion'], dc: 4 },
       plays: [
-        { on: 'check', mode: 'burn', kind: 'any', skills: ['will', 'end'], dice: ['d6'], bonus: 1, text: 'Сожгите для проверки Воли или Выдержки (и их навыков): +1d6+1.' },
+        { on: 'check', mode: 'burn', kind: 'any', skills: ['will', 'end'], dice: ['d8'], bonus: 1, text: 'Сожгите для проверки Воли или Выдержки (и их навыков): +1d8+1.' },
         { on: 'action', mode: 'burn', clearCond: 'terror', target: 'self', text: 'Или сожгите в свой ход: снимите «Ночной ужас».' },
       ],
       flavor: 'Последний глоток — на потом. Всегда на потом.' },
