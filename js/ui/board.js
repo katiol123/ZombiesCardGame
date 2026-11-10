@@ -371,6 +371,21 @@
 
   /** Карты, которые сейчас летят в руку: их место в руке пустует, пока карта не приземлится */
   UI._handFlying = new Set();
+  /** Откуда прилетит карта, только что попавшая в руку (u → прямоугольник показанной карты) */
+  UI._handSource = new Map();
+  UI.markHandSource = function (u, el, keep) {
+    if (u == null || !el || !el.isConnected) return;
+    const r = el.getBoundingClientRect();
+    if (!r.width) return;
+    if (keep) {
+      // карта «выходит» из центра элемента (например, награда из заколоченной локации)
+      const w = Math.min(150, r.width * 0.6), h = w * 1.43;
+      UI._handSource.set(u, { left: r.left + r.width / 2 - w / 2, top: r.top + r.height / 2 - h / 2, width: w, height: h });
+      return;
+    }
+    UI._handSource.set(u, { left: r.left, top: r.top, width: r.width, height: r.height });
+    el.style.visibility = 'hidden';
+  };
   UI.awaitFlights = () => UI._flightP || Promise.resolve();
 
   /** Карты, ушедшие из руки, летят в свои стопки; добранные — вылетают из колоды на своё место в руке */
@@ -408,8 +423,11 @@
         const html = el.outerHTML;
         const live = () => { const e = document.querySelector(`#tray .hand .card[data-u="${u}"]`); return e ? e.getBoundingClientRect() : null; };
         const delay = k++ * 140 * Math.max(ZG.speed || 1, 0.4);
-        const from = { left: deckR.left + deckR.width / 2 - deckR.height * 0.35, top: deckR.top, width: deckR.height * 0.7, height: deckR.height };
-        jobs.push(new Promise((res) => setTimeout(res, delay)).then(() => UI.flyCard(html, from, live, { rot: -8, dur: 560 })).then(() => {
+        // найденная/полученная карта летит оттуда, где её только что показали; добранная — из колоды
+        const src = UI._handSource.get(u);
+        UI._handSource.delete(u);
+        const from = src || { left: deckR.left + deckR.width / 2 - deckR.height * 0.35, top: deckR.top, width: deckR.height * 0.7, height: deckR.height };
+        jobs.push(new Promise((res) => setTimeout(res, delay)).then(() => UI.flyCard(html, from, live, src ? { rot: 0, dur: 680 } : { rot: -8, dur: 560 })).then(() => {
           UI._handFlying.delete(u);
           const e = document.querySelector(`#tray .hand .card[data-u="${u}"]`);
           if (e) e.style.visibility = '';
@@ -637,6 +655,8 @@
     UI.enc = null;
     const box = el.querySelector('.enc-card');
     if (box && /defeated|acquired|lost/.test(box.className)) await ZG.sleep(650);
+    // найденная карта не исчезает вместе с окном, а перелетает в руку
+    if (box && box.classList.contains('acquired') && box.dataset.u) UI.markHandSource(+box.dataset.u, box.querySelector('.card'));
     await UI.closeOverlay(el);
     UI.renderBoard();
   };
@@ -659,10 +679,11 @@
     b.classList.add('defeated');
     ZG.FX.burstAt(b, 'blood', 60);
   };
-  UI.fxLoot = function () {
+  UI.fxLoot = function (inst) {
     const b = UI.cardBox();
     if (!b) return;
     b.classList.add('acquired');
+    if (inst) b.dataset.u = inst.u;
     ZG.Audio.synth('loot');
     ZG.FX.burstAt(b, 'gold', 60);
     ZG.FX.flash('green');

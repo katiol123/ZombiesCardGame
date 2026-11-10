@@ -504,7 +504,7 @@ h1, h2, h3 { font-family: var(--font-head); font-weight: 600; letter-spacing: 0.
 .enc-card.defeated .card { animation: defeated 1s ease forwards; }
 @keyframes defeated { 30% { transform: scale(1.05); filter: brightness(2) sepia(1) hue-rotate(-30deg); } 100% { transform: scale(.85) rotate(4deg) translateY(30px); filter: grayscale(1) brightness(.4); opacity: .3; } }
 .enc-card.acquired .card { animation: acquired 1s var(--ease) forwards; }
-@keyframes acquired { 40% { transform: scale(1.08); filter: brightness(1.4); } 100% { transform: translateY(140px) scale(.45); opacity: 0; } }
+@keyframes acquired { 40% { transform: scale(1.08); filter: brightness(1.4); } 100% { transform: none; filter: brightness(1.1); } }
 .enc-card.lost .card { animation: lostc 1s ease forwards; }
 @keyframes lostc { to { transform: translateY(40px) rotate(-8deg); opacity: 0; filter: blur(3px) grayscale(1); } }
 .enc-hero { position: absolute; left: 50%; bottom: -46px; transform: translateX(-50%); display: flex; align-items: center; gap: 8px; font-family: var(--font-head); font-size: 14px; white-space: nowrap; }

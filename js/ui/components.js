@@ -289,7 +289,10 @@
     await ZG.sleep(150);
     ZG.FX.burstAt(ov.querySelector('.card'), 'gold', 50);
     await ZG.sleep(1300);
+    // карта не растворяется, а перелетает на своё место в руке
+    UI.markHandSource(inst.u, ov.querySelector('.card'));
     await UI.closeOverlay(ov);
+    if (!document.querySelector('#overlay-root > .overlay') && document.getElementById('tray')) UI.renderBoard();
   };
 
   /* ============================== Подсказки ============================== */

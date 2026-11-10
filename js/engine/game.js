@@ -1313,7 +1313,7 @@
       m.stats.finds++;
       G.S().campaign.stats.finds++;
       G.log(T('acquired', { name: def.name }), 'loot');
-      UI().fxLoot();
+      UI().fxLoot(inst);
       // «Тележка из супермаркета»: сбросить, чтобы забрать ещё одну находку того же типа
       const cart = mh.hand.find((c) => c.id === 'cart' && c !== inst);
       if (cart && ZG.isBoon(def)) {
@@ -2100,11 +2100,13 @@
       if (f.gainCard && closer) {
         const c = G.inst(f.gainCard, { l: 1 });
         closer.hand.push(c);
+        if (UI().markHandSource) UI().markHandSource(c.u, document.querySelector(`.loc[data-i="${li}"]`), true);
         lines.push(`${G.hname(closer)} получает «${ZG.card(c.id).name}»`);
       }
       if (f.gain && closer) {
         const c = G.inst(ZG.boxPick(f.gain, G.def().tier), { l: 1 });
         closer.hand.push(c);
+        if (UI().markHandSource) UI().markHandSource(c.u, document.querySelector(`.loc[data-i="${li}"]`), true);
         lines.push(`${G.hname(closer)} находит «${ZG.card(c.id).name}»`);
       }
     }
