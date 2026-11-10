@@ -57,17 +57,19 @@
     if (t === 'clear') Object.keys(counts).forEach((k) => (counts[k] = 0));
     else counts[t] = Math.max(0, Math.min(6, counts[t] + (e.shiftKey ? -1 : 1)));
     draw();
+    table.place(currentSpecs());
   });
   document.querySelectorAll('.seg button').forEach((b) => b.addEventListener('click', () => {
     mode = b.dataset.m;
     document.querySelectorAll('.seg button').forEach((x) => x.classList.toggle('on', x === b));
   }));
   const table = new DiceTable(document.getElementById('table'));
+  const currentSpecs = () => { const sp = []; Object.keys(counts).forEach((t) => { for (let i = 0; i < counts[t]; i++) sp.push({ type: t, color: STYLE[t][0], ink: STYLE[t][1] }); }); return sp; };
+  table.place(currentSpecs());
   const out = document.getElementById('out');
   const btn = document.getElementById('roll');
   btn.addEventListener('click', async () => {
-    const specs = [];
-    Object.keys(counts).forEach((t) => { for (let i = 0; i < counts[t]; i++) specs.push({ type: t, color: STYLE[t][0], ink: STYLE[t][1] }); });
+    const specs = currentSpecs();
     if (!specs.length) { out.textContent = 'Добавьте хотя бы один кубик.'; return; }
     // «игра» решает результат заранее — как сейчас делает ZG.rollDie
     if (mode === 'forced') specs.forEach((s) => (s.value = 1 + Math.floor(Math.random() * +s.type.slice(1))));

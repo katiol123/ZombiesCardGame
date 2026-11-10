@@ -13343,7 +13343,7 @@ exports.World = World;
   DiceTable.prototype.clear = function () { this.dice.forEach((d) => this.scene.remove(d.mesh)); this.dice = []; };
 
   /** Просчитать бросок без показа: вернуть кадры движения каждого кубика */
-  function simulate(dice) {
+  function simulate(dice, starts) {
     const world = new C.World({ gravity: new C.Vec3(0, -38, 0) });
     world.allowSleep = true;
     const mat = new C.Material('m');
@@ -13353,14 +13353,17 @@ exports.World = World;
     // невидимые бортики
     const wall = (x, z, ry) => { const b = new C.Body({ mass: 0, material: mat, shape: new C.Plane() }); b.position.set(x, 0, z); b.quaternion.setFromEuler(0, ry, 0); world.addBody(b); };
     wall(-W / 2, 0, Math.PI / 2); wall(W / 2, 0, -Math.PI / 2); wall(0, -H / 2, 0); wall(0, H / 2, Math.PI);
-    const fromLeft = Math.random() < 0.5;
     const bodies = dice.map((d, i) => {
       const b = new C.Body({ mass: 1, material: mat, shape: d.shape, sleepSpeedLimit: 0.25, sleepTimeLimit: 0.12, angularDamping: 0.22, linearDamping: 0.12 });
-      const side = fromLeft ? -1 : 1;
-      b.position.set(side * (W / 2 - 0.9), 2.2 + i * 0.6, (Math.random() - 0.5) * (H - 2));
-      b.quaternion.setFromEuler(Math.random() * 6.28, Math.random() * 6.28, Math.random() * 6.28);
-      b.velocity.set(-side * (11 + Math.random() * 6), 2 + Math.random() * 3, (Math.random() - 0.5) * 7);
-      b.angularVelocity.set((Math.random() - 0.5) * 30, (Math.random() - 0.5) * 30, (Math.random() - 0.5) * 30);
+      // старт — там, где кубик лежит на поле; его «подхватывают» и бросают к центру стола
+      const st = starts[i];
+      b.position.set(st.p[0], st.p[1] + 0.05, st.p[2]);
+      b.quaternion.set(st.q[0], st.q[1], st.q[2], st.q[3]);
+      const tx = (Math.random() - 0.5) * (W - 4), tz = (Math.random() - 0.5) * (H - 3);
+      const dx = tx - st.p[0], dz = tz - st.p[2], len = Math.hypot(dx, dz) || 1;
+      const sp = 7 + Math.random() * 4;
+      b.velocity.set((dx / len) * sp, 7 + Math.random() * 3, (dz / len) * sp);
+      b.angularVelocity.set((Math.random() - 0.5) * 34, (Math.random() - 0.5) * 34, (Math.random() - 0.5) * 34);
       world.addBody(b);
       return b;
     });
@@ -13381,13 +13384,35 @@ exports.World = World;
    * Бросок. specs: [{ type, color, ink, value? }]. mode: 'honest' | 'forced'.
    * Возвращает Promise<[числа]> после окончания анимации.
    */
-  DiceTable.prototype.roll = function (specs, mode, speed) {
+  /** Положить кубики на поле в ряд у ближнего края (до броска они просто лежат) */
+  DiceTable.prototype.place = function (specs) {
     this.clear();
-    const dice = specs.map((s) => makeDie(s.type, s.color, s.ink));
+    const n = specs.length, gap = Math.min(1.5, (W - 2) / Math.max(1, n));
+    specs.forEach((s, i) => {
+      const d = makeDie(s.type, s.color, s.ink);
+      // повернуть так, чтобы случайная грань лежала на столе
+      const f = d.F[Math.floor(Math.random() * d.F.length)];
+      const q = new T.Quaternion().setFromUnitVectors(new T.Vector3(...f.n), new T.Vector3(0, -1, 0));
+      q.premultiply(new T.Quaternion().setFromAxisAngle(new T.Vector3(0, 1, 0), Math.random() * 6.28));
+      const minY = Math.min(...d.V.map((v) => new T.Vector3(...v).applyQuaternion(q).y));
+      d.mesh.quaternion.copy(q);
+      d.mesh.position.set((i - (n - 1) / 2) * gap, -minY, H / 2 - 1.1);
+      d.spec = s;
+      this.scene.add(d.mesh); this.dice.push(d);
+    });
+    this.render();
+  };
+
+  DiceTable.prototype.roll = function (specs, mode, speed) {
+    // если на поле не те кубики — сначала разложить нужные
+    const same = this.dice.length === specs.length && this.dice.every((d, i) => d.type === specs[i].type);
+    if (!same) this.place(specs);
+    const dice = this.dice;
+    const starts = dice.map((d) => ({ p: d.mesh.position.toArray(), q: d.mesh.quaternion.toArray() }));
     let frames, tops, tries = 0;
     // перебросить без показа, если кубик встал «на ребро» или упёрся в соседа
     do {
-      frames = simulate(dice);
+      frames = simulate(dice, starts);
       tops = dice.map((d, i) => topOf(d, frames[i][frames[i].length - 1].slice(3)));
       tries++;
     } while (tops.some((t) => t.flat < 0.97) && tries < 12);
@@ -13401,7 +13426,6 @@ exports.World = World;
       }
       return d.values[landed];
     });
-    dice.forEach((d) => { this.scene.add(d.mesh); this.dice.push(d); });
     const len = Math.max(...frames.map((f) => f.length));
     const t0 = performance.now();
     return new Promise((resolve) => {
@@ -13436,17 +13460,19 @@ exports.World = World;
     if (t === 'clear') Object.keys(counts).forEach((k) => (counts[k] = 0));
     else counts[t] = Math.max(0, Math.min(6, counts[t] + (e.shiftKey ? -1 : 1)));
     draw();
+    table.place(currentSpecs());
   });
   document.querySelectorAll('.seg button').forEach((b) => b.addEventListener('click', () => {
     mode = b.dataset.m;
     document.querySelectorAll('.seg button').forEach((x) => x.classList.toggle('on', x === b));
   }));
   const table = new DiceTable(document.getElementById('table'));
+  const currentSpecs = () => { const sp = []; Object.keys(counts).forEach((t) => { for (let i = 0; i < counts[t]; i++) sp.push({ type: t, color: STYLE[t][0], ink: STYLE[t][1] }); }); return sp; };
+  table.place(currentSpecs());
   const out = document.getElementById('out');
   const btn = document.getElementById('roll');
   btn.addEventListener('click', async () => {
-    const specs = [];
-    Object.keys(counts).forEach((t) => { for (let i = 0; i < counts[t]; i++) specs.push({ type: t, color: STYLE[t][0], ink: STYLE[t][1] }); });
+    const specs = currentSpecs();
     if (!specs.length) { out.textContent = 'Добавьте хотя бы один кубик.'; return; }
     // «игра» решает результат заранее — как сейчас делает ZG.rollDie
     if (mode === 'forced') specs.forEach((s) => (s.value = 1 + Math.floor(Math.random() * +s.type.slice(1))));
