@@ -78,6 +78,7 @@
   /** Проверка перезарядки приёма */
   G.techRecharge = function (owner, c) {
     const d = ZG.card(c.id);
+    UI().tip('technique');
     const rc = d.recharge || { skills: [], dc: 99 };
     const hd = ZG.HEROES[owner.id];
     // навык должен быть у героя; характеристика (например, Воля) есть у всех
@@ -1681,6 +1682,8 @@
 
   G.doCheck = async function (mh, check) {
     const ctx = { mh, check, played: [], skill: null };
+    // подсказка: у героя нет ни одного навыка из проверки (бросается характеристика)
+    { const hs = ZG.HEROES[mh.id].skills; if (check.kind !== 'combat' && (check.skills || []).length && check.skills.every((s) => !ZG.ATTRS.includes(s) && !(hs[s] > 0))) await UI().tip('noskill'); }
     const res = await UI().check(ctx);
     // «Патроны»: оружие, которое перезарядилось бы, вместо этого показывается (остаётся в руке)
     const weaponReveal = ctx.played.some((p) => G.playDef(p).weaponReveal);
