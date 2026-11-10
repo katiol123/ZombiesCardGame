@@ -40,8 +40,9 @@
         <div class="ctext">${rules}</div>
         ${d.flavor ? `<div class="cflavor">${esc(d.flavor)}</div>` : ''}
       </div>`;
-    const attrs = o.u != null ? ` data-u="${o.u}"` : '';
-    const badge = o.badge ? `<span class="badge-play">${esc(o.badge)}</span>` : '';
+    const attrs = (o.u != null ? ` data-u="${o.u}"` : '') + ` data-cid="${d.id}"`;
+    const badge = o.badge && o.isNew ? `<span class="badges"><span class="badge-play">${esc(o.badge)}</span><span class="badge-new">новая</span></span>`
+      : (o.badge ? `<span class="badge-play">${esc(o.badge)}</span>` : '') + (o.isNew ? '<span class="badge-new">новая</span>' : '');
     const title = o.title ? ` title="${esc(o.title)}"` : '';
     if (o.flip) {
       return `<div class="${cls.join(' ')}"${attrs}${title}><div class="card-flipper down">${face}<div class="back">${ZG.icon('biohazard')}</div></div>${badge}</div>`;

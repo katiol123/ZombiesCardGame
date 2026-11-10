@@ -2211,6 +2211,12 @@
       camp.progress = Math.max(camp.progress, m.idx + 1);
     }
     camp.vault = vault;
+    // «новые» карты: получены в этой миссии и раньше ни разу не бывали в руке или колоде героя в этой кампании
+    const seen = new Set(camp.seen || []);
+    if (!camp.seen) m.heroes.forEach((mh) => G.allPiles(mh).forEach((c) => { if (!c.l) seen.add(c.id); }));
+    camp.newIds = [...new Set(loot.concat(reward ? [reward] : []))].filter((id) => !seen.has(id));
+    m.heroes.forEach((mh) => G.allPiles(mh).forEach((c) => { if (!c.tmp) seen.add(c.id); }));
+    camp.seen = [...seen];
     if (lostHeroes.length) {
       camp.party = camp.party.filter((ph) => !lostHeroes.includes(ph.id));
       camp.lost = (camp.lost || []).concat(lostHeroes);

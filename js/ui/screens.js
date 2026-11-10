@@ -208,7 +208,7 @@
     const n = Math.min(6, S.campaign.party.length + 2);
     const boss = ZG.card(m.boss);
     const hen = ZG.card(m.henchman);
-    const s = show(`<div class="screen briefing"><div class="brief-box panel">
+    const s = show(`<div class="screen briefing" data-peek><div class="brief-box panel">
       <div class="brief-kicker">${m.act === 2 ? 'Акт II · ' : ''}Миссия ${m.num} из ${ZG.MISSIONS.length} · ${esc(m.place)}</div>
       <h1>${esc(m.name)}</h1>
       <div class="typewriter" id="tw"></div>
@@ -258,7 +258,7 @@
     const m = ZG.MISSIONS[r.idx];
     ZG.FX.setNight(false); ZG.Audio.ambient && ZG.Audio.ambient(null);
     const finalWin = r.win && r.idx === ZG.MISSIONS.length - 1;
-    const s = show(`<div class="screen result-screen"><div class="result-box panel ${r.win ? 'win' : 'lose'}">
+    const s = show(`<div class="screen result-screen" data-peek><div class="result-box panel ${r.win ? 'win' : 'lose'}">
       <div class="brief-kicker">Миссия ${m.num} · ${esc(m.name)}</div>
       <h1>${r.win ? T('win_title') : T('lose_title')}</h1>
       <p class="flavor" style="font-size:17px">${r.win ? esc(m.outro) : r.reason === 'time' ? T('lose_time') : T('lose_dead')}</p>
@@ -327,18 +327,19 @@
       const mine = ph.deck.map((id, i) => ({ id, i })).filter((x) => ZG.card(x.id).type === t);
       const avail = reserve.filter((id) => ZG.card(id).type === t);
       const uniq = [...new Set(avail)].sort((a, b) => g.cardValue(b) - g.cardValue(a));
+      const isNew = (id) => (camp.newIds || []).includes(id);
       const cnt = mine.length;
       const ok = cnt === comp[t];
       const empties = Array.from({ length: Math.max(0, comp[t] - cnt) }, () => `<div class="empty-slot">Пустой слот<br>${esc(T('slot_' + t))}</div>`).join('');
       return `<div class="type-group"><h4>${esc(T('type_' + t))} <span class="cnt ${ok ? 'ok' : 'bad'}">${cnt}/${comp[t]}</span></h4>
-        <div class="card-row">${mine.map((x) => UI.cardHTML(x.id, { size: 'mini', title: 'Убрать в склад', badge: g.cardWarn(ph.id, x.id) }).replace('class="card', `data-rm="${x.i}" class="card`)).join('')}${empties}</div>
-        ${uniq.length ? `<button class="vault-toggle ${UI.campOpen.has(t) ? 'open' : ''}" data-vt="${t}">${ZG.icon('backpack')} ${T('camp_vault')}: ${uniq.length} ${ZG.plural(uniq.length, 'вид', 'вида', 'видов')} <span class="vt-arrow">${UI.campOpen.has(t) ? '▴ свернуть' : '▾ показать'}</span></button><div class="card-row vault-row" ${UI.campOpen.has(t) ? '' : 'hidden'}>${uniq.map((id) => UI.cardHTML(id, { size: 'mini', cls: 'out', badge: '×' + ZG.count(avail, (x) => x === id) + (g.cardWarn(ph.id, id) ? ' · ' + g.cardWarn(ph.id, id) : ''), title: g.cardWarn(ph.id, id) ? 'Герою не подходит: ' + g.cardWarn(ph.id, id) : 'Взять в колоду' }).replace('class="card', `data-add="${id}" class="card`)).join('')}</div>` : ''}
+        <div class="card-row">${mine.map((x) => UI.cardHTML(x.id, { size: 'mini', title: 'Убрать в склад', badge: g.cardWarn(ph.id, x.id), isNew: isNew(x.id) }).replace('class="card', `data-rm="${x.i}" class="card`)).join('')}${empties}</div>
+        ${uniq.length ? `<button class="vault-toggle ${UI.campOpen.has(t) ? 'open' : ''}" data-vt="${t}">${ZG.icon('backpack')} ${T('camp_vault')}: ${uniq.length} ${ZG.plural(uniq.length, 'вид', 'вида', 'видов')} <span class="vt-arrow">${UI.campOpen.has(t) ? '▴ свернуть' : '▾ показать'}</span></button><div class="card-row vault-row" ${UI.campOpen.has(t) ? '' : 'hidden'}><div class="vault-up" title="Карта со склада уходит в ряд колоды выше"><b>▲</b><span>в колоду</span></div>${uniq.map((id) => UI.cardHTML(id, { size: 'mini', cls: 'out', isNew: isNew(id), badge: '×' + ZG.count(avail, (x) => x === id) + (g.cardWarn(ph.id, id) ? ' · ' + g.cardWarn(ph.id, id) : ''), title: g.cardWarn(ph.id, id) ? 'Герою не подходит: ' + g.cardWarn(ph.id, id) : 'Взять в колоду' }).replace('class="card', `data-add="${id}" class="card`)).join('')}</div>` : ''}
         ${uniq.length
           ? `<div class="sec-label muted" style="margin-top:6px">${T('camp_supply')}: только когда на складе не осталось карт этого типа</div>`
           : `<div class="sec-label" style="margin-top:6px">${T('camp_supply')}: ${G().BASICS[t].map((id) => `<a href="#" data-basic="${id}" style="color:var(--amber)">${esc(ZG.card(id).name)}</a>`).join(', ')}</div>`}
       </div>`;
     }).join('');
-    const s = show(`<div class="screen"><div class="page">
+    const s = show(`<div class="screen" data-peek><div class="page">
       <div class="page-head"><button class="btn icon ghost" data-back>${ZG.icon('x')}</button><h1>${T('camp_title')}</h1>
         <button class="btn" data-auto>${T('camp_auto')}</button><button class="btn primary" data-done>${T('camp_done')}</button></div>
       <p class="flavor" style="margin-top:-8px">Костёр в бочке, заколоченные окна, чей-то храп. Здесь можно перебрать снаряжение и залатать раны.</p>

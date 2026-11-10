@@ -1040,7 +1040,9 @@
   document.addEventListener('click', (e) => { const c = e.target.closest && e.target.closest('.power-chip'); if (c) { e.stopPropagation(); if (powTip && powTip._chip === c && Date.now() - powTip._t > 400) hidePow(); else if (!powTip || powTip._chip !== c) showPow(c); } else hidePow(); }, true);
   /* Чёткий просмотр карты в окнах проверки и урона: вместо масштабирования (оно размывает уменьшенные карты)
      рядом показывается крупная копия карты в полном размере. */
-  const PEEK_SEL = '.enc-panel .hand .card, .enc-panel .mini-hand .card, .dmg-modal .hand .card';
+  /* Единый код для всей игры: окна проверки/урона, лагерь, брифинг, итоги миссии, галерея.
+     Любой контейнер с атрибутом data-peek включает увеличение своих карт при наведении. */
+  const PEEK_SEL = '.enc-panel .hand .card, .enc-panel .mini-hand .card, .dmg-modal .hand .card, [data-peek] .card:not(.big)';
   let peekEl = null, peekFor = null;
   const hidePeek = () => { if (peekEl) peekEl.remove(); peekEl = null; peekFor = null; };
   const findInst = (u) => {
@@ -1055,10 +1057,19 @@
     if (!el) { if (peekEl && !(e.target.closest && e.target.closest('.card-peek'))) hidePeek(); return; }
     if (peekFor === el) return;
     hidePeek();
-    const inst = findInst(+el.dataset.u);
-    if (!inst) return;
+    // экземпляр карты из миссии (с её состоянием), иначе — карта по id, иначе — копия самого элемента (локации)
+    const inst = el.dataset.u != null ? findInst(+el.dataset.u) : null;
+    let big = '';
+    if (inst) big = UI.cardHTML(inst, { size: 'big' });
+    else if (el.dataset.u == null && el.dataset.cid && ZG.card(el.dataset.cid)) big = UI.cardHTML(el.dataset.cid, { size: 'big' });
+    else if (el.dataset.u == null && el.closest('[data-peek]')) {
+      const cl = el.cloneNode(true);
+      cl.classList.remove('mini', 'mid', 'small', 'out', 'selected'); cl.classList.add('big'); cl.removeAttribute('style');
+      big = cl.outerHTML;
+    }
+    if (!big) return;
     peekFor = el;
-    peekEl = ZG.html(`<div class="card-peek">${UI.cardHTML(inst, { size: 'big' })}</div>`);
+    peekEl = ZG.html(`<div class="card-peek">${big}</div>`);
     document.body.appendChild(peekEl);
     const r = el.getBoundingClientRect();
     const W = 260, H = 372, pad = 10;
