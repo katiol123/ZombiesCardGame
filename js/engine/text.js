@@ -71,7 +71,7 @@
       if (p.rechargeOnSuccess) s += (Array.isArray(p.kind) && p.kind.includes('combat')) ? ` Если враг побеждён (бой выигран) — перезарядите вместо ${p.mode === 'bury' ? 'захоронения' : 'сброса'}.` : ` Если эта проверка пройдена — перезарядите вместо ${p.mode === 'bury' ? 'захоронения' : 'сброса'}.`;
       if (p.burnOnFail) s += (Array.isArray(p.kind) && p.kind.includes('combat')) ? ' Если бой проигран (враг не побеждён) — сожгите.' : ' Если эта проверка провалена — сожгите.';
       if (p.rechargeCheck) s += ` После боя — отдельная проверка перезарядки ${skillsList(p.rechargeCheck.skills)} ${p.rechargeCheck.dc} (независимо от исхода боя): успех — перезарядите вместо сброса.`;
-      if (p.oneToFive) s += ` С навыком «${ZG.skillName(p.oneToFive)}» единица на этом кубике считается за 5.`;
+      if (p.oneToFive) s += ` С навыком «${ZG.skillName(p.oneToFive)}» единица на кубике оружия в бою считается за 5.`;
       if (p.help) s += ' Можно сыграть в проверку соседа по локации.';
       return s;
     }
