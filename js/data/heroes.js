@@ -128,7 +128,7 @@
       hand: 4,
       deck: { weapon: 4, item: 2, consumable: 4, ally: 1, resolve: 2, technique: 2 },
       prof: ['firearms'],
-      start: ['pistol', 'knife', 'bat', 'hatchet', 'jacket', 'flashlight', 'ammo', 'bandage', 'molotov', 'energy', 'trucker', 'hope', 'medals', 'doubletap', 'headshot'],
+      start: ['pistol', 'knife', 'bat', 'hatchet', 'stopsign', 'flashlight', 'ammo', 'bandage', 'molotov', 'whiskey', 'trucker', 'hope', 'medals', 'doubletap', 'headshot'],
       powers: [
         { id: 'grudge', name: 'Старые счёты', text: 'Ваши боевые проверки против людей получают +1d6.' },
         { id: 'looter', name: 'Мародёр', text: 'Раз в ход, победив любого врага, бросьте d6: на 5–6 возьмите случайный Расходник.' },
