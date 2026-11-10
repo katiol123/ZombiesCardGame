@@ -340,7 +340,10 @@
 
   /** Всплывающее меню режимов розыгрыша возле карты */
   UI.modePop = async function (anchor, opts) {
+    // подсказка «Как играть карты» указывает на нажатую карту
+    anchor.setAttribute('data-tip-anchor', '');
     await UI.tip('modes');
+    anchor.removeAttribute('data-tip-anchor');
     return new Promise((resolve) => {
       document.querySelectorAll('.mode-pop').forEach((x) => x.remove());
       const el = ZG.html(`<div class="mode-pop panel">${opts.map((o, i) => `<button class="choice ${o.disabled ? 'off' : ''}" data-i="${i}" ${o.disabled ? 'aria-disabled="true"' : ''}><b>${esc(o.label)}</b>${o.sub ? `<span>${esc(o.sub)}</span>` : ''}${o.reason ? `<em>${esc(o.reason)}</em>` : ''}</button>`).join('')}</div>`);

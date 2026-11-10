@@ -325,25 +325,28 @@
     acquire: ['.enc-panel .dc-box'],
     event: ['.enc-panel .dc-box'],
     damage: ['.dmg-modal .hand', '.enc-panel .dmg-head'],
-    infection: ['.hero-panel .pile.inf'],
+    infection: ['.hero-panel .pile.inf|left'],
     henchman: ['.enc-card .card'],
     boss: ['.enc-card .card'],
     close: ['#tray [data-act="close"]'],
     noise: ['@noise'],
-    modes: ['.mode-pop'],
+    modes: ['[data-tip-anchor]'],
     help: ['.enc-panel .help-row'],
-    endturn: ['.hero-panel .piles'],
+    endturn: ['.hero-panel .piles|left'],
     nonphys: ['.dmg-head'],
-    conds: ['.hero-panel .cond-row'],
+    conds: ['.hero-panel .cond-row|left'],
     camp: ['.feat-box', '.vault-toggle'],
     block: ['.hand .card.playable'],
     technique: ['.ccheck.rc'],
     noskill: ['.enc-panel .skill-chips'],
     night: ['#topbar .clockw.night', '#topbar .clockw'],
   };
+  /** Что ещё подсказка не должна закрывать (кроме подсвеченных элементов) */
+  UI.TIP_AVOID = { block: ['.dmg-modal .hand', '.enc-panel .hand'], damage: ['.dmg-modal .hand'], help: ['.enc-panel .help-row'], modes: ['.mode-pop'] };
   const tipTargets = (key) => {
     const out = [];
-    for (const sel of UI.TIP_TARGETS[key] || []) {
+    for (const raw of UI.TIP_TARGETS[key] || []) {
+      const [sel, dir] = raw.split('|');
       let el = null;
       if (sel === '@noise') {
         // шкала шума локации, где стоит ходящий герой (иначе — самая шумная)
@@ -351,18 +354,36 @@
         const li = m && m.heroes[m.active] ? m.heroes[m.active].loc : -1;
         el = document.querySelector(`.noise-meter[data-noise="${li}"]`) || [...document.querySelectorAll('.noise-meter')].sort((a, b) => +b.querySelector('b').textContent - +a.querySelector('b').textContent)[0];
       } else el = [...document.querySelectorAll(sel)].find((e) => e.offsetParent !== null && e.getBoundingClientRect().width > 0);
-      if (el && !out.includes(el)) out.push(el);
+      if (el && !out.includes(el)) { el._tipDir = dir || ''; out.push(el); }
       if (out.length >= 2) break;
     }
     return out;
   };
   /** Красная прыгающая стрелка и пульсирующая рамка у элемента, пока открыта подсказка */
-  const pointAt = (key) => {
+  const hit = (a, b) => a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top;
+  /** Подсказка не должна закрывать то, на что указывает: перенести её в свободный угол */
+  const dodge = (tipEl, targets, key) => {
+    const avoid = (UI.TIP_AVOID[key] || []).map((sel) => document.querySelector(sel)).filter((e) => e && e.offsetParent !== null);
+    const rs = [...targets, ...avoid].map((t) => t.getBoundingClientRect()).filter((r) => r.width);
+    if (!rs.length || !rs.some((r) => hit(tipEl.getBoundingClientRect(), r))) return;
+    const mob = innerWidth <= 900;
+    const spots = mob
+      ? [{ top: '118px', bottom: 'auto' }, { top: 'auto', bottom: '16px' }]
+      : [{ left: '16px', top: '80px', right: 'auto', bottom: 'auto' }, { left: 'auto', right: '16px', top: '80px', bottom: 'auto' }, { left: 'auto', right: '16px', top: 'auto', bottom: '16px' }, { left: '16px', right: 'auto', top: 'auto', bottom: '16px' }];
+    for (const sp of spots) {
+      Object.assign(tipEl.style, sp);
+      if (!rs.some((r) => hit(tipEl.getBoundingClientRect(), r))) return;
+    }
+  };
+  const pointAt = (key, tipEl) => {
     const marks = [];
-    let alive = true, tries = 0, targets = [];
+    let alive = true, frame = 0;
     const place = () => {
       if (!alive) return;
-      if (!targets.length && tries++ < 40) targets = tipTargets(key); // элемент мог ещё не появиться
+      // элементы ищутся заново каждый кадр: поле и окна постоянно перерисовываются
+      const targets = tipTargets(key);
+      if (tipEl && frame++ % 15 === 0) dodge(tipEl, targets, key);
+      while (marks.length > targets.length) { const m = marks.pop(); m.arrow.remove(); m.ring.remove(); }
       while (marks.length < targets.length) {
         const arrow = ZG.html('<div class="tip-arrow"><svg viewBox="0 0 40 52"><path d="M20 50 L4 28 H14 V2 H26 V28 H36 Z"/></svg></div>');
         const ring = ZG.html('<div class="tip-ring"></div>');
@@ -375,11 +396,22 @@
         const hidden = !t.isConnected || !r.width;
         arrow.style.display = ring.style.display = hidden ? 'none' : '';
         if (hidden) return;
-        Object.assign(ring.style, { left: r.left - 6 + 'px', top: r.top - 6 + 'px', width: r.width + 12 + 'px', height: r.height + 12 + 'px' });
-        const below = r.top < 80; // у верхнего края — стрелка снизу, смотрит вверх
+        // рамка — вокруг элемента, но не за краем экрана (иначе свечение обрезается)
+        const L0 = Math.max(4, r.left - 6), T0 = Math.max(4, r.top - 6);
+        const R0 = Math.min(innerWidth - 4, r.right + 6), B0 = Math.min(innerHeight - 4, r.bottom + 6);
+        Object.assign(ring.style, { left: L0 + 'px', top: T0 + 'px', width: R0 - L0 + 'px', height: B0 - T0 + 'px' });
+        // стрелка: сверху (по умолчанию), снизу у верхнего края, или слева для панели героя у края экрана
+        const side = t._tipDir === 'left' && r.left > 70;
+        const below = !side && r.top < 80;
         arrow.classList.toggle('up', below);
-        arrow.style.left = Math.round(Math.max(4, Math.min(innerWidth - 44, r.left + r.width / 2 - 20))) + 'px';
-        arrow.style.top = Math.round(below ? r.bottom + 10 : r.top - 62) + 'px';
+        arrow.classList.toggle('right', side);
+        if (side) {
+          arrow.style.left = Math.round(r.left - 64) + 'px';
+          arrow.style.top = Math.round(Math.max(4, Math.min(innerHeight - 56, r.top + r.height / 2 - 26))) + 'px';
+        } else {
+          arrow.style.left = Math.round(Math.max(4, Math.min(innerWidth - 44, r.left + r.width / 2 - 20))) + 'px';
+          arrow.style.top = Math.round(below ? r.bottom + 10 : r.top - 62) + 'px';
+        }
       });
       requestAnimationFrame(place);
     };
@@ -387,9 +419,26 @@
     return () => { alive = false; marks.forEach((m) => { m.arrow.remove(); m.ring.remove(); }); };
   };
 
+  // подсказки, которые указывают на элементы поля: если поверх открыто окно, показать их, когда оно закроется
+  const BOARD_TIPS = new Set(['infection', 'conds', 'noise', 'night', 'endturn', 'start', 'close']);
+  const deferred = new Set();
   UI.tip = function (key) {
     const S = ZG.Save.current;
     if (!S || !ZG.Settings.data.tips || S.campaign.tips[key] || !UI.TIPS[key]) return Promise.resolve();
+    if (BOARD_TIPS.has(key) && document.getElementById('board') && document.querySelector('#overlay-root > .overlay')) {
+      // игра не ждёт эту подсказку (иначе окно не закроется) — она появится, когда поле освободится
+      if (!deferred.has(key)) {
+        deferred.add(key);
+        const wait = () => {
+          if (!ZG.Save.current || !document.getElementById('board')) { deferred.delete(key); return; }
+          if (document.querySelector('#overlay-root > .overlay')) return setTimeout(wait, 250);
+          deferred.delete(key);
+          setTimeout(() => { if (!document.querySelector('#overlay-root > .overlay')) UI.tip(key); else wait(); }, 350);
+        };
+        setTimeout(wait, 250);
+      }
+      return Promise.resolve();
+    }
     S.campaign.tips[key] = true;
     const h = UI.TIPS[key][0];
     const p = UI.TIPS[key][1].replace('{n}', ZG.Game.M && ZG.Game.M() ? ZG.Game.nightBonus() : 2);
@@ -398,7 +447,7 @@
     const shown = prev.then(() => new Promise((resolve) => {
       const el = ZG.html(`<div class="tip panel"><h4>${ZG.icon('book')} ${esc(h)}</h4><p>${p}</p><div class="row"><label><input type="checkbox" data-off> Больше не показывать подсказки</label><button class="btn small primary">${T('ok')}</button></div></div>`);
       document.body.appendChild(el);
-      const unpoint = pointAt(key);
+      const unpoint = pointAt(key, el);
       el.querySelector('.btn').addEventListener('click', () => {
         if (el.querySelector('[data-off]').checked) { ZG.Settings.data.tips = false; ZG.Settings.save(); }
         unpoint();
