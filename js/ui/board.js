@@ -237,7 +237,13 @@
         ${UI.statsHTML(ph)}
         <div class="power-list">${hd.powers.map((p, i) => `<button class="power-chip" data-power="${i}" style="--hc:${hd.color}">${ZG.icon('star')} ${esc(p.name)}</button>`).join('')}</div>
         ${mh.id === 'kremen' ? (() => { const n = mh.discard.length; const d = ZG.adrenalineDie(n); return `<div><span class="adr-chip ${d ? '' : 'off'}" title="Адреналин (только в бою): 4–6 карт в сбросе — +1d4, 7–9 — +1d6, 10+ — +1d8">${ZG.icon('heartbeat')} ${d ? '+1' + d : '—'} · сброс ${n}${d === 'd8' ? '' : '/' + (n < 4 ? 4 : n < 7 ? 7 : 10)}</span></div>`; })() : ''}
-        ${Object.keys(mh.conds || {}).length ? `<div class="cond-row">${Object.keys(mh.conds).map((k) => `<span class="cond" title="${esc(ZG.CONDS[k].text)}">${ZG.icon(ZG.CONDS[k].icon)} ${esc(ZG.CONDS[k].name)}</span>`).join('')}</div>` : ''}
+        ${(() => {
+          // 3 и больше состояний — компактные значки (на ПК), название и описание — по наведению или нажатию
+          const ks = Object.keys(mh.conds || {});
+          if (!ks.length) return '';
+          const compact = ks.length >= 3;
+          return `<div class="cond-row ${compact ? 'compact' : ''}">${ks.map((k) => `<span class="cond ${compact ? 'icon-only' : ''}" data-cond="${k}" title="${esc(ZG.CONDS[k].name)}: ${esc(ZG.CONDS[k].text)}">${ZG.icon(ZG.CONDS[k].icon)}<span class="cn"> ${esc(ZG.CONDS[k].name)}</span></span>`).join('')}</div>`;
+        })()}
         </div></div>
         <div class="piles">
           <div class="pile ${mh.deck.length <= 2 ? 'warn' : ''}" title="Колода — это здоровье"><b>${mh.deck.length}</b>${T('deck')}</div>
@@ -1026,6 +1032,13 @@
     await UI.banner(reason === 'turned' ? 'Обращение' : 'Гибель', reason === 'turned' ? `${name} больше не человек. Теперь в этой локации бродит ещё один мертвец.` : `${name} выбился из сил. Колода иссякла.`, 'bad', true);
   };
 
+  // нажатие на значок состояния — его название и что оно делает
+  document.addEventListener('click', (e) => {
+    const c = e.target.closest && e.target.closest('.hero-panel .cond[data-cond]');
+    if (!c) return;
+    const d = ZG.CONDS[c.dataset.cond];
+    if (d) UI.toast(`${ZG.icon(d.icon)} <b>${esc(d.name)}</b>: ${esc(d.text)}`, 'bad');
+  });
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' || e.key === ' ') {
       if (UI.keyRoll && document.activeElement && document.activeElement.tagName !== 'BUTTON') { e.preventDefault(); UI.keyRoll(); }

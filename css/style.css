@@ -1349,3 +1349,10 @@ body:has(#overlay-root > .overlay) #grain, body:has(.enc-ov) #grain { display: n
 
 .adr-chip { display: inline-flex; align-items: center; gap: 5px; padding: 2px 8px; border-radius: 10px; font-size: 11.5px; border: 1px solid color-mix(in srgb, var(--hc) 60%, transparent); background: color-mix(in srgb, var(--hc) 18%, transparent); }
 .adr-chip.off { opacity: .55; }
+
+/* состояния героя: при 3+ — компактные значки (название по наведению/нажатию) */
+.hero-panel .cond[data-cond] { cursor: help; }
+.hero-panel .cond-row.compact { gap: 4px; }
+.hero-panel .cond.icon-only { padding: 3px 5px; }
+.hero-panel .cond.icon-only .cn { display: none; }
+@media (max-width: 900px) { .hero-panel .cond.icon-only .cn { display: inline; } .hero-panel .cond.icon-only { padding: 2px 7px; } }
