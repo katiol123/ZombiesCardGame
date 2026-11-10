@@ -624,7 +624,7 @@
     { id: 'oath', type: 'resolve', name: 'Клятва', tier: 3, icon: 'flame', traits: [],
       acquire: { skills: ['will'], dc: 7 },
       plays: [
-        { on: 'check', mode: 'discard', kind: 'any', skillDie: 2, help: true, helpOnly: true, rechargeOnSuccess: true, burnOnFail: true, text: 'Сбросьте для любой проверки союзника: +2 кубика навыка. При успехе перезарядите вместо сброса. Можно сыграть только в проверку соседа по локации. Сожгите карту в случае провала проверки.' },
+        { on: 'check', mode: 'discard', kind: 'any', skillDie: 2, help: true, helpOnly: true, rechargeOnSuccess: true, burnOnFail: true, text: 'Сбросьте для проверки соседа по локации (только для него): +2 кубика навыка. Если его проверка пройдена — перезарядите вместо сброса, если провалена — сожгите.' },
         { on: 'action', mode: 'discard', explore: true },
       ],
       flavor: '«Я вытащу всех. Или останусь с ними».' },
