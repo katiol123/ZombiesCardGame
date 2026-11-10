@@ -209,6 +209,7 @@ function playValue(d, p) {
     if (p.on === 'evade') { gain = P.EVADE; notes.push('автоматически уклониться'); }
     if (p.weapon) notes.push('оружие');
     if (p.trait || p.skills || p.enemyLiving || p.onlyType) { gain *= P.RESTRICTED; notes.push('с ограничением'); }
+    if (p.night) { uses *= 0.5; notes.push('только ночью'); }
     if (p.cardTypes) { uses *= 0.2; notes.push('только для находок ' + p.cardTypes.join('/')); }
     if (p.perResolve) { gain += p.perResolve * 0.7; notes.push('+ за Решимость'); }
     if (p.ignorePenalties) { gain += 1; notes.push('игнор штрафов врага ≈ +1'); }
