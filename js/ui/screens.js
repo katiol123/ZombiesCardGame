@@ -51,12 +51,14 @@
   UI.resume = function (slot) {
     const S = ZG.Save.load(slot);
     if (!S) return UI.showTitle();
-    go(() => {
+    const m = S.mission;
+    const urls = m && ZG.Preload ? ZG.Preload.missionUrls(m.locations.map((l) => l.id), m.heroes.map((h) => h.id), [].concat(...m.heroes.map((h) => ['hand', 'deck', 'discard'].flatMap((k) => (h[k] || []).map((c) => c.id))))) : [];
+    (ZG.Preload ? ZG.Preload.need(urls, 2500) : Promise.resolve()).then(() => go(() => {
       if (S.mission) { G().run(); return; } // не ждём всю миссию — иначе затемнение висит
       if (S.screen === 'result' && S.lastResult) return UI.showResult();
       if (S.screen === 'camp') return UI.showCamp();
       return UI.showMap();
-    });
+    }));
   };
 
   /* ============================== Слоты ============================== */
@@ -261,7 +263,11 @@
     s.querySelector('[data-back]').addEventListener('click', () => go(UI.showMap, 'out'));
     s.querySelector('[data-go]').addEventListener('click', () => {
       skip = true;
-      go(() => { G().newMission(idx); G().run(); });
+      // перед стартом дожидаемся арта локаций, героев и их карт, чтобы поле не «проявлялось» по кусочкам
+      const camp = G().S().campaign;
+      const def = ZG.MISSIONS[idx];
+      const urls = ZG.Preload ? ZG.Preload.missionUrls(def.locations.slice(0, camp.party.length + 2), camp.party.map((ph) => ph.id), [].concat(...camp.party.map((ph) => ph.deck || []))) : [];
+      (ZG.Preload ? ZG.Preload.need(urls, 2500) : Promise.resolve()).then(() => go(() => { G().newMission(idx); G().run(); }));
     });
   };
 
