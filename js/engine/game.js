@@ -931,7 +931,6 @@
     if (def.living && lr.livingDc) mods.push({ label: 'Локация: люди', v: lr.livingDc });
     const lm = (G.ldef(loc).mods || {}).enemyDc;
     if (lm) mods.push({ label: 'Локация', v: lm });
-    if (m.turnMods.fog) mods.push({ label: 'Туман', v: 1 });
     if (def.loneDc) {
       // «Охота на одиночек»: герой один в локации
       const li = m.locations.indexOf(loc);
@@ -1508,6 +1507,8 @@
     });
     const plr = G.lrule(G.loc(mh));
     if (plr.firearmNoise && wp && ZG.card(wp.id).traits.includes('Огнестрел')) noise += plr.firearmNoise;
+    // «Туман»: цель не разглядеть — стрельба с огнестрела хуже
+    if (G.M().turnMods && G.M().turnMods.fog && wp && ZG.card(wp.id).traits.includes('Огнестрел')) { bonus -= 2; parts.push({ label: 'Туман: огнестрел', v: -2 }); }
     if (plr.stealthBonus && (ck.kind === 'evade' || skill === 'stealth')) { bonus += plr.stealthBonus; parts.push({ label: 'Локация: укрытие', v: plr.stealthBonus }); }
     if (mh.id === 'grom') {
       if (ck.kind === 'combat' && wp) dice.push({ d: 'd4', src: 'Боевой опыт' });
