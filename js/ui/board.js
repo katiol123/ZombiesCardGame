@@ -762,7 +762,7 @@
     const AUTO_MS = Math.round(2200 * Math.max(ZG.speed, 0.3));
     bottom.innerHTML = `<div class="result-banner ${ok ? 'ok' : 'bad'}">${ok ? T('success') : T('fail')}</div>
       <div class="total-line">${res.rolls.map((r) => r.v).join(' + ')}${res.pool.bonus ? (res.pool.bonus > 0 ? ' + ' : ' − ') + Math.abs(res.pool.bonus) : ''} = <b>${res.total}</b> против ${res.dc}${ok ? '' : ` · разница ${res.dc - res.total}`}</div>
-      ${auto ? `<div class="auto-cont"><i style="animation-duration:${AUTO_MS}ms"></i></div>` : `<div class="enc-actions"><button class="btn ${ok ? 'good' : 'primary'}" data-cont>${T('continue')}</button></div>`}`;
+      ${auto ? '' : `<div class="enc-actions"><button class="btn ${ok ? 'good' : 'primary'}" data-cont>${T('continue')}</button></div>`}`;
     ZG.Audio.synth(ok ? 'success' : 'fail');
     if (window.innerWidth <= 900) { const rb = bottom.querySelector('.result-banner'); if (rb) rb.scrollIntoView({ block: 'center', behavior: 'smooth' }); }
     if (ok) { ZG.FX.flash('green'); ZG.FX.burstAt(panel.querySelector('.result-banner'), 'gold', 40); }

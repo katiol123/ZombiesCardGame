@@ -225,24 +225,27 @@
   function simulate(dice, starts) {
     const s = scene();
     const W = s.W, H = s.H;
-    const world = new C.World({ gravity: new C.Vec3(0, -38, 0) });
+    const world = new C.World({ gravity: new C.Vec3(0, -32, 0) });
     world.allowSleep = true;
-    const mat = new C.Material('m');
-    world.addContactMaterial(new C.ContactMaterial(mat, mat, { friction: 0.32, restitution: 0.26 }));
-    const ground = new C.Body({ mass: 0, material: mat, shape: new C.Plane() });
+    const mat = new C.Material('dice'), floorM = new C.Material('floor'), wallM = new C.Material('wall');
+    world.addContactMaterial(new C.ContactMaterial(mat, floorM, { friction: 0.2, restitution: 0.42 }));
+    world.addContactMaterial(new C.ContactMaterial(mat, wallM, { friction: 0.02, restitution: 0.88 })); // борта — упругие, кубики от них отскакивают
+    world.addContactMaterial(new C.ContactMaterial(mat, mat, { friction: 0.2, restitution: 0.5 }));
+    const ground = new C.Body({ mass: 0, material: floorM, shape: new C.Plane() });
     ground.quaternion.setFromEuler(-Math.PI / 2, 0, 0); world.addBody(ground);
-    const wall = (x, z, ry) => { const b = new C.Body({ mass: 0, material: mat, shape: new C.Plane() }); b.position.set(x, 0, z); b.quaternion.setFromEuler(0, ry, 0); world.addBody(b); };
+    const wall = (x, z, ry) => { const b = new C.Body({ mass: 0, material: wallM, shape: new C.Plane() }); b.position.set(x, 0, z); b.quaternion.setFromEuler(0, ry, 0); world.addBody(b); };
     wall(-W / 2, 0, Math.PI / 2); wall(W / 2, 0, -Math.PI / 2); wall(0, -H / 2, 0); wall(0, H / 2, Math.PI);
+    // бросок с силой: низко над столом, в сторону дальнего борта и вбок — кубики бьются о борта и друг о друга
     const bodies = dice.map((d, i) => {
-      const b = new C.Body({ mass: 1, material: mat, shape: d.G.shape, sleepSpeedLimit: 0.25, sleepTimeLimit: 0.12, angularDamping: 0.22, linearDamping: 0.12 });
+      const b = new C.Body({ mass: 1, material: mat, shape: d.G.shape, sleepSpeedLimit: 0.3, sleepTimeLimit: 0.12, angularDamping: 0.08, linearDamping: 0.02 });
       const st = starts[i];
-      b.position.set(st.p[0], st.p[1] + 0.05, st.p[2]);
+      b.position.set(st.p[0], st.p[1] + 0.25, st.p[2]);
       b.quaternion.set(st.q[0], st.q[1], st.q[2], st.q[3]);
-      const tx = (Math.random() - 0.5) * (W - 2.5), tz = (Math.random() - 0.5) * (H - 1.4);
-      const dx = tx - st.p[0], dz = tz - st.p[2], len = Math.hypot(dx, dz) || 1;
-      const sp = 6 + Math.random() * 4;
-      b.velocity.set((dx / len) * sp, 6.5 + Math.random() * 3, (dz / len) * sp);
-      b.angularVelocity.set((Math.random() - 0.5) * 34, (Math.random() - 0.5) * 34, (Math.random() - 0.5) * 34);
+      // у каждого кубика своё направление: вперёд и вбок, к дальнему и боковым бортам
+      const ang = (Math.random() < 0.5 ? -1 : 1) * (0.3 + Math.random() * 0.8);
+      const sp = 15 + Math.random() * 7;
+      b.velocity.set(Math.sin(ang) * sp, 3 + Math.random() * 2.5, -Math.cos(ang) * sp * 0.75);
+      b.angularVelocity.set((Math.random() - 0.5) * 50, (Math.random() - 0.5) * 50, (Math.random() - 0.5) * 50);
       world.addBody(b);
       return b;
     });
@@ -294,6 +297,7 @@
       if (j >= 0 && j !== landed) { [d.values[landed], d.values[j]] = [d.values[j], d.values[landed]]; d.paint(); }
     });
     const len = Math.max(...frames.map((f) => f.length));
+    D3.last = { frames: len, tries, start: frames.map((f) => f[0].slice(0, 3)), end: frames.map((f) => f[f.length - 1].slice(0, 3)) };
     const speed = Math.max(0.6, 1 / Math.max(ZG.speed || 1, 0.45));
     let last = performance.now(), t = 0;
     return new Promise((resolve) => {

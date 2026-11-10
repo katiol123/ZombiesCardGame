@@ -1368,3 +1368,13 @@ body:has(#overlay-root > .overlay) #grain, body:has(.enc-ov) #grain { display: n
 .mode-pop .choice.off b, .mode-pop .choice.off span { text-decoration: line-through; text-decoration-color: rgba(214,60,47,.85); text-decoration-thickness: 2px; }
 .mode-pop .choice.off:hover { background: inherit; transform: none; }
 .mode-pop .choice em { display: block; font-style: normal; font-size: 11.5px; color: #ff9c86; margin-top: 3px; }
+
+/* подсказка указывает на элемент интерфейса: красная прыгающая стрелка и пульсирующая рамка */
+.tip-arrow { position: fixed; z-index: 2400; width: 40px; height: 52px; pointer-events: none; filter: drop-shadow(0 0 6px rgba(214,60,47,.8)) drop-shadow(0 3px 4px rgba(0,0,0,.8)); animation: tipArrow .8s ease-in-out infinite; }
+.tip-arrow svg { width: 100%; height: 100%; fill: #e0392b; stroke: #ffd2c8; stroke-width: 1.5; }
+.tip-arrow.up svg { transform: rotate(180deg); }
+@keyframes tipArrow { 0%, 100% { translate: 0 0; } 50% { translate: 0 -9px; } }
+.tip-arrow.up { animation-name: tipArrowUp; }
+@keyframes tipArrowUp { 0%, 100% { translate: 0 0; } 50% { translate: 0 9px; } }
+.tip-ring { position: fixed; z-index: 2399; pointer-events: none; border: 2px solid #e0392b; border-radius: 10px; box-shadow: 0 0 0 3px rgba(224,57,43,.25), 0 0 22px rgba(224,57,43,.55); animation: tipRing 1.1s ease-in-out infinite; }
+@keyframes tipRing { 0%, 100% { opacity: 1; } 50% { opacity: .45; } }

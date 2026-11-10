@@ -318,6 +318,75 @@
     night: ['Ночь', 'Ночью враги — и мертвецы, и люди — опаснее (+{n} к сложности боя), а находки искать труднее (+1 к сложности поиска). Фонари и молитвы ночью сильнее.'],
   };
 
+  /** На что указывает подсказка: селекторы элементов интерфейса (берутся видимые, не больше двух) */
+  UI.TIP_TARGETS = {
+    start: ['#tray [data-act="explore"]', '#topbar .clockw:not([title="Цель миссии"])'],
+    combat: ['.enc-panel .slots-row .slotbox', '.enc-panel .pool-sum'],
+    acquire: ['.enc-panel .dc-box'],
+    event: ['.enc-panel .dc-box'],
+    damage: ['.dmg-modal .hand', '.enc-panel .dmg-head'],
+    infection: ['.hero-panel .pile.inf'],
+    henchman: ['.enc-card .card'],
+    boss: ['.enc-card .card'],
+    close: ['#tray [data-act="close"]'],
+    noise: ['@noise'],
+    modes: ['.mode-pop'],
+    help: ['.enc-panel .help-row'],
+    endturn: ['.hero-panel .piles'],
+    nonphys: ['.dmg-head'],
+    conds: ['.hero-panel .cond-row'],
+    camp: ['.feat-box', '.vault-toggle'],
+    block: ['.hand .card.playable'],
+    technique: ['.ccheck.rc'],
+    noskill: ['.enc-panel .skill-chips'],
+    night: ['#topbar .clockw.night', '#topbar .clockw'],
+  };
+  const tipTargets = (key) => {
+    const out = [];
+    for (const sel of UI.TIP_TARGETS[key] || []) {
+      let el = null;
+      if (sel === '@noise') {
+        // шкала шума локации, где стоит ходящий герой (иначе — самая шумная)
+        const m = ZG.Game.M && ZG.Game.M();
+        const li = m && m.heroes[m.active] ? m.heroes[m.active].loc : -1;
+        el = document.querySelector(`.noise-meter[data-noise="${li}"]`) || [...document.querySelectorAll('.noise-meter')].sort((a, b) => +b.querySelector('b').textContent - +a.querySelector('b').textContent)[0];
+      } else el = [...document.querySelectorAll(sel)].find((e) => e.offsetParent !== null && e.getBoundingClientRect().width > 0);
+      if (el && !out.includes(el)) out.push(el);
+      if (out.length >= 2) break;
+    }
+    return out;
+  };
+  /** Красная прыгающая стрелка и пульсирующая рамка у элемента, пока открыта подсказка */
+  const pointAt = (key) => {
+    const marks = [];
+    let alive = true, tries = 0, targets = [];
+    const place = () => {
+      if (!alive) return;
+      if (!targets.length && tries++ < 40) targets = tipTargets(key); // элемент мог ещё не появиться
+      while (marks.length < targets.length) {
+        const arrow = ZG.html('<div class="tip-arrow"><svg viewBox="0 0 40 52"><path d="M20 50 L4 28 H14 V2 H26 V28 H36 Z"/></svg></div>');
+        const ring = ZG.html('<div class="tip-ring"></div>');
+        document.body.append(arrow, ring);
+        marks.push({ arrow, ring });
+      }
+      targets.forEach((t, i) => {
+        const r = t.getBoundingClientRect();
+        const { arrow, ring } = marks[i];
+        const hidden = !t.isConnected || !r.width;
+        arrow.style.display = ring.style.display = hidden ? 'none' : '';
+        if (hidden) return;
+        Object.assign(ring.style, { left: r.left - 6 + 'px', top: r.top - 6 + 'px', width: r.width + 12 + 'px', height: r.height + 12 + 'px' });
+        const below = r.top < 80; // у верхнего края — стрелка снизу, смотрит вверх
+        arrow.classList.toggle('up', below);
+        arrow.style.left = Math.round(Math.max(4, Math.min(innerWidth - 44, r.left + r.width / 2 - 20))) + 'px';
+        arrow.style.top = Math.round(below ? r.bottom + 10 : r.top - 62) + 'px';
+      });
+      requestAnimationFrame(place);
+    };
+    requestAnimationFrame(place);
+    return () => { alive = false; marks.forEach((m) => { m.arrow.remove(); m.ring.remove(); }); };
+  };
+
   UI.tip = function (key) {
     const S = ZG.Save.current;
     if (!S || !ZG.Settings.data.tips || S.campaign.tips[key] || !UI.TIPS[key]) return Promise.resolve();
@@ -329,8 +398,10 @@
     const shown = prev.then(() => new Promise((resolve) => {
       const el = ZG.html(`<div class="tip panel"><h4>${ZG.icon('book')} ${esc(h)}</h4><p>${p}</p><div class="row"><label><input type="checkbox" data-off> Больше не показывать подсказки</label><button class="btn small primary">${T('ok')}</button></div></div>`);
       document.body.appendChild(el);
+      const unpoint = pointAt(key);
       el.querySelector('.btn').addEventListener('click', () => {
         if (el.querySelector('[data-off]').checked) { ZG.Settings.data.tips = false; ZG.Settings.save(); }
+        unpoint();
         el.remove();
         resolve();
       });
