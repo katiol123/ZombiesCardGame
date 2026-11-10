@@ -359,6 +359,7 @@
   G.advance = () => {
     const m = G.M();
     m.active = (m.active + 1) % m.heroes.length;
+    if (m.active === 0) m.round = (m.round || 0) + 1; // раунд — каждый герой сходил по разу
   };
 
   G.tipsForTurn = async () => {
@@ -643,7 +644,10 @@
   G.startTurnConds = async function (mh) {
     const m = G.M();
     const cs = G.conds(mh);
-    if (cs.doom) {
+    // Обречённость: платят раз в раунд за весь отряд (сколько бы героев ни было обречено)
+    if (cs.doom && m.doomRound === (m.round || 0)) G.note('Обречённость: в этом раунде отряд уже заплатил.', '');
+    else if (cs.doom) {
+      m.doomRound = m.round || 0;
       const res = mh.hand.filter((c) => ZG.card(c.id).type === 'resolve');
       let paid = false;
       if (res.length) {
