@@ -1030,6 +1030,8 @@
       if (UI.keyRoll && document.activeElement && document.activeElement.tagName !== 'BUTTON') { e.preventDefault(); UI.keyRoll(); }
     }
     if (!UI.waiting || UI.encPanel()) return;
+    // поверх доски открыто окно (меню, правила, галерея) — горячие клавиши не действуют
+    if (UI.menuOpen || document.querySelector('#overlay-root > .overlay') || (e.target && /INPUT|TEXTAREA/.test(e.target.tagName))) return;
     if (e.key === 'e' || e.key === 'у') UI.onAct('explore');
   });
 })();

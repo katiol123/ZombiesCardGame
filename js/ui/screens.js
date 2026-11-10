@@ -33,11 +33,13 @@
         <button class="btn" data-a="slots">${ZG.icon('save')} ${T('menu_load')}</button>
         <button class="btn" data-a="rules">${ZG.icon('book')} ${T('menu_rules')}</button>
         <button class="btn" data-a="settings">${ZG.icon('gear')} ${T('menu_settings')}</button>
+        ${UI.devOn() ? `<button class="btn ghost" data-a="gallery">${ZG.icon('cards')} Галерея</button>` : ''}
       </div>
       <div class="version">v1.0 · соло и хот-сит, 1–4 героя</div>
     </div>`);
     s.querySelectorAll('[data-a]').forEach((b) => b.addEventListener('click', () => {
       const a = b.dataset.a;
+      if (a === 'gallery') return UI.showGallery();
       if (a === 'continue') UI.resume(last);
       if (a === 'new') go(() => UI.showSlots('new'));
       if (a === 'slots') go(() => UI.showSlots('load'));
@@ -535,17 +537,94 @@
   };
 
   UI.gameMenu = async function () {
-    const i = await UI.choose({
-      title: 'Меню',
-      text: T('save_note'),
-      options: [{ label: 'Вернуться в игру', primary: true }, { label: T('rules') }, { label: T('settings') }, { label: T('quit_mission'), sub: 'Прогресс сохранён на начало текущего хода' }],
-      escIndex: 0, // Esc = «Вернуться в игру»
-    });
+    const opts = [{ label: 'Вернуться в игру', primary: true }, { label: T('rules') }, { label: T('settings') }, { label: T('quit_mission'), sub: 'Прогресс сохранён на начало текущего хода' }];
+    if (UI.devOn()) opts.push({ label: 'Галерея', sub: 'Все карты, локации, миссии и состояния' });
+    UI.menuOpen = true;
+    const i = await UI.choose({ title: 'Меню', text: T('save_note'), options: opts, escIndex: 0 }); // Esc = «Вернуться в игру»
+    UI.menuOpen = false;
     if (i === 1) UI.showRules();
     if (i === 2) UI.showSettings();
     if (i === 3) {
       ZG.Save.current = null;
       location.reload();
     }
+    if (i === 4) UI.showGallery();
+  };
+
+  /* ============================== Галерея разработчика (код test1) ============================== */
+  UI.devOn = () => !!(ZG.Settings.data && ZG.Settings.data.dev);
+  {
+    // код набирается на клавиатуре в меню (главном или игровом); по физическим клавишам — работает в любой раскладке
+    const CODE = 'test1';
+    const KEYS = { KeyT: 't', KeyE: 'e', KeyS: 's', Digit1: '1', Numpad1: '1' };
+    let buf = '';
+    document.addEventListener('keydown', (e) => {
+      if (UI.devOn()) return;
+      if (e.target && /INPUT|TEXTAREA/.test(e.target.tagName)) return;
+      const inMenu = UI.menuOpen || document.querySelector('.title-screen');
+      if (!inMenu) { buf = ''; return; }
+      buf = (buf + (KEYS[e.code] || '#')).slice(-CODE.length);
+      if (buf !== CODE) return;
+      ZG.Settings.data.dev = true; ZG.Settings.save();
+      UI.toast(`${ZG.icon('cards')} Галерея открыта`, 'loot');
+      if (document.querySelector('.title-screen')) UI.showTitle();
+      else if (UI.menuOpen) {
+        const list = document.querySelector('#overlay-root .overlay:last-child .choice-list');
+        if (list) {
+          const btn = ZG.html('<button class="choice"><b>Галерея</b><span>Все карты, локации, миссии и состояния</span></button>');
+          btn.addEventListener('click', async () => { const ov = btn.closest('.overlay'); UI.menuOpen = false; UI.showGallery(); if (ov) { UI.closeOverlay(ov); } });
+          list.appendChild(btn);
+        }
+      }
+    });
+  }
+
+  UI.showGallery = function () {
+    const types = ['weapon', 'item', 'consumable', 'ally', 'resolve', 'technique', 'enemy', 'living', 'event', 'henchman', 'boss', 'objective', 'decoy', 'infection'];
+    const all = Object.values(ZG.CARDS).filter((d) => d && d.id && !d.heroArt);
+    const tkey = (d) => (d.type === 'enemy' && d.living ? 'living' : d.type);
+    const groups = types.map((t) => ({ t, list: all.filter((d) => tkey(d) === t) })).filter((g) => g.list.length);
+    const other = all.filter((d) => !types.includes(tkey(d)));
+    if (other.length) groups.push({ t: 'other', list: other });
+    const sortCards = (a, b) => (a.tier || 0) - (b.tier || 0) || ZG.cardName(a).localeCompare(ZG.cardName(b), 'ru');
+    const cardsTab = groups.map((g) => `<div class="gal-group" data-g><h3>${esc(g.t === 'other' ? 'Прочее' : T('type_' + g.t))} <span class="muted">· ${g.list.length}</span></h3>
+      <div class="gal-row">${g.list.sort(sortCards).map((d) => UI.cardHTML(d.id, { size: 'mini' }).replace('class="card', `data-name="${esc(ZG.cardName(d).toLowerCase())}" class="card`)).join('')}</div></div>`).join('');
+    const locsTab = ZG.MISSIONS.map((mi) => `<div class="gal-group" data-g><h3>Миссия ${mi.num}: ${esc(mi.name)}</h3>
+      <div class="gal-row">${mi.locations.filter((id) => ZG.LOCATIONS[id]).map((id) => UI.locCardHTML({ id }, 'mini').replace('class="card', `data-name="${esc(ZG.LOCATIONS[id].name.toLowerCase())}" class="card`)).join('')}</div></div>`).join('');
+    const mini = (id) => (ZG.card(id) ? UI.cardHTML(id, { size: 'mini' }) : '');
+    const missionsTab = ZG.MISSIONS.map((mi) => `<div class="gal-mission panel">
+      <div class="gm-head">${ZG.art('missions', mi.id, mi.icon)}<div><div class="muted">Миссия ${mi.num} · ${esc(mi.place || '')} · уровень ${mi.tier}</div><h3>${esc(mi.name)}</h3></div></div>
+      <p><b>Цель.</b> ${esc(mi.goal || '')}</p>
+      ${mi.rule ? `<p><b>Особое правило.</b> ${esc(mi.rule)}</p>` : ''}
+      <p><b>Локации:</b> ${mi.locations.map((id) => esc((ZG.LOCATIONS[id] || {}).name || id)).join(', ')}</p>
+      <p><b>События Часов:</b> ${(mi.clockEvents || []).map((id) => esc((ZG.CLOCK[id] || {}).name || id)).join(', ')}</p>
+      ${mi.reward ? `<p><b>Награда:</b> ${esc(mi.reward.text)}</p>` : ''}
+      <div class="gal-row">${mini(mi.boss)}${mini(mi.henchman)}${mi.reward ? mini(mi.reward.card) : ''}</div>
+    </div>`).join('');
+    const condsTab = `<div class="gal-conds">${Object.keys(ZG.CONDS).map((k) => `<div class="gal-cond panel"><h3>${ZG.icon(ZG.CONDS[k].icon)} ${esc(ZG.CONDS[k].name)}</h3><p>${esc(ZG.CONDS[k].text)}</p></div>`).join('')}</div>
+      <h3 style="margin-top:18px">События Часов</h3><div class="gal-conds">${Object.values(ZG.CLOCK).map((c) => `<div class="gal-cond panel"><h3>${ZG.icon(c.icon)} ${esc(c.name || (c.names || [])[0] || c.id)}</h3><p>${esc(c.text || 'Ничего не происходит.')}</p></div>`).join('')}</div>`;
+    const TABS = [['cards', `Карты (${all.length})`, cardsTab], ['locs', 'Локации', locsTab], ['missions', 'Миссии', missionsTab], ['conds', 'Состояния', condsTab]];
+    const ov = UI.overlay(`<div class="gallery panel" data-peek>
+      <div class="gal-head"><h2>${ZG.icon('cards')} Галерея</h2>
+        <div class="gal-tabs">${TABS.map(([k, l], i) => `<button class="tab ${i ? '' : 'on'}" data-gt="${k}">${esc(l)}</button>`).join('')}</div>
+        <input class="gal-search" type="search" placeholder="Поиск по названию…">
+        <button class="btn icon ghost" data-x title="Закрыть">${ZG.icon('x')}</button></div>
+      <div class="gal-body">${TABS.map(([k, , h], i) => `<div class="gal-pane" data-gp="${k}" ${i ? 'hidden' : ''}>${h}</div>`).join('')}</div>
+    </div>`);
+    const close = () => UI.closeOverlay(ov);
+    ov.querySelector('[data-x]').addEventListener('click', close);
+    ov.addEventListener('click', (e) => { if (e.target === ov) close(); });
+    const search = ov.querySelector('.gal-search');
+    const filter = () => {
+      const q = search.value.trim().toLowerCase();
+      ov.querySelectorAll('.gal-pane [data-name]').forEach((el) => { el.hidden = !!q && !el.dataset.name.includes(q); });
+      ov.querySelectorAll('.gal-group').forEach((g) => { g.hidden = !!q && !g.querySelector('[data-name]:not([hidden])'); });
+    };
+    search.addEventListener('input', filter);
+    ov.querySelectorAll('[data-gt]').forEach((b) => b.addEventListener('click', () => {
+      ov.querySelectorAll('[data-gt]').forEach((x) => x.classList.toggle('on', x === b));
+      ov.querySelectorAll('[data-gp]').forEach((p) => { p.hidden = p.dataset.gp !== b.dataset.gt; });
+      ov.querySelector('.gal-body').scrollTop = 0;
+    }));
   };
 })();

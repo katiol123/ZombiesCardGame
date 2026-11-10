@@ -59,7 +59,7 @@
       <div class="cart">${ZG.art('locations', ld.id, ld.icon)}</div>
       <div class="ctype">${T('type_location')}</div>
       <div class="ccheck">${T('close_check')}: ${esc(ZG.cardCheckLineClose(loc))}</div>
-      <div class="ctext">${rules}<p>Порог орды: ${loc.limit}</p></div>
+      <div class="ctext">${rules}<p>Порог орды: ${loc.limit != null ? loc.limit : Math.max(3, ld.noise)}</p></div>
       <div class="cflavor">${esc(ld.flavor)}</div></div></div>`;
   };
 
