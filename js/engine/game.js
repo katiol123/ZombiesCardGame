@@ -1485,8 +1485,7 @@
     if (mh.id === 'kremen') {
       // «Адреналин»: чем больше карт в сбросе, тем злее
       const ad = ZG.adrenalineDie(mh.discard.length);
-      const at = ZG.attrOf(skill);
-      if (ad && (ck.kind === 'combat' || at === 'str' || at === 'end')) dice.push({ d: ad, src: `Адреналин (сброс ${mh.discard.length})` });
+      if (ad && ck.kind === 'combat') dice.push({ d: ad, src: `Адреналин (сброс ${mh.discard.length})` });
       // «Кулаки»: бой без оружия +1d4
       if (ck.kind === 'combat' && !wp) dice.push({ d: 'd4', src: 'Кулаки' });
     }

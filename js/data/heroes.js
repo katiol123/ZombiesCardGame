@@ -149,7 +149,7 @@
       prof: [],
       start: ['bat', 'jacket', 'pads', 'flashlight', 'bandage', 'cannedfood', 'energy', 'neighbor', 'hope', 'hope', 'medals', 'prayer', 'headshot', 'headshot', 'focus'],
       powers: [
-        { id: 'adrenaline', name: 'Адреналин', text: 'Боевые проверки и проверки Силы, Выдержки, Рукопашной и Выживания получают бонус по числу карт в вашем сбросе: 3–5 — +1d4, 6–8 — +1d6, 9 и больше — +1d8.' },
+        { id: 'adrenaline', name: 'Адреналин', text: 'Боевые проверки получают бонус по числу карт в вашем сбросе: 4–6 — +1d4, 7–9 — +1d6, 10 и больше — +1d8.' },
         { id: 'fists', name: 'Кулаки', text: 'В бою без оружия +1d4.' },
       ],
       bio: 'Двенадцать боёв, двенадцать побед, одно сломанное ребро. Лучше всего дерётся, когда его уже почти уложили.',
@@ -159,7 +159,7 @@
   ZG.heroShort = (id) => { const n = ZG.HEROES[id].name; const m = n.match(/«(.+?)»/); return m ? m[1] : n.split(' ')[0]; };
   ZG.HERO_ORDER = ['marina', 'grom', 'ten', 'palych', 'klyk', 'kremen'];
   /** «Адреналин» Кремня: бонусный кубик по числу карт в сбросе */
-  ZG.adrenalineDie = (n) => (n >= 9 ? 'd8' : n >= 6 ? 'd6' : n >= 3 ? 'd4' : null);
+  ZG.adrenalineDie = (n) => (n >= 10 ? 'd8' : n >= 7 ? 'd6' : n >= 4 ? 'd4' : null);
 
   ZG.SCARS = [
     { id: 'scar_hand', text: 'Дрожащие руки: −1 к размеру руки', hand: -1 },
