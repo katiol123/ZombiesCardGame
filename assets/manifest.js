@@ -302,6 +302,8 @@ window.ZG_ART = {
     cleanroom: 'assets/locations/cleanroom.webp',
     server: 'assets/locations/server.webp',
     sublevel: 'assets/locations/sublevel.webp',
+    pumproom: 'assets/locations/pumproom.webp',
+    ranger: 'assets/locations/ranger.webp',
   },
   missions: {},
 };
