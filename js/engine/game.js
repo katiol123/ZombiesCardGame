@@ -882,7 +882,8 @@
   G.enemyCheck = function (def, loc, i, hits) {
     const m = G.M();
     const mods = [];
-    if (!def.living && m.phase === 'night') mods.push({ label: 'Ночь', v: G.nightBonus() });
+    if (m.phase === 'night') mods.push({ label: 'Ночь', v: G.nightBonus() }); // ночью опаснее и мертвецы, и люди
+    if (def.nightDc && m.phase === 'night') mods.push({ label: `${def.name}: ночная охота`, v: def.nightDc });
     if (def.mutates && m.bossMut) mods.push({ label: def.mutateName || 'Мутация', v: m.bossMut });
     const lr = G.lrule(loc);
     if (!def.living && lr.undeadDc) mods.push({ label: 'Локация: мертвецы', v: lr.undeadDc });
@@ -923,7 +924,7 @@
   G.acquireCheck = function (def, loc) {
     const m = G.M();
     const mods = [];
-    if (m.phase === 'night') mods.push({ label: 'Ночь', v: -1 });
+    if (m.phase === 'night') mods.push({ label: 'Ночь: темно', v: 1 }); // в темноте искать труднее
     const am = ((G.ldef(loc).mods || {}).acquireDc || {})[def.type];
     if (am) mods.push({ label: 'Локация', v: am });
     if (m.turnMods.fog) mods.push({ label: 'Туман', v: -1 });
@@ -953,7 +954,7 @@
     const li = m.locations.indexOf(loc);
     for (const h of m.heroes.filter((x) => !x.dead && x.loc === li)) {
       const br = await G.doCheck(h, { kind: 'event', skills: spec.skills, dc: spec.dc, base: spec.dc, mods: [], card: def, cardId: def.id, title: `${G.hname(h)}: в укрытие!` });
-      if (!br.success) await G.damage(h, ZG.rollDie(spec.die), { source: `${def.name}: ${what}`, dmgType: spec.dmgType || 'fire' });
+      if (!br.success) await G.damage(h, Math.max(0, ZG.rollDie(spec.die) - (spec.minus || 0)), { source: `${def.name}: ${what}`, dmgType: spec.dmgType || 'fire' });
     }
   };
 
@@ -1478,21 +1479,32 @@
         parts.push({ label: `Иммунитет: ${t} — кубики не считаются`, v: 0 });
       });
       Object.keys(en.weak || {}).forEach((t) => { if (playedTraits.has(t)) dice.push({ d: en.weak[t], src: `Уязвим: ${t}` }); });
-      Object.keys(en.resist || {}).forEach((t) => { if (playedTraits.has(t)) { bonus -= en.resist[t]; parts.push({ label: `Стойкость: ${t}`, v: -en.resist[t] }); } });
+      const noPenR = ctx.played.some((p) => G.playDef(p).ignorePenalties);
+      Object.keys(en.resist || {}).forEach((t) => { if (!playedTraits.has(t)) return; if (noPenR && !['Огонь', 'Кислота', 'Электричество', 'Холод'].includes(t)) { parts.push({ label: `Стойкость (${t}) не действует`, v: 0 }); return; } bonus -= en.resist[t]; parts.push({ label: `Стойкость: ${t}`, v: -en.resist[t] }); });
     }
-    // кислота проедает броню
-    const acid = ck.kind === 'combat' && playedTraits.has('Кислота');
-    const ignoreArmor = acid || ctx.played.some((p) => G.playDef(p).ignoreArmor);
-    if (ignoreArmor && ck.enemy && (ck.enemy.armor || ck.enemy.bulletproof)) parts.push({ label: acid ? 'Кислота: броня врага не действует' : 'Броня врага не действует', v: 0 });
-    // «Пуленепробиваемость» (бронежилет Бёрка): штраф к атаке огнестрелом, кислота его тоже проедает
-    if (!ignoreArmor && ck.enemy && ck.enemy.bulletproof && playedTraits.has('Огнестрел')) {
-      bonus -= ck.enemy.bulletproof;
-      parts.push({ label: 'Бронежилет держит пули', v: -ck.enemy.bulletproof });
+    // броня врагов: штрафы к броску. Кувалда (ignorePenalties) их не замечает
+    const noPen = ctx.played.some((p) => G.playDef(p).ignorePenalties);
+    const ELEM = ['Огонь', 'Кислота', 'Электричество', 'Холод'];
+    const physical = ck.kind === 'combat' && !ELEM.some((t) => playedTraits.has(t));
+    if (ck.enemy && ck.kind === 'combat') {
+      const en = ck.enemy;
+      // бронежилет: любой физический удар — ближний, дальний и без оружия
+      if (en.armor && physical) {
+        if (noPen) parts.push({ label: 'Бронежилет врага не действует', v: 0 });
+        else { bonus -= en.armor; parts.push({ label: 'Бронежилет врага', v: -en.armor }); }
+      }
+      // каска и т. п.: проверки Силой и Рукопашной
+      if (en.strArmor && (skill === 'melee' || ZG.attrOf(skill) === 'str')) {
+        if (noPen) parts.push({ label: 'Каска врага не действует', v: 0 });
+        else { bonus -= en.strArmor; parts.push({ label: 'Каска врага', v: -en.strArmor }); }
+      }
     }
-    if (!ignoreArmor && ck.enemy && ck.enemy.armor && (skill === 'melee' || ZG.attrOf(skill) === 'str')) {
-      bonus -= ck.enemy.armor;
-      parts.push({ label: 'Броня врага', v: -ck.enemy.armor });
-    }
+    ctx.played.forEach((p) => {
+      const pr = G.playDef(p).perResolve;
+      if (!pr) return;
+      const k = ctx.played.filter((x) => ZG.card(x.id).type === 'resolve').length;
+      if (k) { bonus += pr * k; parts.push({ label: `${ZG.card(p.id).name}: Решимость ×${k}`, v: pr * k }); }
+    });
     if (G.conds(mh).numb) {
       const top = Math.max(...dice.map((x) => ZG.sides(x.d)));
       if (top > 4) {

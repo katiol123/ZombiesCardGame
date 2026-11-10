@@ -66,9 +66,11 @@
       else if (p.noise) s += ` Шум +${p.noise}.`;
       if (p.gainCard) s = s.replace(/\.$/, '') + ` и возьмите в руку карту «${ZG.card(p.gainCard).name}».`;
       if (p.ignoreArmor) s += ' Игнорирует броню врага.';
-      if (p.rechargeOnSuccess) s += ` При успехе перезарядите вместо ${p.mode === 'bury' ? 'захоронения' : 'сброса'}.`;
+      if (p.ignorePenalties) s += ' Отрицательные модификаторы врага к Силе, Рукопашной и физическому урону (бронежилет, каска, стойкость) на эту атаку не действуют.';
+      if (p.perResolve) s += ` +${p.perResolve} к броску за каждую сыгранную в эту проверку Решимость.`;
+      if (p.rechargeOnSuccess) s += (Array.isArray(p.kind) && p.kind.includes('combat')) ? ` Если враг побеждён (бой выигран) — перезарядите вместо ${p.mode === 'bury' ? 'захоронения' : 'сброса'}.` : ` Если эта проверка пройдена — перезарядите вместо ${p.mode === 'bury' ? 'захоронения' : 'сброса'}.`;
       if (p.burnOnFail) s += ' При провале проверки сожгите.';
-      if (p.rechargeCheck) s += ` После проверки — ${skillsList(p.rechargeCheck.skills)} ${p.rechargeCheck.dc}: успех — перезарядите вместо сброса.`;
+      if (p.rechargeCheck) s += ` После боя — отдельная проверка перезарядки ${skillsList(p.rechargeCheck.skills)} ${p.rechargeCheck.dc} (независимо от исхода боя): успех — перезарядите вместо сброса.`;
       if (p.oneToFive) s += ` С навыком «${ZG.skillName(p.oneToFive)}» единица на этом кубике считается за 5.`;
       if (p.help) s += ' Можно сыграть в проверку соседа по локации.';
       return s;
@@ -107,9 +109,12 @@
       if (def.noiseOnEncounter) lines.push(`При встрече: шум локации +${def.noiseOnEncounter}.`);
       if (def.before && def.before.damage) lines.push(`До проверки: ${def.before.damage} урон.`);
       if (def.noEvade) lines.push('От него нельзя уклониться.');
-      if (def.armor) lines.push(`Броня: проверки Силой и Рукопашной против него −${def.armor}.`);
+
       if (def.theft) lines.push(`Если вы не победили ${ZG.gf(def, 'его', 'её', 'его')}, ${ZG.gf(def, 'он', 'она', 'оно')} забирает случайную карту из руки.`);
     }
+    if (ZG.isEnemy(def) && def.armor) lines.push(`Бронежилет: −${def.armor} к броску в бою любым физическим ударом — ближним, дальним и без оружия. Огонь, кислота, электричество и холод его не замечают.`);
+    if (ZG.isEnemy(def) && def.strArmor && !(def.text || '').includes('Каска')) lines.push(`Каска: −${def.strArmor} к броску в проверках Силой и Рукопашной.`);
+    if (ZG.isEnemy(def) && def.nightDc && !(def.text || '').includes('Ночная охота')) lines.push(`Ночная охота: ночью сложность ещё +${def.nightDc}.`);
     if (ZG.isEnemy(def) && def.dmgType) lines.push(`Урон: ${ZG.DMG_TYPES[def.dmgType]}.`);
     if (ZG.isEnemy(def)) lines.push(`Провал: урон = ${def.halfDmg ? 'половина разницы, с округлением вниз' : 'разница'} (макс. ${ZG.Game.dmgCap(def)}${def.dmgAdd ? `, +${def.dmgAdd}` : ''})${def.bite ? '. Укус (2+ урона) → Инфекция' : ''}${def.inflict ? (def.inflictCheck ? `. Рана → проверка ${skillsList(def.inflictCheck.skills)} ${def.inflictCheck.dc}, при провале — ${ZG.CONDS[def.inflict].name}` : `. Рана → ${ZG.CONDS[def.inflict].name}`) : ''}.`);
     if (def.plays && def.plays.length) def.plays.forEach((p) => lines.push(ZG.playText(p)));
