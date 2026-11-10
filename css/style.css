@@ -345,6 +345,12 @@ h1, h2, h3 { font-family: var(--font-head); font-weight: 600; letter-spacing: 0.
 .hero-panel { align-self: stretch; display: flex; flex-direction: column; gap: 6px; padding-top: 4px; }
 .hero-panel .hp-top { display: flex; align-items: center; gap: 10px; }
 .hero-panel .avatar { width: 54px; height: 54px; font-size: 26px; }
+.hero-panel .hp-top .avatar { display: none; }
+.hero-panel .hp-body { display: flex; gap: 10px; align-items: stretch; }
+.hero-panel .hp-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
+.hero-panel .avatar.portrait { width: 96px; height: auto; min-height: 128px; border-radius: 10px; font-size: 44px; border: 2px solid var(--hc); box-shadow: 0 0 0 1px rgba(0,0,0,.6), 0 0 18px color-mix(in srgb, var(--hc) 35%, transparent); background: #0d0f12; }
+.hero-panel .avatar.portrait img { object-position: 50% 15%; }
+.hero-panel .avatar.portrait .av-fx { border-radius: 8px; }
 .hero-panel .hp-name { font-family: var(--font-head); font-size: 17px; line-height: 1.1; }
 .hero-panel .hp-role { font-size: 11.5px; color: var(--hc); letter-spacing: .1em; text-transform: uppercase; }
 .hero-panel .stat-row { margin: 2px 0; gap: 4px; }
@@ -741,7 +747,9 @@ h1, h2, h3 { font-family: var(--font-head); font-weight: 600; letter-spacing: 0.
   .party { flex-direction: row; flex-wrap: wrap; }
   .pmini { flex: 1; min-width: 150px; }
   .tray { position: fixed; left: 0; right: 0; bottom: 0; grid-template-columns: 1fr; min-height: 0; gap: 6px; padding: 6px 10px 10px; box-shadow: 0 -10px 30px rgba(0,0,0,.7); }
-  .hero-panel .hp-top .avatar { width: 38px; height: 38px; font-size: 18px; }
+  .hero-panel .hp-top .avatar { width: 38px; height: 38px; font-size: 18px; display: flex; }
+  .hero-panel .avatar.portrait { display: none; }
+  .hero-panel .hp-body, .hero-panel .hp-info { display: contents; }
   .hero-panel { gap: 8px; }
   .hand-label { display: none; }
   .hand { padding-top: 18px; margin-top: 0; }

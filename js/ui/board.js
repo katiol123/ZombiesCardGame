@@ -233,9 +233,11 @@
     tray.innerHTML = `
       <div class="hero-panel" style="--hc:${hd.color}">
         <div class="hp-top">${UI.avatar(mh.id)}<div><div class="hp-name">${esc(hd.name)}</div><div class="hp-role">${esc(hd.role)}</div></div><button class="btn small ghost tray-toggle" data-act="traytoggle">${UI.trayCollapsed ? 'Рука ▴' : 'Свернуть ▾'}</button></div>
+        <div class="hp-body">${UI.avatar(mh.id, 'portrait', true)}<div class="hp-info">
         ${UI.statsHTML(ph)}
         <div class="power-list">${hd.powers.map((p, i) => `<button class="power-chip" data-power="${i}" style="--hc:${hd.color}">${ZG.icon('star')} ${esc(p.name)}</button>`).join('')}</div>
         ${Object.keys(mh.conds || {}).length ? `<div class="cond-row">${Object.keys(mh.conds).map((k) => `<span class="cond" title="${esc(ZG.CONDS[k].text)}">${ZG.icon(ZG.CONDS[k].icon)} ${esc(ZG.CONDS[k].name)}</span>`).join('')}</div>` : ''}
+        </div></div>
         <div class="piles">
           <div class="pile ${mh.deck.length <= 2 ? 'warn' : ''}" title="Колода — это здоровье"><b>${mh.deck.length}</b>${T('deck')}</div>
           <div class="pile"><b>${mh.discard.length}</b>${T('discard')}</div>
@@ -824,7 +826,7 @@
         UI.fitHand(panel.querySelector('.hand'));
         panel.querySelector('[data-ok]').addEventListener('click', done);
       };
-      ZG.FX.burstAt(document.querySelector('.hero-panel .avatar'), 'blood', 50);
+      ZG.FX.burstAt(UI.heroAvatarEl(), 'blood', 50);
       // если защититься нечем и выбора нет — авто
       const anyRed = mh.hand.some((c) => (ZG.card(c.id).plays || []).some((p) => isRed(p, ZG.card(c.id))));
       const discardable = mh.hand.filter((c) => c.id !== 'infection');
@@ -839,6 +841,9 @@
 
   /* ============================== Эффекты событий ============================== */
   /** Окно «Набега»: жетоны банды, вскрытые карты по одной, итог */
+  /** Видимый портрет активного героя (большой на компьютере, кружок на телефоне) */
+  UI.heroAvatarEl = () => [...document.querySelectorAll('.hero-panel .avatar')].find((e) => e.offsetParent) || document.querySelector('.hero-panel .avatar');
+
   UI.raid = async function (li, steps, losses, why) {
     const m = G().M();
     const loc = m.locations[li];
@@ -997,7 +1002,7 @@
     ZG.Audio.sfx('heartbeat', 1);
     if (n >= 2) ZG.Audio.sfx('psychedelic', 0.6);
     ZG.FX.flash('toxic');
-    ZG.FX.burstAt(UI.cardBox() || document.querySelector('.hero-panel .avatar'), 'toxic', 60);
+    ZG.FX.burstAt(UI.cardBox() || UI.heroAvatarEl(), 'toxic', 60);
     UI.toast(`${ZG.icon('biohazard')} ${esc(G().hname(mh))}: Инфекция ${n}/3`, 'bad');
     UI.renderParty();
     await ZG.sleep(700);

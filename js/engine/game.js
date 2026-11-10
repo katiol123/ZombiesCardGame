@@ -412,7 +412,7 @@
     if (sp.raidEvery && m.turn > 1 && m.turn % sp.raidEvery === 0) await G.raid(sp.raidTokens || 3);
     if (old === 'night' && m.phase === 'day') {
       m.locations.forEach((l) => (l.noise = Math.max(0, l.noise - 1)));
-      G.log('Утро: шум всех локаций −1.', 'clock');
+      G.note('Утро: шум всех локаций −1.', 'clock');
     }
     const cd = ZG.CLOCK[c.id];
     if (c.id !== 'calm') G.log(`Часы: ${cd.name}. ${cd.text}`, 'clock');
@@ -437,7 +437,7 @@
           const l = R.pick(open);
           l.deck.push(G.inst(ZG.boxPick('enemy', G.def().tier)));
           R.shuffle(l.deck);
-          G.log(`В локацию «${G.ldef(l).name}» пришёл мертвец.`, 'bad');
+          G.note(`В локацию «${G.ldef(l).name}» пришёл мертвец.`, 'bad');
           m.turnEvent.detail = `Мертвец пришёл в «${G.ldef(l).name}».`;
           if (UI().eventFx) UI().eventFx('howl', m.locations.indexOf(l));
           await UI().flyIn(m.locations.indexOf(l), 1);
@@ -571,6 +571,13 @@
     }
   };
 
+  /** Запись в журнал + всплывающее уведомление: игрок видит каждый сработавший эффект */
+  G.note = function (text, kind) {
+    G.log(text, kind);
+    const ui = UI();
+    if (ui && ui.toast) ui.toast(ZG.esc(text), kind === 'bad' ? 'bad' : kind === 'good' || kind === 'loot' ? 'loot' : '');
+  };
+
   G.endTurn = async function (mh) {
     if (!mh.dead) await UI().tip('endturn');
     const el = G.loc(mh);
@@ -643,7 +650,7 @@
         const opts = res.map((c) => ({ label: `Сбросить «${ZG.card(c.id).name}»`, u: c.u }));
         opts.push({ label: 'Потерять карту Часов', sub: 'Время уходит быстрее' });
         const k = await UI().choose({ title: 'Обречённость', text: 'Сбросьте Решимость из руки или потеряйте карту Часов.', options: opts });
-        if (opts[k].u) { G.moveByMode(mh, opts[k].u, 'discard'); paid = true; G.log(`${G.hname(mh)} гонит отчаяние прочь.`, 'card'); }
+        if (opts[k].u) { G.moveByMode(mh, opts[k].u, 'discard'); paid = true; G.note(`${G.hname(mh)} гонит отчаяние прочь.`, 'card'); }
       }
       if (!paid) {
         m.clockPos = Math.min(m.clock.length, m.clockPos + 1);
@@ -689,7 +696,7 @@
       const c = mh.hand.find((x) => x.u === us[0]);
       G.moveByMode(mh, us[0], 'recharge');
       G.M().ts.scouted = true;
-      if (c) G.log(`${G.hname(mh)} перезаряжает «${ZG.card(c.id).name}» ради разведки.`, 'card');
+      if (c) G.note(`${G.hname(mh)} перезаряжает «${ZG.card(c.id).name}» ради разведки.`, 'card');
     }
     const toBottom = await UI().scout(l.deck[0], l);
     if (toBottom) l.deck.push(l.deck.shift());
@@ -810,7 +817,7 @@
       const to = G.M().locations[lureTo];
       to.noise += from.noise;
       from.noise = 0;
-      G.log(`Шум уведён в «${G.ldef(to).name}».`, 'card');
+      G.note(`Шум уведён в «${G.ldef(to).name}».`, 'card');
       await G.checkHorde(to);
     }
     if (p.scout) await G.scout(mh);
@@ -859,7 +866,7 @@
     if (lr.nightExtra && m.phase === 'night' && !m.ts.nightExtra && !mh.dead) {
       m.ts.nightExtra = true;
       m.ts.explores++;
-      G.log('Ночь скрывает вас: +1 исследование.', 'good');
+      G.note('Ночь скрывает вас: +1 исследование.', 'good');
     }
     return r;
   };
@@ -983,7 +990,7 @@
     const isBoss = def.type === 'boss';
     if (def.noiseOnEncounter) {
       G.addNoise(loc, def.noiseOnEncounter);
-      G.log(`${def.name} поднимает шум (+${def.noiseOnEncounter}).`, 'bad');
+      G.note(`${def.name} поднимает шум (+${def.noiseOnEncounter}).`, 'bad');
       ui.fxNoise(loc);
     }
     // «Сигнализация» / «Сверху»: можно не сражаться
@@ -1102,7 +1109,7 @@
       const fr = await G.doCheck(mh, { kind: 'event', skills: fc.skills, dc: fc.dc, base: fc.dc, mods: [], card: def, cardId: def.id, title: `Добить: ${def.name}` });
       if (!fr.success) {
         if (!loc.closed) { loc.deck.push(inst); R.shuffle(loc.deck); }
-        G.log(`${def.name} ${ZG.gf(def, 'выжил', 'выжила', 'выжило')} и уходит обратно в колоду локации.`, 'bad');
+        G.note(`${def.name} ${ZG.gf(def, 'выжил', 'выжила', 'выжило')} и уходит обратно в колоду локации.`, 'bad');
         return null;
       }
     }
@@ -1155,7 +1162,7 @@
       const ic = def.inflictCheck;
       const avoid = ic ? (await G.doCheck(mh, { kind: 'event', skills: ic.skills, dc: ic.dc, base: ic.dc, mods: [], card: def, cardId: def.id, title: `${def.name}: рана — ${ZG.CONDS[def.inflict].name}?` })).success : false;
       if (!avoid) await G.addCond(mh, def.inflict);
-      else G.log(`${G.hname(mh)}: рана чистая — без состояния «${ZG.CONDS[def.inflict].name}».`, 'good');
+      else G.note(`${G.hname(mh)}: рана чистая — без состояния «${ZG.CONDS[def.inflict].name}».`, 'good');
     }
     if (def.theft && !mh.dead && mh.hand.some((x) => x.id !== 'infection')) {
       const pool = mh.hand.filter((x) => x.id !== 'infection'); // Инфекцию не крадут — иначе это бесплатное лечение
@@ -1168,7 +1175,7 @@
       // «Свисток смены»: в локацию приходит его смена
       loc.deck.push(G.inst(def.callShift));
       R.shuffle(loc.deck);
-      G.log(`${def.name} свистит: в «${G.ldef(loc).name}» приходит ${ZG.card(def.callShift).name}.`, 'bad');
+      G.note(`${def.name} свистит: в «${G.ldef(loc).name}» приходит ${ZG.card(def.callShift).name}.`, 'bad');
       await ui.flyIn(m.locations.indexOf(loc), 1);
     }
     if (def.alarm) {
@@ -1211,7 +1218,7 @@
     if (driftTo) {
       driftTo.deck.push(inst);
       R.shuffle(driftTo.deck);
-      G.log(`${def.name} ${ZG.gf(def, 'не повержен', 'не повержена', 'не повержено')} — течение уносит ${ZG.gf(def, 'его', 'её', 'его')} в «${G.ldef(driftTo).name}».`, 'bad');
+      G.note(`${def.name} ${ZG.gf(def, 'не повержен', 'не повержена', 'не повержено')} — течение уносит ${ZG.gf(def, 'его', 'её', 'его')} в «${G.ldef(driftTo).name}».`, 'bad');
       await ui.flyBetween(m.locations.indexOf(loc), m.locations.indexOf(driftTo), def.icon || 'waves');
       return null;
     }
@@ -1239,7 +1246,7 @@
       if (!res.success) {
         loc.deck.push(inst);
         R.shuffle(loc.deck);
-        G.log(`${def.name} не поддалась — осталась в локации.`, 'bad');
+        G.note(`${def.name} не поддалась — осталась в локации.`, 'bad');
         return null;
       }
       m.obj = (m.obj || 0) + 1;
@@ -1282,8 +1289,8 @@
     } else {
       if (G.lrule(loc).findsStay && !loc.closed) {
         loc.deck.push(inst);
-        G.log(`«${def.name}» не далась — ушла под низ колоды локации.`, 'bad');
-      } else G.log(T('lost_find', { name: def.name }), 'bad');
+        G.note(`«${def.name}» не далась — ушла под низ колоды локации.`, 'bad');
+      } else G.note(T('lost_find', { name: def.name }), 'bad');
       UI().fxLost();
     }
     return null;
@@ -1302,7 +1309,7 @@
       await UI().gain(inst, 'Обезврежен!');
       return null;
     }
-    G.log(`«${def.name}» защёлкнулся.`, 'bad');
+    G.note(`«${def.name}» защёлкнулся.`, 'bad');
     return await G.applyFx(mh, loc, t.fail);
   };
 
@@ -1332,7 +1339,7 @@
         const n = typeof fx.damage === 'string' ? ZG.rollDie(fx.damage) : fx.damage;
         await G.damage(mh, n, { source: 'Препятствие', dmgType: fx.dmgType });
       }
-      if (fx.noise) { G.addNoise(loc, fx.noise); ui.fxNoise(loc); G.log(`Шум +${fx.noise}.`, 'bad'); }
+      if (fx.noise) { G.addNoise(loc, fx.noise); ui.fxNoise(loc); G.note(`Шум +${fx.noise}.`, 'bad'); }
       if (fx.infect) await G.infect(mh);
       if (fx.cond) await G.addCond(mh, fx.cond);
       if (fx.explore && G.M().ts) {
@@ -1355,7 +1362,7 @@
       }
       if (fx.summon) {
         const e = G.inst(ZG.boxPick('enemy', tier));
-        G.log('Из темноты появляется мертвец!', 'bad');
+        G.note('Из темноты появляется мертвец!', 'bad');
         const r = await G.encounter(mh, e, loc, { noEvade: false });
         if (r === 'win') return r;
       }
@@ -1382,7 +1389,7 @@
         const ok = (c) => c.id !== 'infection';
         if (mh.hand.some(ok)) {
           const us = await ui.pickCards(mh, fx.toll, 'Плата за проезд', 'Банда требует плату: сбросьте карту из руки.', false, ok);
-          us.forEach((u) => { const c = mh.hand.find((x) => x.u === u); G.moveByMode(mh, u, 'discard'); G.log(`${G.hname(mh)} платит за проезд: «${ZG.card(c.id).name}».`, 'bad'); });
+          us.forEach((u) => { const c = mh.hand.find((x) => x.u === u); G.moveByMode(mh, u, 'discard'); G.note(`${G.hname(mh)} платит за проезд: «${ZG.card(c.id).name}».`, 'bad'); });
         }
       }
       if (fx.banishRandomHand) {
@@ -1390,7 +1397,7 @@
         if (pool.length) {
           const c = R.pick(pool);
           mh.hand.splice(mh.hand.indexOf(c), 1);
-          G.log(`Отдано: «${ZG.card(c.id).name}».`, 'card');
+          G.note(`Отдано: «${ZG.card(c.id).name}».`, 'card');
         }
       }
       if (fx.stranger) {
@@ -1641,14 +1648,14 @@
       }
       if (weaponReveal && mode === 'recharge' && ZG.card(p.id).type === 'weapon') {
         mode = 'reveal';
-        G.log(`Патроны: «${ZG.card(p.id).name}» остаётся в руке вместо перезарядки.`, 'card');
+        G.note(`Патроны: «${ZG.card(p.id).name}» остаётся в руке вместо перезарядки.`, 'card');
       }
       if (pl.noiseAtOwner) { const ol = G.loc(owner); G.addNoise(ol, pl.noiseAtOwner); UI().fxNoise(ol); }
       G.moveByMode(owner, p.u, mode);
       if (pl.gainCard) {
         // например, Оружейник Хэнк: «возьмите в руку карту Патроны»
         owner.hand.push(G.inst(pl.gainCard, { l: 1 }));
-        G.log(`${G.hname(owner)} получает «${ZG.card(pl.gainCard).name}».`, 'loot');
+        G.note(`${G.hname(owner)} получает «${ZG.card(pl.gainCard).name}».`, 'loot');
       }
     });
     if (res.pool.noise > 0) {
@@ -1659,7 +1666,7 @@
     if (res.pool.noiseOthers > 0) {
       const loc = G.loc(mh);
       G.openLocs().filter((l) => l !== loc).forEach((l) => { G.addNoise(l, res.pool.noiseOthers); UI().fxNoise(l); });
-      G.log(`Шум +${res.pool.noiseOthers} во всех остальных локациях.`, 'bad');
+      G.note(`Шум +${res.pool.noiseOthers} во всех остальных локациях.`, 'bad');
     }
     G.log(`${G.hname(mh)}: ${check.title} — ${res.total} против ${check.dc}: ${res.success ? 'успех' : 'провал'}.`, res.success ? 'good' : 'bad');
     return res;
@@ -1740,7 +1747,7 @@
       const i = await ui.choose({ title: 'Укус!', text: 'Можно отменить Инфекцию.', options: opts });
       if (opts[i].u) {
         G.moveByMode(mh, opts[i].u, opts[i].mode || 'discard');
-        G.log(`${G.hname(mh)} избегает заражения.`, 'good');
+        G.note(`${G.hname(mh)} избегает заражения.`, 'good');
         return false;
       }
     }
@@ -1839,7 +1846,7 @@
     if (kills) {
       G.addNoise(loc, kills);
       UI().fxNoise(loc);
-      G.log(`Стрельба банды: шум +${kills}.`, 'bad');
+      G.note(`Стрельба банды: шум +${kills}.`, 'bad');
     }
     UI().renderBoard();
     if (kills) await G.checkHorde(loc);
@@ -1976,10 +1983,10 @@
         const to = R.pick(open);
         to.deck.push(c);
         R.shuffle(to.deck);
-        G.log(`«${ZG.card(c.id).name}» перенесена в «${G.ldef(to).name}».`, 'loot');
+        G.note(`«${ZG.card(c.id).name}» перенесена в «${G.ldef(to).name}».`, 'loot');
       } else if (ob) {
         m.obj = (m.obj || 0) + 1;
-        G.log(`«${ZG.card(c.id).name}» найдена при зачистке: ${ob.label} ${m.obj}/${ob.need}.`, 'loot');
+        G.note(`«${ZG.card(c.id).name}» найдена при зачистке: ${ob.label} ${m.obj}/${ob.need}.`, 'loot');
       }
     });
   };
@@ -2078,7 +2085,7 @@
         if (h.dead || G.M().over) break;
         if (res.success) {
           guarded.push(li);
-          G.log(`«${G.ldef(l).name}» временно перекрыта.`, 'good');
+          G.note(`«${G.ldef(l).name}» временно перекрыта.`, 'good');
           break;
         }
       }

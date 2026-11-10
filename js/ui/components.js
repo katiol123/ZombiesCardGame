@@ -63,9 +63,10 @@
       <div class="cflavor">${esc(ld.flavor)}</div></div></div>`;
   };
 
-  UI.avatar = function (heroId, cls) {
+  UI.avatar = function (heroId, cls, full) {
     const h = ZG.HEROES[heroId];
-    const av = window.ZG_ART && window.ZG_ART.avatars && window.ZG_ART.avatars[heroId] ? 'avatars' : 'heroes';
+    // full — портрет в полный рост (спрайт героя) вместо кружка-аватарки
+    const av = !full && window.ZG_ART && window.ZG_ART.avatars && window.ZG_ART.avatars[heroId] ? 'avatars' : 'heroes';
     // в миссии портрет показывает состояние: Инфекция — зелёные прожилки, тающая колода — трещины
     let st = '';
     const M = document.getElementById('board') && ZG.Game.M && ZG.Game.M();
