@@ -264,9 +264,11 @@
       typing++;
       // штамп
       el.classList.add('stamped');
-      ZG.Audio.synth('stamp');
+      // звук удара — в момент касания: анимация падения штампа длится 0.2 с
+      if (!quick()) await ZG.sleep(170);
+      ZG.Audio.sfx('stamp');
       ZG.FX.shake(el.querySelector('.df-page'));
-      if (!quick()) await ZG.sleep(650);
+      if (!quick()) await ZG.sleep(700);
       // папка закрывается и улетает в стопку
       el.classList.remove('open');
       if (!quick()) await ZG.sleep(420);
