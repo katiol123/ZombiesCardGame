@@ -122,8 +122,8 @@
       if (def.noEvade) lines.push('От него нельзя уклониться.');
 
       if (def.before && def.before.sermon) lines.push(`Проповедь: до боя проверка: ${skillsList(def.before.sermon.skills)} ${def.before.sermon.dc}. Провал — «Ночной ужас», а ${ZG.gf(def, 'он', 'она', 'оно')} без боя замешивается в колоду локации.`);
-      if (def.theftDiscard) lines.push(`Если вы не победили ${ZG.gf(def, 'его', 'её', 'его')}, ${ZG.gf(def, 'он', 'она', 'оно')} забирает случайную карту из вашего сброса.`);
-      if (def.theft) lines.push(`Если вы не победили ${ZG.gf(def, 'его', 'её', 'его')}, ${ZG.gf(def, 'он', 'она', 'оно')} забирает случайную карту из руки.`);
+      if (def.theftDiscard) lines.push(`Если вы не победили ${ZG.gf(def, 'его', 'её', 'его')}, ${ZG.gf(def, 'он', 'она', 'оно')} забирает случайную карту из вашего сброса — навсегда.`);
+      if (def.theft) lines.push(`Если вы не победили ${ZG.gf(def, 'его', 'её', 'его')}, ${ZG.gf(def, 'он', 'она', 'оно')} забирает случайную карту из руки — навсегда.`);
     }
     if (ZG.isEnemy(def) && def.armor) lines.push(`Бронежилет: −${def.armor} к броску против физических ударов (огонь, кислота, электричество и холод проходят).`);
     if (ZG.isEnemy(def) && def.pierceShield) lines.push('Пробивает щит: щиты не блокируют его урон.');

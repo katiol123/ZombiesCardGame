@@ -1208,15 +1208,17 @@
       const pool = mh.hand.filter((x) => x.id !== 'infection'); // Инфекцию не крадут — иначе это бесплатное лечение
       const c = R.pick(pool);
       mh.hand.splice(mh.hand.indexOf(c), 1);
-      G.log(`${def.name} отбирает «${ZG.card(c.id).name}».`, 'bad');
-      await ui.banner('Ограблен!', `${def.name} забирает «${ZG.card(c.id).name}»`, 'bad');
+      if (!c.tmp) (m.stolen = m.stolen || []).push(c.id); // украденное не возвращается на склад
+      G.log(`${def.name} отбирает «${ZG.card(c.id).name}» — навсегда.`, 'bad');
+      await ui.banner('Ограблен!', `${def.name} забирает «${ZG.card(c.id).name}» навсегда`, 'bad');
     }
     if (def.theftDiscard && !mh.dead && mh.discard.length) {
       // «Отчаяние»: уносит случайную карту из сброса героя
       const c = R.pick(mh.discard);
       mh.discard.splice(mh.discard.indexOf(c), 1);
-      G.log(`${def.name} уносит из сброса «${ZG.card(c.id).name}».`, 'bad');
-      await ui.banner('Ограблен!', `${def.name} уносит из вашего сброса «${ZG.card(c.id).name}»`, 'bad');
+      if (!c.tmp) (m.stolen = m.stolen || []).push(c.id);
+      G.log(`${def.name} уносит из сброса «${ZG.card(c.id).name}» — навсегда.`, 'bad');
+      await ui.banner('Ограблен!', `${def.name} навсегда уносит из вашего сброса «${ZG.card(c.id).name}»`, 'bad');
     }
     if (def.callShift && !loc.closed) {
       // «Свисток смены»: в локацию приходит его смена
@@ -2303,7 +2305,7 @@
       camp.lost = (camp.lost || []).concat(lostHeroes);
     }
     const burnedIds = []; m.heroes.forEach((mh) => (mh.burned || []).forEach((c) => burnedIds.push(c.id)));
-    S.lastResult = { burned: burnedIds, win, reason, idx: m.idx, stats: m.stats, turns: m.turn, scars, loot, reward, xpGot, lostHeroes, partyGone: !camp.party.length, dead: m.heroes.filter((h) => h.dead).map((h) => h.id) };
+    S.lastResult = { burned: burnedIds, stolen: (m.stolen || []).filter((id) => ZG.isBoon(ZG.card(id))), win, reason, idx: m.idx, stats: m.stats, turns: m.turn, scars, loot, reward, xpGot, lostHeroes, partyGone: !camp.party.length, dead: m.heroes.filter((h) => h.dead).map((h) => h.id) };
     S.mission = null;
     S.screen = 'result';
     G.ensureDecks();
