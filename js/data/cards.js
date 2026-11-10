@@ -437,7 +437,7 @@
     { id: 'raider', type: 'enemy', living: true, name: 'Рейдер', tier: 2, icon: 'raider', dc: 9, before: { damage: 1 }, noiseOnEncounter: 1,
       text: 'Человек. До проверки: 1 урон (стреляет первым), шум локации +1.',
       flavor: 'Банда Кейна. Красная бандана — их знак.' },
-    { id: 'refugee', type: 'enemy', living: true, name: 'Беженец с топором', tier: 0, icon: 'axe', dc: 6, theft: true, pierceShield: true,
+    { id: 'refugee', type: 'enemy', living: true, name: 'Беженец с топором', tier: 0, icon: 'axe', dc: 6, theftDiscard: true, pierceShield: true,
       flavor: '«Это моё! Всё моё!»' },
     { id: 'deserterz', type: 'enemy', living: true, name: 'Дезертир', tier: 1, icon: 'gun', dc: 8, before: { damage: 1 }, noiseOnEncounter: 2, armor: 1,
       flavor: '«Я свою войну закончил. А вы свою — сейчас».' },

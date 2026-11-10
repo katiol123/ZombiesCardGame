@@ -1194,6 +1194,13 @@
       G.log(`${def.name} отбирает «${ZG.card(c.id).name}».`, 'bad');
       await ui.banner('Ограблен!', `${def.name} забирает «${ZG.card(c.id).name}»`, 'bad');
     }
+    if (def.theftDiscard && !mh.dead && mh.discard.length) {
+      // «Отчаяние»: уносит случайную карту из сброса героя
+      const c = R.pick(mh.discard);
+      mh.discard.splice(mh.discard.indexOf(c), 1);
+      G.log(`${def.name} уносит из сброса «${ZG.card(c.id).name}».`, 'bad');
+      await ui.banner('Ограблен!', `${def.name} уносит из вашего сброса «${ZG.card(c.id).name}»`, 'bad');
+    }
     if (def.callShift && !loc.closed) {
       // «Свисток смены»: в локацию приходит его смена
       loc.deck.push(G.inst(def.callShift));
