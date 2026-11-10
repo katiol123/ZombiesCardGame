@@ -805,6 +805,10 @@
       plays: [{ on: 'check', mode: 'recharge', kind: COMBAT, weapon: ['str', 'melee'], dice: ['d8'] }, { on: 'check', mode: 'recharge', kind: ['close'], dice: ['d4'] }], flavor: 'Тяжёлый. Удобный. Честный.' },
     { id: 'nitro', type: 'consumable', name: 'Канистра нитро', icon: 'fuel', traits: ['Огонь'], acquire: { skills: ['tech', 'survival'], dc: 7 },
       plays: [{ on: 'check', mode: 'burn', kind: COMBAT, dice: ['d8', 'd8'], noise: 3 }], flavor: 'Из грузовика банды Кейна. Лучше не спрашивать, зачем им.' },
+    { id: 'extinguisher', type: 'consumable', name: 'Огнетушитель', tier: 0, icon: 'smoke', traits: ['Холод'], acquire: { skills: ['tech', 'str'], dc: 5 },
+      plays: [{ on: 'check', mode: 'burn', kind: COMBAT, dice: ['d8'] }], flavor: 'Струя углекислоты: минус семьдесят у самого раструба.' },
+    { id: 'nitrogen', type: 'consumable', name: 'Баллон жидкого азота', tier: 2, icon: 'bottle', traits: ['Холод'], acquire: { skills: ['tech', 'medicine'], dc: 8 },
+      plays: [{ on: 'check', mode: 'burn', kind: COMBAT, dice: ['d6', 'd6'] }], flavor: 'Из криохранилища. Перчатки обязательны.' },
     { id: 'cagekey', type: 'item', name: 'Ключ от клетки', icon: 'lock', traits: [], acquire: { skills: ['stealth', 'dex'], dc: 7 },
       plays: [{ on: 'action', mode: 'burn', gain: 'ally' }], flavor: 'В клетке ещё живые.' },
     { id: 'prisoner', type: 'ally', name: 'Официантка Мэгги', icon: 'coffee', traits: ['Горожанин'], acquire: { skills: ['persuasion'], dc: 6 },
@@ -958,6 +962,30 @@
     patientzero: { inflict: 'numb', dmgType: 'electric', immune: ['Огонь'], resist: { 'Ближнее': 2 }, weak: { 'Электричество': 'd8' } },
   };
   Object.keys(AUG).forEach((id) => { if (C[id]) Object.assign(C[id], AUG[id]); });
+  // стихии: у каждой есть враги со стойкостью (−2) и со слабостью (доп. кубик); дописываем, не затирая прежнее
+  const ELEM_MODS = {
+    // Огонь
+    soldier: { resist: { 'Огонь': 2 } }, // огнеупорный костюм карантина
+    patrol: { resist: { 'Огонь': 2 }, weak: { 'Холод': 'd6' } }, // сам ходит с огнемётом; баллоны боятся мороза
+    // Кислота
+    spitter: { resist: { 'Кислота': 2 } }, // сам плюётся кислотой
+    labtech: { resist: { 'Кислота': 2 } }, // прорезиненный фартук
+    // Электричество
+    soldierz: { resist: { 'Электричество': 2 } }, // разряды бегают по нему самому
+    linesman: { resist: { 'Электричество': 2 } }, // диэлектрические перчатки и боты
+    liquidator: { resist: { 'Электричество': 2 } },
+    // Холод
+    coldbody: { resist: { 'Холод': 2 } },
+    drowned: { resist: { 'Холод': 2 } },
+    wolfz: { resist: { 'Холод': 2 } }, // густая шерсть
+    burnt: { weak: { 'Холод': 'd6' } }, // обожжённая кожа трескается от мороза
+    mechanicz: { weak: { 'Холод': 'd6' } },
+    gasminer: { weak: { 'Холод': 'd6' } },
+  };
+  Object.keys(ELEM_MODS).forEach((id) => {
+    const d = C[id]; if (!d) return;
+    ['resist', 'weak'].forEach((k) => { if (ELEM_MODS[id][k]) d[k] = Object.assign({}, d[k] || {}, ELEM_MODS[id][k]); });
+  });
   // броня защищает только от физического урона; кислота, холод, электричество и огонь проходят сквозь неё
   // (кроме специального снаряжения с явно указанным типом урона, например Противогаза)
   Object.values(C).forEach((d) => {
