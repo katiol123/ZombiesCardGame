@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Кубики: прототип</title>
+<style>
+  :root { --bg: #0d0e11; --fg: #e8dfcf; --mut: #8d8a84; --amber: #e0a642; --edge: #2c2e34; }
+  html, body { margin: 0; height: 100%; background: var(--bg); color: var(--fg); font: 14px/1.4 'Roboto Condensed', system-ui, sans-serif; }
+  main { display: flex; flex-direction: column; height: 100%; max-width: 1100px; margin: 0 auto; padding: 12px 16px; box-sizing: border-box; gap: 10px; }
+  h1 { font: 600 20px Oswald, system-ui, sans-serif; letter-spacing: .05em; margin: 0; text-transform: uppercase; }
+  .mut { color: var(--mut); }
+  #table { flex: 1; min-height: 300px; border-radius: 12px; overflow: hidden; border: 1px solid var(--edge); background: #10140f; position: relative; }
+  .bar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .dbtn { display: inline-flex; align-items: center; gap: 6px; padding: 6px 10px; border-radius: 8px; border: 1px solid var(--edge); background: #191b20; color: var(--fg); cursor: pointer; font: inherit; }
+  .dbtn b { font-family: Oswald, sans-serif; }
+  .dbtn .n { min-width: 18px; text-align: center; color: var(--amber); font-weight: 700; }
+  .seg button { padding: 6px 10px; border: 1px solid var(--edge); background: #191b20; color: var(--mut); cursor: pointer; font: inherit; }
+  .seg button.on { color: #1b1203; background: var(--amber); border-color: var(--amber); }
+  .seg button:first-child { border-radius: 8px 0 0 8px; } .seg button:last-child { border-radius: 0 8px 8px 0; }
+  .roll { padding: 8px 22px; border-radius: 8px; border: 0; background: #a8261c; color: #fff; font: 600 16px Oswald, sans-serif; letter-spacing: .08em; cursor: pointer; }
+  .roll:disabled { opacity: .5; }
+  #out { min-height: 22px; font-size: 15px; }
+  #out b { color: var(--amber); }
+  select { background: #191b20; color: var(--fg); border: 1px solid var(--edge); border-radius: 8px; padding: 5px; font: inherit; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Прототип: 3D-кубики с физикой</h1>
+  <div class="mut">Нажмите на кубик, чтобы добавить его (повторное нажатие с Shift — убрать). Бросок полностью считается по физике и затем проигрывается.</div>
+  <div class="bar" id="pick"></div>
+  <div class="bar">
+    <span class="mut">Режим:</span>
+    <div class="seg"><button data-m="forced" class="on">Заданный результат</button><button data-m="honest">Честная физика</button></div>
+    <span class="mut">Скорость:</span>
+    <select id="speed"><option value="0.8">медленно</option><option value="1" selected>обычно</option><option value="1.6">быстро</option></select>
+    <button class="roll" id="roll">Бросить</button>
+  </div>
+  <div id="out" class="mut">Пример: проверка «Стрельба» — d8 навыка, d8 пистолета, d4 «Боевого опыта».</div>
+  <div id="table"></div>
+</main>
+<script>
+(function () {
+  const STYLE = { d4: ['#5b8a4a', '#f3f0e6'], d6: ['#e9e1cf', '#2a1f14'], d8: ['#8e2a22', '#f6e7d0'], d10: ['#2d4f7a', '#f2ecdc'], d12: ['#6b4b8c', '#f6eedd'] };
+  const LABEL = { d4: 'd4', d6: 'd6', d8: 'd8', d10: 'd10', d12: 'd12' };
+  const counts = { d4: 1, d6: 0, d8: 2, d10: 0, d12: 0 };
+  let mode = 'forced';
+  const pick = document.getElementById('pick');
+  const draw = () => {
+    pick.innerHTML = Object.keys(STYLE).map((t) => `<button class="dbtn" data-t="${t}" style="border-color:${STYLE[t][0]}"><span style="width:12px;height:12px;border-radius:3px;background:${STYLE[t][0]};display:inline-block"></span><b>${LABEL[t]}</b><span class="n">×${counts[t]}</span></button>`).join('') + '<button class="dbtn" data-t="clear">очистить</button>';
+  };
+  draw();
+  pick.addEventListener('click', (e) => {
+    const b = e.target.closest('[data-t]'); if (!b) return;
+    const t = b.dataset.t;
+    if (t === 'clear') Object.keys(counts).forEach((k) => (counts[k] = 0));
+    else counts[t] = Math.max(0, Math.min(6, counts[t] + (e.shiftKey ? -1 : 1)));
+    draw();
+  });
+  document.querySelectorAll('.seg button').forEach((b) => b.addEventListener('click', () => {
+    mode = b.dataset.m;
+    document.querySelectorAll('.seg button').forEach((x) => x.classList.toggle('on', x === b));
+  }));
+  const table = new DiceTable(document.getElementById('table'));
+  const out = document.getElementById('out');
+  const btn = document.getElementById('roll');
+  btn.addEventListener('click', async () => {
+    const specs = [];
+    Object.keys(counts).forEach((t) => { for (let i = 0; i < counts[t]; i++) specs.push({ type: t, color: STYLE[t][0], ink: STYLE[t][1] }); });
+    if (!specs.length) { out.textContent = 'Добавьте хотя бы один кубик.'; return; }
+    // «игра» решает результат заранее — как сейчас делает ZG.rollDie
+    if (mode === 'forced') specs.forEach((s) => (s.value = 1 + Math.floor(Math.random() * +s.type.slice(1))));
+    btn.disabled = true;
+    out.innerHTML = mode === 'forced' ? `Игра выбросила заранее: <b>${specs.map((s) => s.type + '=' + s.value).join(', ')}</b> — смотрим, как ляжет…` : 'Бросаем…';
+    const t0 = performance.now();
+    const res = await table.roll(specs, mode, +document.getElementById('speed').value);
+    const ms = Math.round(performance.now() - t0);
+    const ok = mode !== 'forced' || res.every((v, i) => v === specs[i].value);
+    out.innerHTML = `Выпало: <b>${res.map((v, i) => specs[i].type + '=' + v).join(', ')}</b> · сумма <b>${res.reduce((a, b) => a + b, 0)}</b> · ${ms} мс${mode === 'forced' ? (ok ? ' · совпало с заданным ✓' : ' · НЕ совпало ✗') : ''}`;
+    btn.disabled = false;
+  });
+})();
+</script>
+</body>
+</html>
