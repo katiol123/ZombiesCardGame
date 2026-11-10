@@ -118,7 +118,7 @@
         { on: 'check', mode: 'bury', kind: COMBAT, weapon: ['str', 'melee'], dice: ['d10', 'd10'], noise: 5, rechargeOnSuccess: true },
       ],
       flavor: 'Слышно на три квартала. Им — тоже.' },
-    { id: 'scalpel', type: 'weapon', name: 'Скальпель доктора Хейла', tier: 9, reward: true, icon: 'knife', traits: ['Ближнее', 'Тихое', 'Трофей'],
+    { id: 'scalpel', type: 'weapon', name: 'Скальпель доктора Хейла', tier: 9, reward: true, icon: 'knife', traits: ['Ближнее', 'Тихое', 'Медицина', 'Трофей'],
       acquire: { skills: ['dex'], dc: 4 },
       plays: [
         { on: 'check', mode: 'recharge', kind: COMBAT, weapon: ['dex', 'melee', 'medicine'], dice: ['d6'], bonus: 2 },

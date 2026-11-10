@@ -1431,8 +1431,8 @@
     const night = m.phase === 'night';
     const wp = G.weaponPlay(ctx);
     let opts = wp ? G.playDef(wp).weapon.slice() : ck.skills.slice();
-    // «Твёрдая рука»: с «Тихим» оружием — кубик Смекалки вместо Ловкости, без бонуса Медицины
-    if (mh.id === 'marina' && wp && ZG.card(wp.id).traits.includes('Тихое') && !opts.includes('wit')) opts.push('wit');
+    // «Твёрдая рука»: с оружием «Медицина» — кубик Смекалки вместо Ловкости, без бонуса Медицины
+    if (mh.id === 'marina' && wp && ZG.card(wp.id).traits.includes('Медицина') && !opts.includes('wit')) opts.push('wit');
     let skill = ctx.skill && opts.includes(ctx.skill) ? ctx.skill : null;
     if (!skill) skill = opts.slice().sort((a, b) => G.skillScore(ph, b) - G.skillScore(ph, a))[0];
     const sv = G.skillValue(ph, skill);
@@ -1462,9 +1462,13 @@
     if (plr.stealthBonus && (ck.kind === 'evade' || skill === 'stealth')) { bonus += plr.stealthBonus; parts.push({ label: 'Локация: укрытие', v: plr.stealthBonus }); }
     if (mh.id === 'grom') {
       if (ck.kind === 'combat' && wp) dice.push({ d: 'd4', src: 'Боевой опыт' });
-      if (wp && (G.playDef(wp).noise || 0) > 0) { noise += 1; if (ck.kind === 'combat') dice.push({ d: 'd6', src: 'Громкий' }); } // «Громкий»: шум +1, но и +1d6
+      // «Громкий»: любая боевая проверка с оружием — шум +1; если само оружие бесшумное — ещё и +1d6
+      if (ck.kind === 'combat' && wp) {
+        noise += 1;
+        if (!(G.playDef(wp).noise || 0)) dice.push({ d: 'd6', src: 'Громкий' });
+      }
     }
-    if (mh.id === 'marina' && ck.kind === 'combat' && wp && ZG.card(wp.id).traits.includes('Тихое')) dice.push({ d: 'd4', src: 'Твёрдая рука' });
+    if (mh.id === 'marina' && ck.kind === 'combat' && wp && ZG.card(wp.id).traits.includes('Медицина')) dice.push({ d: 'd4', src: 'Твёрдая рука' });
     if (mh.id === 'palych') {
       if (ck.kind === 'close') dice.push({ d: 'd4', src: 'Золотые руки' });
       if (ck.kind === 'combat' && wp && ZG.card(wp.id).traits.includes('Инструмент')) dice.push({ d: 'd4', src: 'Золотые руки' });
