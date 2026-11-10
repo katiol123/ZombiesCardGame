@@ -633,6 +633,8 @@
       }
       mh.hand.push(mh.deck.shift());
     }
+    // показать сброс и добор этого героя (карты летят в стопки и из колоды) до передачи хода
+    if (UI().renderBoard && UI().awaitFlights) { UI().renderBoard(); await UI().awaitFlights(); }
     if (cs.poison && mh.hand.length) {
       const c = mh.hand.splice(R.int(mh.hand.length), 1)[0];
       mh.deck.push(c);

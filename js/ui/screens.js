@@ -116,7 +116,7 @@
     const s = show(`<div class="screen"><div class="page">
       <div class="page-head"><button class="btn icon ghost" data-back>${ZG.icon('x')}</button><h1>${T('party_title')}</h1></div>
       <p class="muted">${T('party_hint')}</p>
-      <div class="hero-pick">${ZG.HERO_ORDER.map((id) => {
+      <div class="hero-carousel"><button class="hc-nav prev" data-hc="-1" aria-label="Назад">‹</button><div class="hero-pick">${ZG.HERO_ORDER.map((id) => {
         const h = ZG.HEROES[id];
         const ph = { id, feats: { attr: {}, hand: 0, slots: {} }, scars: [] };
         return `<div class="hero-card" data-id="${id}" style="--hc:${h.color}">
@@ -127,7 +127,7 @@
           ${h.powers.map((p) => `<div class="power"><b>${esc(p.name)}.</b> ${esc(p.text)}</div>`).join('')}
           <div class="prof">Владение: ${(h.prof || []).length ? h.prof.map((k) => esc(ZG.PROF[k].name)).join(', ') : 'нет'}</div>
           <p class="flavor" style="font-size:13px;margin:10px 0 0">${esc(h.bio)}</p></div></div>`;
-      }).join('')}</div>
+      }).join('')}</div><button class="hc-nav next" data-hc="1" aria-label="Вперёд">›</button></div>
       <div class="sticky-foot">
         <div class="diff-seg"><span class="muted">${T('party_difficulty')}:</span>
           <button class="diff" data-d="normal" title="${esc(T('diff_normal_d'))}"><b>${T('diff_normal')}</b></button>
@@ -153,6 +153,17 @@
       upd();
     }));
     s.querySelectorAll('.diff').forEach((d) => d.addEventListener('click', () => { diff = d.dataset.d; upd(); }));
+    // карусель героев: стрелки листают на одну карточку, колесо мыши — по горизонтали
+    const row = s.querySelector('.hero-pick');
+    const stepW = () => { const c = row.querySelector('.hero-card'); return c ? c.getBoundingClientRect().width + 18 : 320; };
+    const navUpd = () => {
+      s.querySelector('.hc-nav.prev').classList.toggle('off', row.scrollLeft < 4);
+      s.querySelector('.hc-nav.next').classList.toggle('off', row.scrollLeft + row.clientWidth >= row.scrollWidth - 4);
+    };
+    s.querySelectorAll('[data-hc]').forEach((b) => b.addEventListener('click', () => row.scrollBy({ left: +b.dataset.hc * stepW(), behavior: 'smooth' })));
+    row.addEventListener('scroll', navUpd, { passive: true });
+    row.addEventListener('wheel', (e) => { if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) { row.scrollBy({ left: e.deltaY, behavior: 'auto' }); e.preventDefault(); } }, { passive: false });
+    requestAnimationFrame(navUpd);
     s.querySelector('[data-back]').addEventListener('click', () => go(() => UI.showSlots('new')));
     s.querySelector('[data-start]').addEventListener('click', () => {
       const ids = ZG.HERO_ORDER.filter((id) => sel.has(id));

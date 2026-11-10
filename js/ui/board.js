@@ -312,6 +312,7 @@
     const bd = document.getElementById('board');
     if (bd) bd.classList.toggle('tray-small', !!UI.trayCollapsed);
     UI.fitHand(tray.querySelector('.hand'));
+    UI._handFlying.forEach((u) => { const e = tray.querySelector(`.hand .card[data-u="${u}"]`); if (e) { e.style.visibility = 'hidden'; e.classList.remove('new'); } });
     if (flipOn && before.size) UI.trayFlights(tray, mh, before, deckBefore);
     if (visible || !shot) {
       // запомнить, как рука выглядит сейчас (для следующего сравнения)
@@ -326,32 +327,59 @@
     if (window.ResizeObserver && UI.trayEl !== tray) { if (UI.trayRO) UI.trayRO.disconnect(); UI.trayEl = tray; UI.trayRO = new ResizeObserver(setTrayH); UI.trayRO.observe(tray); }
   };
 
-  /** Полёт копии карты из одной точки экрана в другую (уменьшаясь) */
-  UI.flyCardEl = function (html, from, to, o) {
+  /** Полёт копии карты. Копия рисуется в своём естественном размере и масштабируется, поэтому выглядит
+   * ровно как карта в руке. target — прямоугольник или функция, возвращающая ЖИВОЙ прямоугольник цели
+   * (карта приземляется точно туда, где останется лежать, даже если рука за это время сдвинулась). */
+  UI.flyCard = function (html, from, target, o) {
     o = o || {};
-    const el = ZG.html(`<div class="fly-hand-card">${html}</div>`);
-    const card = el.firstElementChild;
-    if (card) { card.classList.remove('new', 'playable', 'selected'); card.style.margin = '0'; }
-    Object.assign(el.style, { left: from.left + 'px', top: from.top + 'px', width: from.width + 'px', height: from.height + 'px' });
-    document.body.appendChild(el);
-    const dx = to.left + to.width / 2 - (from.left + from.width / 2);
-    const dy = to.top + to.height / 2 - (from.top + from.height / 2);
-    const sc = o.scale != null ? o.scale : Math.max(0.15, Math.min(1, to.width / from.width));
-    const sp = Math.max(ZG.speed || 1, 0.4);
-    const a = el.animate([
-      { transform: 'translate(0,0) scale(1) rotate(0deg)', opacity: 1 },
-      { transform: `translate(${dx * 0.5}px, ${dy * 0.5 - 40}px) scale(${(1 + sc) / 2}) rotate(${o.rot || -6}deg)`, opacity: 1, offset: 0.5 },
-      { transform: `translate(${dx}px, ${dy}px) scale(${sc}) rotate(0deg)`, opacity: o.fade ? 0 : 0.85 },
-    ], { duration: (o.dur || 520) * sp, easing: 'cubic-bezier(.35,.6,.3,1)', fill: 'forwards' });
-    return a.finished.then(() => el.remove()).catch(() => el.remove());
+    return new Promise((resolve) => {
+      const fl = ZG.html(`<div class="fly-hand-card">${html}</div>`);
+      const card = fl.firstElementChild;
+      if (card) { card.classList.remove('new', 'playable', 'selected', 'inpool'); card.style.visibility = ''; card.style.marginLeft = ''; }
+      document.body.appendChild(fl);
+      const nat = fl.getBoundingClientRect();
+      const w0 = nat.width || 150, h0 = nat.height || 214;
+      const tgt = () => (typeof target === 'function' ? target() : target) || from;
+      const sp = Math.max(ZG.speed || 1, 0.4);
+      const dur = (o.dur || 520) * sp;
+      const t0 = performance.now();
+      const ease = (t) => (t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2);
+      const step = () => {
+        const t = Math.min(1, (performance.now() - t0) / dur);
+        const k = ease(t);
+        const to = tgt();
+        const fx = from.left + from.width / 2, fy = from.top + from.height / 2;
+        const tx = to.left + to.width / 2, ty = to.top + to.height / 2;
+        const lift = o.lift != null ? o.lift : Math.min(110, 30 + Math.hypot(tx - fx, ty - fy) * 0.18);
+        const cx = (fx + tx) / 2, cy = Math.min(fy, ty) - lift;
+        // квадратичная кривая: дуга над столом
+        const x = (1 - k) * (1 - k) * fx + 2 * (1 - k) * k * cx + k * k * tx;
+        const y = (1 - k) * (1 - k) * fy + 2 * (1 - k) * k * cy + k * k * ty;
+        const s0 = from.width / w0, s1 = to.width / w0;
+        const sc = s0 + (s1 - s0) * k;
+        const rot = (o.rot || 0) * Math.sin(Math.PI * k);
+        fl.style.transform = `translate(${x - (w0 * sc) / 2}px, ${y - (h0 * sc) / 2}px) scale(${sc}) rotate(${rot}deg)`;
+        fl.style.opacity = o.fade ? String(1 - 0.9 * k) : '1';
+        if (t < 1) requestAnimationFrame(step);
+        else { fl.remove(); resolve(); }
+      };
+      step();
+    });
   };
+  // совместимость: старое имя
+  UI.flyCardEl = (html, from, to, o) => UI.flyCard(html, from, to, o);
 
-  /** Карты, ушедшие из руки, летят в свои стопки; добранные — вылетают из колоды */
+  /** Карты, которые сейчас летят в руку: их место в руке пустует, пока карта не приземлится */
+  UI._handFlying = new Set();
+  UI.awaitFlights = () => UI._flightP || Promise.resolve();
+
+  /** Карты, ушедшие из руки, летят в свои стопки; добранные — вылетают из колоды на своё место в руке */
   UI.trayFlights = function (tray, mh, before, deckBefore) {
     const piles = tray.querySelectorAll('.piles .pile');
     const now = new Set(mh.hand.map((c) => c.u));
     const has = (pile, u) => (pile || []).some((c) => c.u === u);
     const m = G().M();
+    const jobs = [];
     before.forEach((b, u) => {
       if (now.has(u)) return;
       let target = null;
@@ -362,36 +390,34 @@
         const other = m.heroes.findIndex((h) => h !== mh && has(h.hand, u));
         if (other >= 0) target = document.querySelector(`.pmini[data-hero="${other}"]`);
       }
-      const to = target ? target.getBoundingClientRect() : { left: b.r.left, top: b.r.top - 120, width: b.r.width * 0.4, height: b.r.height * 0.4 };
-      UI.flyCardEl(b.html, b.r, to, { fade: !target, rot: target === piles[1] ? 8 : -6 });
+      const r = target ? target.getBoundingClientRect() : null;
+      // в стопку карта уходит маленькой — по размеру стопки
+      const to = r ? { left: r.left + r.width / 2 - r.height * 0.35, top: r.top, width: r.height * 0.7, height: r.height } : { left: b.r.left, top: b.r.top - 120, width: b.r.width * 0.4, height: b.r.height * 0.4 };
+      jobs.push(UI.flyCard(b.html, b.r, to, { fade: !target, rot: target === piles[1] ? 10 : -8 }));
     });
-    // добор: новые карты вылетают из колоды
+    // добор: новые карты по очереди вылетают из колоды и садятся точно на своё место
     const deckR = deckBefore || (piles[0] && piles[0].getBoundingClientRect());
-    if (!deckR) return;
-    let k = 0;
-    tray.querySelectorAll('.hand .card[data-u]').forEach((el) => {
-      const u = +el.dataset.u;
-      if (before.has(u)) return;
-      if (!has(mh.hand, u)) return;
-      const r = el.getBoundingClientRect();
-      const from = { left: deckR.left + deckR.width / 2 - r.width / 2, top: deckR.top + deckR.height / 2 - r.height / 2, width: r.width, height: r.height };
-      el.style.visibility = 'hidden';
-      const delay = k++ * 110 * Math.max(ZG.speed || 1, 0.4);
-      setTimeout(() => {
-        const fl = ZG.html(`<div class="fly-hand-card">${el.outerHTML}</div>`);
-        fl.firstElementChild.style.visibility = '';
-        fl.firstElementChild.classList.remove('new');
-        Object.assign(fl.style, { left: from.left + 'px', top: from.top + 'px', width: r.width + 'px', height: r.height + 'px' });
-        document.body.appendChild(fl);
-        const a = fl.animate([
-          { transform: 'translate(0,0) scale(.3) rotate(-10deg)', opacity: 0 },
-          { transform: `translate(${(r.left - from.left) * 0.5}px, ${(r.top - from.top) * 0.5 - 60}px) scale(.8) rotate(-4deg)`, opacity: 1, offset: 0.55 },
-          { transform: `translate(${r.left - from.left}px, ${r.top - from.top}px) scale(1) rotate(0deg)`, opacity: 1 },
-        ], { duration: 480 * Math.max(ZG.speed || 1, 0.4), easing: 'cubic-bezier(.3,.7,.3,1)', fill: 'forwards' });
-        const done = () => { fl.remove(); el.style.visibility = ''; };
-        a.finished.then(done).catch(done);
-      }, delay);
-    });
+    if (deckR) {
+      let k = 0;
+      tray.querySelectorAll('.hand .card[data-u]').forEach((el) => {
+        const u = +el.dataset.u;
+        if (before.has(u) || !has(mh.hand, u)) return;
+        el.classList.remove('new');
+        el.style.visibility = 'hidden';
+        UI._handFlying.add(u);
+        const html = el.outerHTML;
+        const live = () => { const e = document.querySelector(`#tray .hand .card[data-u="${u}"]`); return e ? e.getBoundingClientRect() : null; };
+        const delay = k++ * 140 * Math.max(ZG.speed || 1, 0.4);
+        const from = { left: deckR.left + deckR.width / 2 - deckR.height * 0.35, top: deckR.top, width: deckR.height * 0.7, height: deckR.height };
+        jobs.push(new Promise((res) => setTimeout(res, delay)).then(() => UI.flyCard(html, from, live, { rot: -8, dur: 560 })).then(() => {
+          UI._handFlying.delete(u);
+          const e = document.querySelector(`#tray .hand .card[data-u="${u}"]`);
+          if (e) e.style.visibility = '';
+        }));
+      });
+    }
+    UI._flightP = Promise.all(jobs);
+    return UI._flightP;
   };
 
   /* ---------- Ожидание действия ---------- */
