@@ -854,24 +854,64 @@
       ${lossHtml}
       <div class="sec-label">Разграбление колоды</div>
       <div class="raid-tokens">${tokRow(start)}</div>
-      <div class="raid-row"></div>
+      <div class="raid-stage"><div class="raid-deck"><div class="rd-back">${ZG.icon('biohazard')}</div><span class="rd-n">${loc.deck.length + steps.filter((x) => ['kill', 'join', 'loot'].includes(x.res)).length}</span></div><div class="raid-row"></div></div>
       <div class="mtext raid-sum"></div>
       <div class="enc-actions"><button class="btn primary" data-ok disabled>${T('continue')}</button></div></div>`);
     ZG.Audio.sfx('raid', 0.9);
+    const quick = ZG.speed < 0.2;
+    const sp = Math.max(ZG.speed, 0.4);
+    const pause = (ms) => (quick ? Promise.resolve() : ZG.sleep(ms * sp));
+    if (!quick) { ZG.FX.flash('red'); ZG.FX.shake(); }
+    // потери героев — по одной: карту вырывают из рук
+    const lost = [...ov.querySelectorAll('.raid-lost')];
+    lost.forEach((el) => el.classList.add('pending'));
+    for (const el of lost) {
+      await pause(300);
+      el.classList.remove('pending'); el.classList.add('stolen');
+      ZG.Audio.synth && ZG.Audio.synth('curse');
+    }
+    if (lost.length) await pause(400);
     const row = ov.querySelector('.raid-row');
     const tk = ov.querySelector('.raid-tokens');
+    const deckN = ov.querySelector('.rd-n');
+    let cur = start;
+    const setTokens = async (n) => {
+      // жетоны меняются по одному: убитые бандиты гаснут, новые вливаются в банду
+      while (cur > n) {
+        const t = [...tk.querySelectorAll('.raid-tok:not(.gone)')].pop();
+        if (!t) break;
+        t.classList.add('gone'); cur--;
+        await pause(260);
+        t.remove();
+      }
+      while (cur < n) {
+        const e = tk.querySelector('.muted'); if (e) e.remove();
+        tk.insertAdjacentHTML('beforeend', `<span class="raid-tok join">${ZG.icon('raider')}</span>`); cur++;
+        await pause(260);
+      }
+      if (cur <= 0 && !tk.querySelector('.raid-tok:not(.gone)')) tk.innerHTML = '<span class="muted">жетонов нет</span>';
+    };
+    let left = +deckN.textContent;
     for (const st of steps) {
-      await ZG.sleep(450);
+      await pause(380);
       const [lbl, cls] = LBL[st.res];
-      const el = ZG.html(`<div class="raid-step ${cls}">${UI.cardHTML(st.c, { size: 'sm' })}<div class="raid-lbl">${esc(lbl)}</div></div>`);
+      const el = ZG.html(`<div class="raid-step">${UI.cardHTML(st.c, { size: 'sm' })}<div class="raid-lbl">${esc(lbl)}</div></div>`);
       row.appendChild(el);
-      tk.innerHTML = tokRow(st.tokens);
+      if (['kill', 'join', 'loot'].includes(st.res)) deckN.textContent = --left;
+      ZG.Audio.synth && ZG.Audio.synth('flip');
+      await pause(520);
+      el.classList.add('res', cls);
+      if (st.res === 'kill') { ZG.Audio.synth && ZG.Audio.synth('hit'); ZG.FX.burstAt && ZG.FX.burstAt(el, 'blood', 30); }
+      await setTokens(st.tokens);
+      el.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: quick ? 'auto' : 'smooth' });
     }
-    await ZG.sleep(300);
+    await pause(300);
+    ov.querySelector('.raid-deck').classList.add('done');
     const kills = steps.filter((x) => x.res === 'kill').length;
     const last = steps[steps.length - 1];
     const end = why === 'villain' ? `Бандиты наткнулись на «${esc(ZG.card(last.c.id).name)}» и ушли.` : why === 'tokens' ? 'Жетоны кончились — банда уходит.' : steps.length ? 'Колода выпотрошена до дна.' : 'Колода пуста — грабить нечего.';
     ov.querySelector('.raid-sum').innerHTML = `${end} Колода перемешана.${kills ? ` Стрельба: шум +${kills}.` : ''}`;
+    ov.querySelector('.raid-sum').classList.add('show');
     const ok = ov.querySelector('[data-ok]');
     ok.disabled = false;
     await new Promise((res) => ok.addEventListener('click', res, { once: true }));
@@ -1202,6 +1242,64 @@
     await Promise.all(jobs);
     const e = locEl(idx);
     if (e) { e.classList.remove('receive'); void e.offsetWidth; e.classList.add('receive'); }
+  };
+
+  /** Вожак переходит между локациями: стрелка «откуда → куда», открытая карта летит по ней, обе колоды тасуются */
+  UI.moveCardAnim = async function (fromIdx, toIdx, cardId) {
+    if (fast() || document.documentElement.classList.contains('no-fx')) return;
+    await peek(true);
+    const fe = locEl(fromIdx), te = locEl(toIdx);
+    const A = rectOf(fe), B = rectOf(te);
+    const NS = 'http://www.w3.org/2000/svg';
+    const svg = document.createElementNS(NS, 'svg');
+    svg.setAttribute('class', 'move-arrow');
+    svg.setAttribute('width', innerWidth); svg.setAttribute('height', innerHeight);
+    const len = Math.hypot(B.x - A.x, B.y - A.y);
+    const lift = Math.min(160, len * 0.35);
+    const cx = (A.x + B.x) / 2, cy = Math.min(A.y, B.y) - lift;
+    svg.innerHTML = `<defs><marker id="mvhead" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#e0a642"/></marker></defs>
+      <path class="mv-line" d="M${A.x},${A.y} Q${cx},${cy} ${B.x},${B.y}" fill="none" stroke="#e0a642" stroke-width="4" stroke-linecap="round" stroke-dasharray="10 9" marker-end="url(#mvhead)"/>`;
+    document.body.appendChild(svg);
+    const path = svg.querySelector(".mv-line");
+    const plen = path.getTotalLength();
+    const sp = Math.max(ZG.speed, 0.4);
+    path.animate([{ strokeDashoffset: plen, opacity: 0 }, { strokeDashoffset: 0, opacity: 1 }], { duration: 450 * sp, easing: 'ease-out', fill: 'both' });
+    [fe, te].forEach((e) => { if (e) e.classList.add('mv-mark'); });
+    await sleep(380 * sp);
+    // открытая карта: поднимается из колоды, переворачивается лицом вверх и летит по стрелке
+    const card = ZG.html(`<div class="move-card">${UI.cardHTML(cardId, { size: 'mini' })}</div>`);
+    document.body.appendChild(card);
+    const W = 112, H = 160;
+    const pts = [0, 0.25, 0.5, 0.75, 1].map((t) => { const q = path.getPointAtLength(plen * t); return { x: q.x - W / 2, y: q.y - H / 2 }; });
+    const a1 = card.animate([
+      { transform: `translate(${pts[0].x}px, ${pts[0].y + 20}px) scale(.4) rotateY(90deg)`, opacity: 0 },
+      { transform: `translate(${pts[0].x}px, ${pts[0].y - 30}px) scale(1) rotateY(0deg)`, opacity: 1 },
+    ], { duration: 420 * sp, easing: 'cubic-bezier(.2,.8,.3,1)', fill: 'forwards' });
+    await a1.finished.catch(() => {});
+    await sleep(380 * sp);
+    const a2 = card.animate([
+      { transform: `translate(${pts[0].x}px, ${pts[0].y - 30}px) rotate(0deg)` },
+      { transform: `translate(${pts[1].x}px, ${pts[1].y - 20}px) rotate(-5deg)` },
+      { transform: `translate(${pts[2].x}px, ${pts[2].y - 10}px) rotate(-2deg)` },
+      { transform: `translate(${pts[3].x}px, ${pts[3].y - 5}px) rotate(3deg)` },
+      { transform: `translate(${pts[4].x}px, ${pts[4].y - 30}px) rotate(0deg)` },
+    ], { duration: 900 * sp, easing: 'cubic-bezier(.45,.05,.4,1)', fill: 'forwards' });
+    await a2.finished.catch(() => {});
+    await sleep(250 * sp);
+    const a3 = card.animate([
+      { transform: `translate(${pts[4].x}px, ${pts[4].y - 30}px) scale(1)`, opacity: 1 },
+      { transform: `translate(${pts[4].x}px, ${pts[4].y + 10}px) scale(.35)`, opacity: 0 },
+    ], { duration: 380 * sp, easing: 'ease-in', fill: 'forwards' });
+    await a3.finished.catch(() => {});
+    card.remove();
+    // обе колоды перетасовываются
+    [fe, te].forEach((e) => { if (!e) return; e.classList.remove('mv-mark', 'shuffle'); void e.offsetWidth; e.classList.add('shuffle'); });
+    ZG.Audio.synth && ZG.Audio.synth('flip');
+    svg.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 400 * sp, fill: 'forwards' });
+    await sleep(600 * sp);
+    svg.remove();
+    [fe, te].forEach((e) => e && e.classList.remove('shuffle'));
+    await peek(false);
   };
 
   /** Карта переходит из одной локации в другую */

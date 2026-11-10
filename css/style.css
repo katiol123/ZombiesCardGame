@@ -812,6 +812,11 @@ h1, h2, h3 { font-family: var(--font-head); font-weight: 600; letter-spacing: 0.
 .fly-card.gold { border-color: var(--amber); box-shadow: 0 0 18px rgba(224,166,66,.7); }
 .enc-ov.peek { opacity: .1 !important; transition: opacity .35s ease; pointer-events: none; }
 .loc.receive { animation: receive .6s var(--ease); }
+.move-arrow { position: fixed; inset: 0; z-index: 2550; pointer-events: none; filter: drop-shadow(0 0 6px rgba(224,166,66,.55)); }
+.move-card { position: fixed; left: 0; top: 0; z-index: 2560; pointer-events: none; filter: drop-shadow(0 16px 30px rgba(0,0,0,.85)); }
+.loc.mv-mark { box-shadow: 0 0 0 2px var(--amber), 0 0 26px rgba(224,166,66,.45); }
+.loc.shuffle .lstack { animation: deckShuffle .55s ease-in-out; }
+@keyframes deckShuffle { 0%, 100% { transform: none; } 20% { transform: translateX(-6px) rotate(-4deg); } 40% { transform: translateX(6px) rotate(4deg); } 60% { transform: translateX(-4px) rotate(-2deg); } 80% { transform: translateX(3px) rotate(1deg); } }
 @keyframes receive { 0% { transform: scale(1.04); box-shadow: 0 0 0 2px var(--blood2), 0 0 40px rgba(214,60,47,.6); } 100% { transform: none; } }
 .loc.purge .lart { animation: purge 1s ease; }
 @keyframes purge { 30% { filter: brightness(2.2) sepia(1) hue-rotate(-20deg); } 100% { filter: none; } }
@@ -970,7 +975,28 @@ h1, h2, h3 { font-family: var(--font-head); font-weight: 600; letter-spacing: 0.
 @keyframes raidTok { from { transform: scale(1.4); opacity: 0; } }
 .raid-row { display: flex; flex-wrap: wrap; gap: 10px; min-height: 40px; }
 .raid-step { display: flex; flex-direction: column; align-items: center; gap: 4px; animation: raidIn .35s ease-out; }
-@keyframes raidIn { from { transform: translateY(-14px) rotateY(80deg); opacity: 0; } }
+@keyframes raidIn { from { transform: translate(-70px, -10px) rotateY(90deg) scale(.7); opacity: 0; } 60% { transform: translate(0, -6px) rotateY(0) scale(1.06); opacity: 1; } }
+.raid-stage { display: flex; gap: 14px; align-items: flex-start; }
+.raid-deck { position: relative; flex: none; width: 70px; height: 100px; border-radius: 8px; background: linear-gradient(160deg, #2a1b1b, #120c0c); border: 1px solid #5a2a24; display: grid; place-items: center; color: #8c3a30; box-shadow: 3px 3px 0 #1a1010, 6px 6px 0 #0e0909; transition: opacity .5s, transform .5s; }
+.raid-deck .rd-back svg { width: 34px; height: 34px; }
+.raid-deck .rd-n { position: absolute; bottom: -9px; left: 50%; transform: translateX(-50%); background: #000; border: 1px solid #5a2a24; border-radius: 9px; padding: 0 7px; font-family: var(--font-head); font-size: 12px; color: #e8dfcf; }
+.raid-deck.done { opacity: .45; transform: scale(.94); }
+.raid-step { animation: raidIn .55s cubic-bezier(.2,.8,.3,1) both; transition: filter .4s, opacity .4s, transform .4s; }
+.raid-step .raid-lbl { opacity: 0; transform: scale(1.8) rotate(-8deg); transition: opacity .25s, transform .3s cubic-bezier(.3,1.6,.5,1); }
+.raid-step.res .raid-lbl { opacity: 1; transform: none; }
+.raid-step.res.loot { opacity: .55; transform: translateY(6px); filter: grayscale(.8); }
+.raid-step.res.kill .card { box-shadow: 0 0 0 2px #c0503f, 0 0 18px rgba(214,60,47,.6); }
+.raid-step.res.join .card { box-shadow: 0 0 0 2px var(--amber), 0 0 18px rgba(224,166,66,.5); }
+.raid-tok { transition: transform .26s, opacity .26s; }
+.raid-tok.gone { transform: scale(.2) rotate(40deg); opacity: 0; background: #2a0d0d; }
+.raid-tok.join { animation: raidTokJoin .35s cubic-bezier(.3,1.6,.5,1); }
+@keyframes raidTokJoin { from { transform: scale(2); opacity: 0; box-shadow: 0 0 20px var(--amber); } }
+.raid-lost { transition: opacity .35s, transform .35s, filter .35s; }
+.raid-lost.pending { opacity: 0; transform: translateY(10px); }
+.raid-lost.stolen .card { animation: raidSteal .6s ease-out both; }
+@keyframes raidSteal { 0% { transform: none; } 40% { transform: translate(10px, -16px) rotate(8deg); filter: none; } 100% { transform: translate(4px, -4px) rotate(4deg); filter: grayscale(.7) brightness(.7); } }
+.raid-sum { opacity: 0; transform: translateY(6px); transition: opacity .4s, transform .4s; }
+.raid-sum.show { opacity: 1; transform: none; }
 .raid-lbl { max-width: 124px; text-align: center; line-height: 1.2; font-size: 11px; letter-spacing: .04em; text-transform: uppercase; padding: 2px 8px; border-radius: 10px; background: #2a2a30; color: #cfcfd6; }
 .raid-step.kill .raid-lbl { background: #5a1a1a; color: #ffb3a8; }
 .raid-step.join .raid-lbl { background: #4a3514; color: #ffd28a; }
@@ -1215,10 +1241,10 @@ body.night .guard-art { filter: brightness(.8) saturate(.6); }
 .weather { grid-area: locs; position: relative; pointer-events: none; z-index: 4; overflow: hidden; }
 .weather i { position: absolute; inset: -20%; opacity: 0; transition: opacity 1.5s ease; }
 /* ливень: косые струи двух слоёв, капли на картинках темнее */
-.weather .w-rain { background: url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27160%27%20height%3D%27160%27%3E%3Cg%20stroke%3D%27%23cfdcf0%27%20stroke-opacity%3D%270.38%27%20stroke-width%3D%271.3%27%20stroke-linecap%3D%27round%27%3E%3Cline%20x1%3D%2751.8%27%20y1%3D%2724.1%27%20x2%3D%2749.6%27%20y2%3D%2735.1%27/%3E%3Cline%20x1%3D%27104.1%27%20y1%3D%2711.6%27%20x2%3D%27101.9%27%20y2%3D%2722.6%27/%3E%3Cline%20x1%3D%2785.7%27%20y1%3D%2758.5%27%20x2%3D%2783.5%27%20y2%3D%2769.5%27/%3E%3Cline%20x1%3D%279.3%27%20y1%3D%2781.2%27%20x2%3D%277.1%27%20y2%3D%2792.2%27/%3E%3Cline%20x1%3D%276.0%27%20y1%3D%2769.4%27%20x2%3D%273.8%27%20y2%3D%2780.4%27/%3E%3Cline%20x1%3D%2711.2%27%20y1%3D%2714.5%27%20x2%3D%279.0%27%20y2%3D%2725.5%27/%3E%3Cline%20x1%3D%2767.9%27%20y1%3D%27132.3%27%20x2%3D%2765.7%27%20y2%3D%27143.3%27/%3E%3Cline%20x1%3D%2719.8%27%20y1%3D%2735.7%27%20x2%3D%2717.6%27%20y2%3D%2746.7%27/%3E%3Cline%20x1%3D%27100.4%27%20y1%3D%27151.6%27%20x2%3D%2798.2%27%20y2%3D%27162.6%27/%3E%3Cline%20x1%3D%2792.3%27%20y1%3D%2763.5%27%20x2%3D%2790.1%27%20y2%3D%2774.5%27/%3E%3Cline%20x1%3D%27156.2%27%20y1%3D%277.5%27%20x2%3D%27154.0%27%20y2%3D%2718.5%27/%3E%3Cline%20x1%3D%27137.4%27%20y1%3D%2746.3%27%20x2%3D%27135.2%27%20y2%3D%2757.3%27/%3E%3Cline%20x1%3D%2723.1%27%20y1%3D%2718.8%27%20x2%3D%2720.9%27%20y2%3D%2729.8%27/%3E%3Cline%20x1%3D%2749.4%27%20y1%3D%27130.6%27%20x2%3D%2747.2%27%20y2%3D%27141.6%27/%3E%3C/g%3E%3C/svg%3E") 0 0 / 160px 160px repeat; animation: rainFall 1.3s linear infinite; }
-.weather .w-rain.w2 { background: url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27220%27%20height%3D%27220%27%3E%3Cg%20stroke%3D%27%23cfdcf0%27%20stroke-opacity%3D%270.22%27%20stroke-width%3D%271%27%20stroke-linecap%3D%27round%27%3E%3Cline%20x1%3D%2739.8%27%20y1%3D%27128.0%27%20x2%3D%2738.2%27%20y2%3D%27136.0%27/%3E%3Cline%20x1%3D%27140.6%27%20y1%3D%2781.9%27%20x2%3D%27139.0%27%20y2%3D%2789.9%27/%3E%3Cline%20x1%3D%27120.5%27%20y1%3D%2713.8%27%20x2%3D%27118.9%27%20y2%3D%2721.8%27/%3E%3Cline%20x1%3D%2713.1%27%20y1%3D%2745.3%27%20x2%3D%2711.5%27%20y2%3D%2753.3%27/%3E%3Cline%20x1%3D%27149.7%27%20y1%3D%2794.1%27%20x2%3D%27148.1%27%20y2%3D%27102.1%27/%3E%3Cline%20x1%3D%2769.1%27%20y1%3D%27128.8%27%20x2%3D%2767.5%27%20y2%3D%27136.8%27/%3E%3Cline%20x1%3D%2799.7%27%20y1%3D%2765.9%27%20x2%3D%2798.1%27%20y2%3D%2773.9%27/%3E%3Cline%20x1%3D%27174.8%27%20y1%3D%27153.8%27%20x2%3D%27173.2%27%20y2%3D%27161.8%27/%3E%3Cline%20x1%3D%2753.7%27%20y1%3D%27126.4%27%20x2%3D%2752.1%27%20y2%3D%27134.4%27/%3E%3Cline%20x1%3D%27115.5%27%20y1%3D%27192.5%27%20x2%3D%27113.9%27%20y2%3D%27200.5%27/%3E%3C/g%3E%3C/svg%3E") 0 0 / 220px 220px repeat; animation: rainFall2 2s linear infinite; }
-@keyframes rainFall { from { background-position: 0 0; } to { background-position: -32px 160px; } }
-@keyframes rainFall2 { from { background-position: 0 0; } to { background-position: -44px 220px; } }
+.weather .w-rain { background: url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27160%27%20height%3D%27160%27%3E%3Cg%20stroke%3D%27%23cfdcf0%27%20stroke-opacity%3D%270.38%27%20stroke-width%3D%271.3%27%20stroke-linecap%3D%27round%27%3E%3Cline%20x1%3D%2751.8%27%20y1%3D%2724.1%27%20x2%3D%2751.8%27%20y2%3D%2738.1%27/%3E%3Cline%20x1%3D%27104.1%27%20y1%3D%2711.6%27%20x2%3D%27104.1%27%20y2%3D%2725.6%27/%3E%3Cline%20x1%3D%2785.7%27%20y1%3D%2758.5%27%20x2%3D%2785.7%27%20y2%3D%2772.5%27/%3E%3Cline%20x1%3D%279.3%27%20y1%3D%2781.2%27%20x2%3D%279.3%27%20y2%3D%2795.2%27/%3E%3Cline%20x1%3D%276.0%27%20y1%3D%2769.4%27%20x2%3D%276.0%27%20y2%3D%2783.4%27/%3E%3Cline%20x1%3D%2711.2%27%20y1%3D%2714.5%27%20x2%3D%2711.2%27%20y2%3D%2728.5%27/%3E%3Cline%20x1%3D%2767.9%27%20y1%3D%27132.3%27%20x2%3D%2767.9%27%20y2%3D%27146.3%27/%3E%3Cline%20x1%3D%2719.8%27%20y1%3D%2735.7%27%20x2%3D%2719.8%27%20y2%3D%2749.7%27/%3E%3Cline%20x1%3D%27100.4%27%20y1%3D%27151.6%27%20x2%3D%27100.4%27%20y2%3D%27165.6%27/%3E%3Cline%20x1%3D%2792.3%27%20y1%3D%2763.5%27%20x2%3D%2792.3%27%20y2%3D%2777.5%27/%3E%3Cline%20x1%3D%27156.2%27%20y1%3D%277.5%27%20x2%3D%27156.2%27%20y2%3D%2721.5%27/%3E%3Cline%20x1%3D%27137.4%27%20y1%3D%2746.3%27%20x2%3D%27137.4%27%20y2%3D%2760.3%27/%3E%3Cline%20x1%3D%2723.1%27%20y1%3D%2718.8%27%20x2%3D%2723.1%27%20y2%3D%2732.8%27/%3E%3Cline%20x1%3D%2749.4%27%20y1%3D%27130.6%27%20x2%3D%2749.4%27%20y2%3D%27144.6%27/%3E%3C/g%3E%3C/svg%3E") 0 0 / 160px 160px repeat; animation: rainFall .55s linear infinite; }
+.weather .w-rain.w2 { background: url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27220%27%20height%3D%27220%27%3E%3Cg%20stroke%3D%27%23cfdcf0%27%20stroke-opacity%3D%270.22%27%20stroke-width%3D%271%27%20stroke-linecap%3D%27round%27%3E%3Cline%20x1%3D%2739.8%27%20y1%3D%27128.0%27%20x2%3D%2739.8%27%20y2%3D%27139.0%27/%3E%3Cline%20x1%3D%27140.6%27%20y1%3D%2781.9%27%20x2%3D%27140.6%27%20y2%3D%2792.9%27/%3E%3Cline%20x1%3D%27120.5%27%20y1%3D%2713.8%27%20x2%3D%27120.5%27%20y2%3D%2724.8%27/%3E%3Cline%20x1%3D%2713.1%27%20y1%3D%2745.3%27%20x2%3D%2713.1%27%20y2%3D%2756.3%27/%3E%3Cline%20x1%3D%27149.7%27%20y1%3D%2794.1%27%20x2%3D%27149.7%27%20y2%3D%27105.1%27/%3E%3Cline%20x1%3D%2769.1%27%20y1%3D%27128.8%27%20x2%3D%2769.1%27%20y2%3D%27139.8%27/%3E%3Cline%20x1%3D%2799.7%27%20y1%3D%2765.9%27%20x2%3D%2799.7%27%20y2%3D%2776.9%27/%3E%3Cline%20x1%3D%27174.8%27%20y1%3D%27153.8%27%20x2%3D%27174.8%27%20y2%3D%27164.8%27/%3E%3Cline%20x1%3D%2753.7%27%20y1%3D%27126.4%27%20x2%3D%2753.7%27%20y2%3D%27137.4%27/%3E%3Cline%20x1%3D%27115.5%27%20y1%3D%27192.5%27%20x2%3D%27115.5%27%20y2%3D%27203.5%27/%3E%3C/g%3E%3C/svg%3E") 0 0 / 220px 220px repeat; animation: rainFall2 .8s linear infinite; }
+@keyframes rainFall { from { background-position: 0 0; } to { background-position: 0 160px; } }
+@keyframes rainFall2 { from { background-position: 0 0; } to { background-position: 0 220px; } }
 .board.w-rain .weather .w-rain { opacity: 1; }
 .board.w-rain .loc .lart img { filter: brightness(.9) saturate(.85) !important; }
 .board.w-rain .loc .lart::before { content: ''; position: absolute; inset: 0; z-index: 1; background: linear-gradient(180deg, rgba(60, 80, 110, .16), transparent); pointer-events: none; }

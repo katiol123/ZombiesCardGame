@@ -1854,11 +1854,12 @@
     const c = from.deck.splice(i, 1)[0];
     to.deck.push(c);
     R.shuffle(to.deck);
+    R.shuffle(from.deck);
     const name = ZG.card(hid).name;
-    await UI().flyBetween(G.M().locations.indexOf(from), G.M().locations.indexOf(to), 'ghost');
-    G.log(`${why}: ${name} уходит из «${G.ldef(from).name}» в «${G.ldef(to).name}».`, 'bad');
+    await UI().moveCardAnim(G.M().locations.indexOf(from), G.M().locations.indexOf(to), hid);
+    G.log(`${why}: ${name} уходит из «${G.ldef(from).name}» в «${G.ldef(to).name}». Обе колоды перетасованы.`, 'bad');
     ZG.Audio.sfx('growl', 0.7);
-    await UI().banner(`${why}: ${name}`, `Из «${G.ldef(from).name}» в «${G.ldef(to).name}»`, 'warn');
+    await UI().banner(`${why}: ${name}`, `Из «${G.ldef(from).name}» в «${G.ldef(to).name}» · обе колоды перетасованы`, 'warn');
     UI().renderBoard();
   };
 
