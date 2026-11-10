@@ -191,9 +191,12 @@
       });
     },
     click(c, o, t) { burst(c, o, t, 0.03, 2500, 3, 0.25); },
+    type(c, o, t) { burst(c, o, t, 0.025, 3200, 2, 0.35); tone(c, o, 'square', 1100, 0, t, 0.015, 0.05); },
+    paper(c, o, t) { burst(c, o, t, 0.32, 2600, 0.6, 0.35); burst(c, o, t + 0.08, 0.22, 5200, 0.8, 0.2, 'highpass'); },
+    stamp(c, o, t) { burst(c, o, t, 0.14, 420, 0.7, 1, 'lowpass'); tone(c, o, 'sine', 95, 40, t, 0.28, 0.9); burst(c, o, t, 0.05, 1800, 1, 0.35); },
     noise(c, o, t) { tone(c, o, 'square', 330, 0, t, 0.08, 0.06); tone(c, o, 'square', 330, 0, t + 0.12, 0.08, 0.06); },
   };
-  const SYN_VOL = { click: 0.25, tick: 0.5, dice: 0.6 };
+  const SYN_VOL = { click: 0.25, tick: 0.5, dice: 0.6, type: 0.3, paper: 0.55 };
   A.synth = function (name) {
     if (A.disabled || !A.unlocked || sfxVol() <= 0 || !SYN[name]) return;
     const c = ctx();

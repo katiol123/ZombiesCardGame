@@ -111,25 +111,54 @@
     });
   };
 
-  /* ============================== Выбор отряда ============================== */
+  /* ============================== Выбор отряда: «Досье выживших» ============================== */
+  // Папки с делами лежат на столе каруселью. Центральная раскрыта: фото на скрепке и машинописный текст.
+  // «Взять в отряд» — штамп «В ОТРЯДЕ», папка улетает в стопку отряда, карусель смыкается.
   UI.showParty = function (slot) {
-    const sel = new Set(['marina', 'grom']);
+    const sel = [];
     let diff = 'normal';
-    const s = show(`<div class="screen"><div class="page">
+    const caseNo = (i) => `${String(17 + i * 23).padStart(3, '0')}-${['А', 'Б', 'В', 'Г', 'Д', 'Е', 'Ж'][i] || 'З'}`;
+    const folder = (id, i) => {
+      const h = ZG.HEROES[id];
+      const ph = { id, feats: { attr: {}, hand: 0, slots: {} }, scars: [] };
+      return `<div class="dossier" data-id="${id}" style="--hc:${h.color}">
+        <div class="df-page">
+          <div class="df-text">
+            <div class="df-h" data-type>${esc(h.name)}</div>
+            <div class="df-role" data-type>${esc(h.role)}</div>
+            <div class="df-blk">${UI.statsHTML(ph)}</div>
+            <div class="df-blk df-line">Рука: <b>${h.hand}</b> · Колода: <b>15</b> · Владение: <b>${(h.prof || []).length ? h.prof.map((k) => esc(ZG.PROF[k].name)).join(', ') : 'нет'}</b></div>
+            ${h.powers.map((p) => `<div class="df-blk power"><b>${esc(p.name)}.</b> ${esc(p.text)}</div>`).join('')}
+          </div>
+          <div class="df-foot"><button class="btn primary small" data-take>${ZG.icon('users')} Взять в отряд</button></div>
+          <div class="df-stamp squad">В ОТРЯДЕ</div>
+        </div>
+        <div class="df-cover">
+          <div class="df-face front">
+            <div class="df-tab">${esc(h.name.replace(/^.*«(.+)».*$/, '$1'))}</div>
+            <div class="df-label"><small>Дело № ${caseNo(i)}</small><b>${esc(h.name)}</b><span>${esc(h.role)}</span></div>
+            <div class="df-peek">${ZG.art('avatars', id, h.icon)}</div>
+            <div class="df-secret">Хранить в убежище</div>
+          </div>
+          <div class="df-face back">
+            <div class="df-photo">${ZG.art('heroes', id, h.icon)}<span class="df-clip"></span></div>
+            <div class="df-stamp alive">Статус: жив</div>
+            <p class="df-bio">${esc(h.bio)}</p>
+          </div>
+        </div>
+      </div>`;
+    };
+    const s = show(`<div class="screen dossier-screen"><div class="page">
       <div class="page-head"><button class="btn icon ghost" data-back>${ZG.icon('x')}</button><h1>${T('party_title')}</h1></div>
       <p class="muted">${T('party_hint')}</p>
-      <div class="hero-carousel"><button class="hc-nav prev" data-hc="-1" aria-label="Назад">‹</button><div class="hero-pick">${ZG.HERO_ORDER.map((id) => {
-        const h = ZG.HEROES[id];
-        const ph = { id, feats: { attr: {}, hand: 0, slots: {} }, scars: [] };
-        return `<div class="hero-card" data-id="${id}" style="--hc:${h.color}">
-          <div class="portrait">${ZG.art('heroes', id, h.icon)}<div class="check">${ZG.icon('x')}</div></div>
-          <div class="body"><h3>${esc(h.name)}</h3><div class="role">${esc(h.role)}</div>
-          ${UI.statsHTML(ph)}
-          <div class="stat-row"><span class="stat">Рука <b>${h.hand}</b></span><span class="stat">Колода <b>15</b></span></div>
-          ${h.powers.map((p) => `<div class="power"><b>${esc(p.name)}.</b> ${esc(p.text)}</div>`).join('')}
-          <div class="prof">Владение: ${(h.prof || []).length ? h.prof.map((k) => esc(ZG.PROF[k].name)).join(', ') : 'нет'}</div>
-          <p class="flavor" style="font-size:13px;margin:10px 0 0">${esc(h.bio)}</p></div></div>`;
-      }).join('')}</div><button class="hc-nav next" data-hc="1" aria-label="Вперёд">›</button></div>
+      <div class="dossier-wrap">
+        <div class="dossier-stage">
+          <button class="hc-nav prev" data-hc="-1" aria-label="Назад">‹</button>
+          <div class="dossier-track">${ZG.HERO_ORDER.map(folder).join('')}</div>
+          <button class="hc-nav next" data-hc="1" aria-label="Вперёд">›</button>
+        </div>
+        <div class="squad-stack"><div class="sq-head">Отряд <b id="sqn">0/4</b></div><div class="sq-list"></div><div class="sq-empty muted">Возьмите в отряд от 1 до 4 выживших</div></div>
+      </div>
       <div class="sticky-foot">
         <div class="diff-seg"><span class="muted">${T('party_difficulty')}:</span>
           <button class="diff" data-d="normal" title="${esc(T('diff_normal_d'))}"><b>${T('diff_normal')}</b></button>
@@ -137,42 +166,205 @@
           <span class="muted diff-note" id="diffnote"></span></div>
         <span class="muted" id="pcount"></span><button class="btn primary" data-start>${ZG.icon('skull')} ${T('party_start')}</button></div>
     </div></div>`);
-    const upd = () => {
-      s.querySelectorAll('.hero-card').forEach((c) => {
-        c.classList.toggle('sel', sel.has(c.dataset.id));
-        c.querySelector('.check').innerHTML = sel.has(c.dataset.id) ? '✓' : '';
+    const stage = s.querySelector('.dossier-stage');
+    const els = {};
+    s.querySelectorAll('.dossier').forEach((el) => (els[el.dataset.id] = el));
+    const list = () => ZG.HERO_ORDER.filter((id) => !sel.includes(id));
+    const quick = () => (ZG.speed || 1) < 0.2 || document.documentElement.classList.contains('no-fx');
+    let cur = 0, typing = 0, busy = false;
+
+    // машинописный текст раскрытой папки: заголовок печатается по буквам, остальное — строками
+    const typeOut = async (el) => {
+      const tok = ++typing;
+      const heads = [...el.querySelectorAll('[data-type]')];
+      const blks = [...el.querySelectorAll('.df-blk, .df-foot')];
+      heads.forEach((h) => { h.dataset.full = h.dataset.full || h.textContent; h.textContent = ''; });
+      blks.forEach((b) => b.classList.add('wait'));
+      if (quick()) { heads.forEach((h) => (h.textContent = h.dataset.full)); blks.forEach((b) => b.classList.remove('wait')); return; }
+      await ZG.sleep(380);
+      for (const h of heads) {
+        const full = h.dataset.full;
+        for (let i = 1; i <= full.length; i++) {
+          if (tok !== typing) return;
+          h.textContent = full.slice(0, i);
+          if (i % 2) ZG.Audio.synth('type');
+          await ZG.sleep(18);
+        }
+      }
+      for (const b of blks) {
+        if (tok !== typing) return;
+        b.classList.remove('wait');
+        ZG.Audio.synth('type');
+        await ZG.sleep(70);
+      }
+    };
+    const finishType = (el) => {
+      el.querySelectorAll('[data-type]').forEach((h) => { if (h.dataset.full) h.textContent = h.dataset.full; });
+      el.querySelectorAll('.wait').forEach((b) => b.classList.remove('wait'));
+    };
+
+    const layout = (opening) => {
+      const L = list();
+      cur = Math.max(0, Math.min(cur, L.length - 1));
+      const W = s.querySelector('.dossier').offsetWidth;
+      ZG.HERO_ORDER.forEach((id) => {
+        const el = els[id];
+        const i = L.indexOf(id);
+        if (i < 0) { el.classList.add('away'); el.classList.remove('open'); return; }
+        el.classList.remove('away');
+        const o = i - cur, a = Math.abs(o);
+        const sc = a === 0 ? 1 : a === 1 ? 0.6 : 0.48;
+        let x;
+        if (o === 0) x = 0;
+        else if (o > 0) x = W + 26 + (a - 1) * (W * 0.6 * 0.55);
+        else x = -(W + 26) - W * sc - (a - 1) * (W * 0.6 * 0.55);
+        el.style.transform = `translateX(${x}px) translateY(${o === 0 ? 0 : W * 0.22}px) scale(${sc}) rotate(${o === 0 ? 0 : o * 2.5}deg)`;
+        el.style.zIndex = String(10 - a);
+        el.style.opacity = a > 2 ? '0' : a === 2 ? '.45' : '1';
+        el.style.pointerEvents = a > 2 ? 'none' : '';
+        el.classList.toggle('side', o !== 0);
+        const was = el.classList.contains('open');
+        el.classList.toggle('open', o === 0);
+        if (o === 0 && (!was || opening)) typeOut(el);
+        if (o !== 0 && was) finishType(el);
       });
+      s.querySelector('.hc-nav.prev').classList.toggle('off', cur <= 0);
+      s.querySelector('.hc-nav.next').classList.toggle('off', cur >= L.length - 1);
+    };
+    const goTo = (k) => {
+      const L = list();
+      k = Math.max(0, Math.min(k, L.length - 1));
+      if (k === cur) return;
+      cur = k;
+      ZG.Audio.synth('paper');
+      layout();
+    };
+
+    const upd = () => {
       s.querySelectorAll('.diff').forEach((d) => d.classList.toggle('sel', d.dataset.d === diff));
       s.querySelector('#diffnote').textContent = T(diff === 'hard' ? 'diff_hard_d' : 'diff_normal_d');
-      s.querySelector('[data-start]').disabled = sel.size === 0;
-      s.querySelector('#pcount').textContent = sel.size ? `Героев: ${sel.size} · локаций в миссии: ${Math.min(6, sel.size + 2)}` : T('party_need');
+      s.querySelector('[data-start]').disabled = sel.length === 0;
+      s.querySelector('#pcount').textContent = sel.length ? `Героев: ${sel.length} · локаций в миссии: ${Math.min(6, sel.length + 2)}` : T('party_need');
+      s.querySelector('#sqn').textContent = `${sel.length}/4`;
+      s.querySelector('.squad-stack').classList.toggle('empty', !sel.length);
+      s.querySelectorAll('[data-take]').forEach((b) => (b.disabled = sel.length >= 4));
     };
-    s.querySelectorAll('.hero-card').forEach((c) => c.addEventListener('click', () => {
-      const id = c.dataset.id;
-      if (sel.has(id)) sel.delete(id);
-      else if (sel.size >= 4) return UI.toast('В отряде не больше 4 героев — сначала уберите кого-нибудь', 'bad');
-      else sel.add(id);
+    const miniHTML = (id) => {
+      const h = ZG.HEROES[id];
+      return `<button class="sq-folder" data-id="${id}" style="--hc:${h.color}" title="Вернуть в картотеку">
+        <span class="sq-ava">${ZG.art('avatars', id, h.icon)}</span><span class="sq-name"><b>${esc(h.name)}</b><small>${esc(h.role)}</small></span><span class="sq-stamp">В ОТРЯДЕ</span></button>`;
+    };
+
+    const take = async (id) => {
+      if (busy || sel.includes(id)) return;
+      if (sel.length >= 4) return UI.toast('В отряде не больше 4 героев — сначала верните кого-нибудь из стопки', 'bad');
+      busy = true;
+      const el = els[id];
+      finishType(el);
+      typing++;
+      // штамп
+      el.classList.add('stamped');
+      ZG.Audio.synth('stamp');
+      ZG.FX.shake(el.querySelector('.df-page'));
+      if (!quick()) await ZG.sleep(650);
+      // папка закрывается и улетает в стопку
+      el.classList.remove('open');
+      if (!quick()) await ZG.sleep(420);
+      const from = el.querySelector('.df-cover').getBoundingClientRect();
+      sel.push(id);
+      const lst = s.querySelector('.sq-list');
+      lst.insertAdjacentHTML('beforeend', miniHTML(id));
+      const mini = lst.lastElementChild;
+      mini.addEventListener('click', () => giveBack(id));
+      mini.style.visibility = 'hidden';
       upd();
-    }));
-    s.querySelectorAll('.diff').forEach((d) => d.addEventListener('click', () => { diff = d.dataset.d; upd(); }));
-    // карусель героев: стрелки листают на одну карточку, колесо мыши — по горизонтали
-    const row = s.querySelector('.hero-pick');
-    const stepW = () => { const c = row.querySelector('.hero-card'); return c ? c.getBoundingClientRect().width + 18 : 320; };
-    const navUpd = () => {
-      s.querySelector('.hc-nav.prev').classList.toggle('off', row.scrollLeft < 4);
-      s.querySelector('.hc-nav.next').classList.toggle('off', row.scrollLeft + row.clientWidth >= row.scrollWidth - 4);
+      const to = mini.getBoundingClientRect();
+      const fl = el.querySelector('.df-cover').cloneNode(true);
+      fl.classList.add('df-fly');
+      Object.assign(fl.style, { left: from.left + 'px', top: from.top + 'px', width: from.width + 'px', height: from.height + 'px' });
+      document.body.appendChild(fl);
+      el.style.visibility = 'hidden';
+      layout();
+      ZG.Audio.synth('paper');
+      if (!quick() && fl.animate) {
+        const dx = to.left + to.width / 2 - (from.left + from.width / 2), dy = to.top + to.height / 2 - (from.top + from.height / 2);
+        const k = Math.max(to.width / from.width, 0.12);
+        await fl.animate([
+          { transform: 'translate(0,0) scale(1) rotate(0deg)', opacity: 1 },
+          { transform: `translate(${dx * 0.5}px, ${dy * 0.5 - 80}px) scale(${(1 + k) / 2}) rotate(-8deg)`, opacity: 1, offset: 0.55 },
+          { transform: `translate(${dx}px, ${dy}px) scale(${k}) rotate(0deg)`, opacity: 0.2 },
+        ], { duration: 620, easing: 'cubic-bezier(.45,.05,.35,1)' }).finished.catch(() => {});
+      }
+      fl.remove();
+      el.style.visibility = '';
+      el.classList.remove('stamped');
+      mini.style.visibility = '';
+      mini.classList.add('landed');
+      ZG.Audio.synth('hit');
+      busy = false;
     };
-    s.querySelectorAll('[data-hc]').forEach((b) => b.addEventListener('click', () => row.scrollBy({ left: +b.dataset.hc * stepW(), behavior: 'smooth' })));
-    row.addEventListener('scroll', navUpd, { passive: true });
-    row.addEventListener('wheel', (e) => { if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) { row.scrollBy({ left: e.deltaY, behavior: 'auto' }); e.preventDefault(); } }, { passive: false });
-    requestAnimationFrame(navUpd);
+    const giveBack = (id) => {
+      if (busy) return;
+      const i = sel.indexOf(id);
+      if (i < 0) return;
+      sel.splice(i, 1);
+      const mini = s.querySelector(`.sq-folder[data-id="${id}"]`);
+      if (mini) mini.remove();
+      ZG.Audio.synth('paper');
+      const el = els[id];
+      // возвращённая папка появляется в центре карусели
+      el.style.transition = 'none';
+      el.style.opacity = '0';
+      el.style.transform = 'translateY(-60px) scale(.8)';
+      void el.offsetWidth;
+      el.style.transition = '';
+      cur = list().indexOf(id);
+      upd();
+      layout(true);
+    };
+
+    ZG.HERO_ORDER.forEach((id) => {
+      const el = els[id];
+      el.addEventListener('click', (e) => {
+        if (e.target.closest('[data-take]')) return take(id);
+        if (el.classList.contains('side')) goTo(list().indexOf(id));
+        else finishType(el);
+      });
+    });
+    s.querySelectorAll('[data-hc]').forEach((b) => b.addEventListener('click', () => goTo(cur + +b.dataset.hc)));
+    // колесо мыши, свайп и стрелки клавиатуры листают папки
+    let wheelT = 0;
+    stage.addEventListener('wheel', (e) => {
+      const d = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
+      if (Math.abs(d) < 8) return;
+      e.preventDefault();
+      const now = performance.now();
+      if (now - wheelT < 380) return;
+      wheelT = now;
+      goTo(cur + (d > 0 ? 1 : -1));
+    }, { passive: false });
+    let sx = null;
+    stage.addEventListener('pointerdown', (e) => { sx = e.clientX; });
+    stage.addEventListener('pointerup', (e) => { if (sx != null && Math.abs(e.clientX - sx) > 50) goTo(cur + (e.clientX < sx ? 1 : -1)); sx = null; });
+    const onKey = (e) => {
+      if (!s.isConnected) return document.removeEventListener('keydown', onKey);
+      if (document.querySelector('#overlay-root > .overlay')) return;
+      if (e.key === 'ArrowRight') goTo(cur + 1);
+      if (e.key === 'ArrowLeft') goTo(cur - 1);
+    };
+    document.addEventListener('keydown', onKey);
+    const onResize = () => { if (!s.isConnected) return window.removeEventListener('resize', onResize); layout(); };
+    window.addEventListener('resize', onResize);
+
+    s.querySelectorAll('.diff').forEach((d) => d.addEventListener('click', () => { diff = d.dataset.d; upd(); }));
     s.querySelector('[data-back]').addEventListener('click', () => go(() => UI.showSlots('new')));
     s.querySelector('[data-start]').addEventListener('click', () => {
-      const ids = ZG.HERO_ORDER.filter((id) => sel.has(id));
+      const ids = ZG.HERO_ORDER.filter((id) => sel.includes(id));
       ZG.Save.newCampaign(slot, ids, diff);
       go(() => UI.showBriefing(0));
     });
     upd();
+    requestAnimationFrame(() => layout(true));
   };
 
   /* ============================== Карта кампании ============================== */

@@ -1427,3 +1427,102 @@ body:has(#overlay-root > .overlay) #grain, body:has(.enc-ov) #grain { display: n
 .tok-fly > .avatar { width: 100% !important; height: 100% !important; }
 .tok-landed { animation: tokLand .35s ease-out; }
 @keyframes tokLand { 0% { transform: scale(1.25); box-shadow: 0 0 0 3px var(--hc), 0 0 22px var(--hc); } }
+
+/* ============ Выбор отряда: «Досье выживших» ============ */
+.dossier-wrap { display: grid; grid-template-columns: minmax(0, 1fr) 230px; gap: 18px; align-items: start; }
+.dossier-stage { --W: clamp(250px, 31vw, 360px); position: relative; height: calc(var(--W) * 1.38 + 40px); overflow: hidden; border-radius: 14px; touch-action: pan-y;
+  background: radial-gradient(ellipse at 50% 18%, rgba(255, 214, 150, .16), transparent 60%), repeating-linear-gradient(92deg, rgba(0,0,0,.18) 0 2px, transparent 2px 9px), linear-gradient(180deg, #3a2a1d, #24190f);
+  box-shadow: inset 0 0 90px rgba(0,0,0,.75), 0 10px 40px rgba(0,0,0,.5); border: 1px solid #3b2c1e; }
+.dossier-stage .hc-nav { z-index: 30; }
+.dossier-stage .hc-nav.prev { left: 10px; } .dossier-stage .hc-nav.next { right: 10px; }
+.dossier-track { position: absolute; inset: 0; perspective: 2000px; }
+.dossier { position: absolute; left: 50%; top: 20px; width: var(--W); height: calc(var(--W) * 1.38); transform-origin: 0 0; transition: transform .55s cubic-bezier(.3,.7,.2,1), opacity .4s; cursor: pointer; transform-style: preserve-3d; }
+.dossier.away { opacity: 0 !important; pointer-events: none; transform: translateY(-40px) scale(.7) !important; }
+.dossier.side { filter: brightness(.72) saturate(.85); }
+.dossier.side:hover { filter: brightness(.9); }
+.dossier.open { cursor: default; }
+/* правая страница: машинописный лист */
+.df-page { position: absolute; inset: 0; border-radius: 3px 8px 8px 3px; padding: 22px 20px 14px 24px; display: flex; flex-direction: column; color: #2b2219; overflow: hidden;
+  background: repeating-linear-gradient(180deg, transparent 0 23px, rgba(70,90,120,.12) 23px 24px), radial-gradient(circle at 80% 10%, rgba(255,255,255,.35), transparent 50%), #e8dfc9;
+  box-shadow: 0 14px 34px rgba(0,0,0,.6), inset 0 0 30px rgba(120,90,40,.25); font-family: 'Courier New', Courier, monospace; }
+.df-page::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 10px; background: linear-gradient(90deg, rgba(0,0,0,.28), transparent); }
+.df-text { flex: 1; overflow-y: auto; scrollbar-width: thin; min-height: 0; }
+.df-h { font-weight: 700; font-size: 19px; line-height: 1.15; letter-spacing: .02em; min-height: 1.15em; text-transform: uppercase; }
+.df-role { font-weight: 700; font-size: 12px; color: color-mix(in srgb, var(--hc) 55%, #3a2a1a); letter-spacing: .14em; text-transform: uppercase; margin: 4px 0 2px; min-height: 1.2em; }
+.df-blk { transition: opacity .18s, transform .18s; }
+.df-blk.wait, .df-foot.wait { opacity: 0; transform: translateY(3px); }
+.df-line { font-size: 12.5px; margin: 2px 0 6px; }
+.dossier .stat-row { margin: 6px 0; gap: 4px; }
+.dossier .stat { background: rgba(255,255,255,.35); border: 1px solid rgba(60,40,20,.35); color: #3a2c1e; font-family: 'Courier New', Courier, monospace; font-size: 12px; }
+.dossier .stat b { color: #8a1d14; font-family: 'Courier New', Courier, monospace; font-weight: 700; }
+.dossier .stat.skill { border-color: rgba(60,40,20,.25); color: #4a3a25; }
+.dossier .power { color: #33281c; font-size: 12.5px; line-height: 1.35; margin-top: 7px; }
+.dossier .power b { color: #1e160f; }
+.df-foot { display: flex; justify-content: flex-end; padding-top: 10px; transition: opacity .18s; }
+.dossier.side .df-foot, .dossier:not(.open) .df-foot { visibility: hidden; }
+/* штампы */
+.df-stamp { position: absolute; font-family: var(--font-head); font-weight: 600; text-transform: uppercase; letter-spacing: .12em; border: 3px solid currentColor; border-radius: 6px; padding: 4px 12px; pointer-events: none; mix-blend-mode: multiply; }
+.df-stamp.alive { color: rgba(30, 70, 140, .75); top: 52%; right: 14px; transform: rotate(-9deg); font-size: 15px; }
+.df-stamp.squad { color: rgba(170, 20, 14, .9); font-size: 30px; left: 50%; top: 42%; transform: translate(-50%, -50%) rotate(-14deg) scale(2.6); opacity: 0; border-width: 4px; padding: 6px 16px; z-index: 5; }
+.dossier.stamped .df-stamp.squad { animation: df-stamp .2s cubic-bezier(.5,0,.9,.4) forwards; }
+@keyframes df-stamp { to { transform: translate(-50%, -50%) rotate(-14deg) scale(1); opacity: .92; } }
+/* обложка: открывается как книга налево */
+.df-cover { position: absolute; inset: 0; transform-origin: 0 50%; transform-style: preserve-3d; transition: transform .7s cubic-bezier(.4,.1,.2,1); }
+.dossier.open .df-cover { transform: rotateY(-178deg); }
+.df-face { position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden; border-radius: 8px 3px 3px 8px; overflow: hidden; }
+.df-face.front { border-radius: 3px 8px 8px 3px; background: radial-gradient(circle at 30% 20%, rgba(255,255,255,.18), transparent 55%), linear-gradient(160deg, #cfa96c, #a9824a); box-shadow: 0 14px 34px rgba(0,0,0,.6), inset 0 0 0 1px rgba(80,50,20,.4), inset 0 0 40px rgba(90,60,20,.35); color: #3a2814; }
+.df-face.back { transform: rotateY(180deg); background: linear-gradient(200deg, #d9b97f, #b8935a); box-shadow: inset -12px 0 20px rgba(0,0,0,.25); padding: 22px 18px; display: flex; flex-direction: column; }
+.df-tab { position: absolute; top: 0; right: 22px; padding: 4px 14px 5px; background: #c09858; border-radius: 0 0 8px 8px; font-family: 'Courier New', Courier, monospace; font-weight: 700; font-size: 13px; text-transform: uppercase; letter-spacing: .1em; box-shadow: 0 2px 4px rgba(0,0,0,.3); }
+.df-label { position: absolute; left: 18%; right: 18%; top: 22%; padding: 12px 10px; background: #efe6cf; border: 1px solid rgba(60,40,20,.4); text-align: center; font-family: 'Courier New', Courier, monospace; transform: rotate(-1.5deg); box-shadow: 0 2px 6px rgba(0,0,0,.2); }
+.df-label small { display: block; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: #6a5236; }
+.df-label b { display: block; font-size: 15px; margin: 6px 0 3px; text-transform: uppercase; }
+.df-label span { font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: color-mix(in srgb, var(--hc) 50%, #3a2814); }
+.df-peek { position: absolute; left: 50%; bottom: 13%; width: 38%; aspect-ratio: 1; transform: translateX(-50%) rotate(4deg); border: 6px solid #f3ecdc; box-shadow: 0 4px 10px rgba(0,0,0,.4); background: #222; }
+.df-peek img, .df-peek .art-icon { width: 100%; height: 100%; object-fit: cover; display: flex; align-items: center; justify-content: center; }
+.df-secret { position: absolute; bottom: 12px; left: 0; right: 0; text-align: center; font-family: var(--font-head); font-size: 11px; letter-spacing: .3em; text-transform: uppercase; color: rgba(140,30,20,.6); }
+.df-photo { position: relative; height: 58%; flex: none; border: 8px solid #f4eddd; border-bottom-width: 22px; box-shadow: 0 6px 14px rgba(0,0,0,.45); transform: rotate(-2deg); background: #1a1a1a; }
+.df-photo img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 25%; filter: sepia(.25) contrast(1.05); }
+.df-photo .art-icon { height: 100%; display: flex; align-items: center; justify-content: center; font-size: 70px; color: var(--hc); }
+.dossier[data-id="grom"] .df-photo img { object-position: 50% 38%; }
+.dossier[data-id="palych"] .df-photo img { object-position: 50% 45%; }
+.dossier[data-id="ten"] .df-photo img { object-position: 50% 30%; }
+.df-clip { position: absolute; top: -18px; left: 22px; width: 16px; height: 46px; border: 3px solid #9aa0a6; border-radius: 9px; box-shadow: 1px 1px 2px rgba(0,0,0,.5); }
+.df-bio { margin: auto 0 0; font-family: var(--font-flavor); font-style: italic; font-size: 13.5px; line-height: 1.4; color: #3a2a17; }
+.df-fly { position: fixed; z-index: 9000; pointer-events: none; transform-origin: 50% 50%; }
+.df-fly .df-face.back { display: none; }
+/* стопка отряда */
+.squad-stack { padding: 14px; border-radius: 12px; background: linear-gradient(180deg, #1b1610, #120e0a); border: 1px solid #3b2c1e; min-height: 120px; }
+.sq-head { font-family: var(--font-head); letter-spacing: .2em; text-transform: uppercase; font-size: 13px; color: #cdb88f; margin-bottom: 10px; }
+.sq-head b { color: var(--amber); }
+.sq-list { display: flex; flex-direction: column; }
+.sq-empty { font-size: 13px; }
+.squad-stack:not(.empty) .sq-empty { display: none; }
+.sq-folder { position: relative; display: flex; align-items: center; gap: 10px; width: 100%; padding: 14px 10px 10px; margin-top: -6px; border: 0; border-radius: 3px 8px 6px 6px; cursor: pointer; text-align: left; color: #3a2814;
+  background: linear-gradient(160deg, #cfa96c, #a9824a); box-shadow: 0 6px 14px rgba(0,0,0,.55), inset 0 0 0 1px rgba(80,50,20,.4); transition: transform .2s; }
+.sq-folder:nth-child(odd) { transform: rotate(-1.5deg); } .sq-folder:nth-child(even) { transform: rotate(1.2deg); }
+.sq-folder:hover { transform: translateX(-4px) rotate(0); }
+.sq-folder:hover::after { content: 'Вернуть'; position: absolute; right: 8px; top: 3px; font-size: 10px; letter-spacing: .1em; text-transform: uppercase; color: #5a3a1a; }
+.sq-folder.landed { animation: sq-land .35s ease-out; }
+@keyframes sq-land { 0% { transform: translateY(-10px) scale(1.06); } 60% { transform: translateY(2px) scale(.98); } }
+.sq-ava { width: 42px; height: 42px; flex: none; border: 3px solid #f3ecdc; box-shadow: 0 2px 5px rgba(0,0,0,.4); overflow: hidden; background: #222; }
+.sq-ava img, .sq-ava .art-icon { width: 100%; height: 100%; object-fit: cover; }
+.sq-name { display: flex; flex-direction: column; min-width: 0; font-family: 'Courier New', Courier, monospace; }
+.sq-name b { font-size: 12.5px; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sq-name small { font-size: 10.5px; letter-spacing: .08em; text-transform: uppercase; color: #5a4128; }
+.sq-stamp { position: absolute; right: 8px; bottom: 6px; font-family: var(--font-head); font-size: 10px; letter-spacing: .1em; color: rgba(170,20,14,.85); border: 2px solid currentColor; border-radius: 4px; padding: 0 5px; transform: rotate(-8deg); mix-blend-mode: multiply; }
+@media (max-width: 900px) {
+  .dossier-wrap { grid-template-columns: 1fr; }
+  .dossier-stage { --W: min(46vw, 330px); height: calc(var(--W) * 2 + 30px); }
+  .dossier { height: calc(var(--W) * 2); top: 14px; }
+  .df-photo { height: 44%; border-width: 5px; border-bottom-width: 14px; }
+  .df-label { left: 8%; right: 8%; }
+  .df-stamp.alive { top: 40%; font-size: 11px; right: 6px; }
+  .df-foot .btn { padding: 7px 10px; font-size: 12px; }
+  .df-page { padding: 14px 10px 10px 14px; }
+  .df-face.back { padding: 14px 10px; }
+  .df-h { font-size: 15px; }
+  .dossier .power, .df-line { font-size: 11px; }
+  .df-bio { font-size: 11.5px; }
+  .sq-list { flex-direction: row; flex-wrap: wrap; gap: 8px; }
+  .sq-folder { width: auto; flex: 1 1 160px; margin-top: 0; }
+}
