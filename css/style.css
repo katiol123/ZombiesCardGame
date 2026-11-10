@@ -1414,3 +1414,9 @@ body:has(#overlay-root > .overlay) #grain, body:has(.enc-ov) #grain { display: n
 .fly-hand-card > .card { width: 100% !important; height: 100% !important; transform: none !important; }
 .sl-landed { animation: slLanded .35s ease-out; }
 @keyframes slLanded { from { box-shadow: 0 0 0 2px var(--amber), 0 0 18px rgba(224,166,66,.7); } }
+
+/* перелёт фишки героя между локациями */
+.tok-fly { position: fixed; z-index: 2200; pointer-events: none; filter: drop-shadow(0 10px 14px rgba(0,0,0,.75)); }
+.tok-fly > .avatar { width: 100% !important; height: 100% !important; }
+.tok-landed { animation: tokLand .35s ease-out; }
+@keyframes tokLand { 0% { transform: scale(1.25); box-shadow: 0 0 0 3px var(--hc), 0 0 22px var(--hc); } }

@@ -152,11 +152,17 @@
           <div class="lclose">${ZG.icon('hammer')} ${esc(ZG.cardCheckLineClose(l))}</div>
           ${ZG.closeRewardText(ld) ? `<div class="lreward" title="Награда, когда локация заколочена">${ZG.icon('trophy')} ${esc(ZG.closeRewardText(ld))}</div>` : ''}
           ${l.deck.length === 0 ? `<div class="lrule" style="color:var(--amber)">${T('empty_loc')} — можно заколотить</div>` : ''}`}
-          <div class="ltokens">${heroes.map((h) => UI.avatar(h.id, (h === active ? 'active ' : '') + (h.dead ? 'dead' : ''))).join('')}</div>
+          <div class="ltokens">${heroes.map((h) => UI.avatar(h.id, (h === active ? 'active ' : '') + (h.dead ? 'dead' : '')).replace('class="avatar', `data-tok="${h.id}" class="avatar`)).join('')}</div>
         </div>
       </div>`;
     }).join('');
     const locsEl = document.getElementById('locs');
+    // где стояли фишки героев до перерисовки — чтобы при переходе фишка плавно перелетела
+    const tokBefore = new Map();
+    locsEl.querySelectorAll('[data-tok]').forEach((el) => tokBefore.set(el.dataset.tok, { r: el.getBoundingClientRect(), html: el.outerHTML }));
+    const prevLoc = UI._tokLoc || {};
+    UI._tokLoc = {};
+    m.heroes.forEach((h) => (UI._tokLoc[h.id] = h.loc));
     locsEl.innerHTML = html;
     // раскладка: до 4 локаций — в ряд, 5–6 — по 3 в ряд (3+2 или 3×3), дальше — по 4
     const n = m.locations.length;
@@ -164,6 +170,36 @@
     locsEl.style.setProperty('--cols', cols);
     locsEl.classList.toggle('two-rows', n > cols);
     UI.fitLocText(locsEl);
+    // пока фишка в полёте, на новом месте она скрыта (поле может перерисоваться во время перелёта)
+    UI._tokFlying = UI._tokFlying || new Set();
+    UI._tokFlying.forEach((id) => { const e = locsEl.querySelector(`[data-tok="${id}"]`); if (e) e.style.visibility = 'hidden'; });
+    // фишка героя, сменившего локацию, плавно перелетает со старого места на новое
+    if (ZG.speed >= 0.2 && !document.documentElement.classList.contains('no-fx')) {
+      m.heroes.forEach((h) => {
+        const old = tokBefore.get(h.id);
+        if (!old || prevLoc[h.id] == null || prevLoc[h.id] === h.loc) return;
+        const el = locsEl.querySelector(`[data-tok="${h.id}"]`);
+        if (!el) return;
+        const to = el.getBoundingClientRect();
+        if (!to.width || !old.r.width) return;
+        el.style.visibility = 'hidden';
+        UI._tokFlying.add(h.id);
+        const fl = ZG.html(`<div class="tok-fly">${old.html}</div>`);
+        if (fl.firstElementChild) fl.firstElementChild.style.visibility = '';
+        Object.assign(fl.style, { left: old.r.left + 'px', top: old.r.top + 'px', width: old.r.width + 'px', height: old.r.height + 'px' });
+        document.body.appendChild(fl);
+        const dx = to.left - old.r.left, dy = to.top - old.r.top;
+        const lift = Math.min(140, 40 + Math.hypot(dx, dy) * 0.25);
+        const sc = to.width / old.r.width;
+        const a = fl.animate([
+          { transform: 'translate(0,0) scale(1)' },
+          { transform: `translate(${dx * 0.5}px, ${dy * 0.5 - lift}px) scale(${1.35 * ((1 + sc) / 2)})`, offset: 0.5 },
+          { transform: `translate(${dx}px, ${dy}px) scale(${sc})` },
+        ], { duration: 650 * Math.max(ZG.speed || 1, 0.4), easing: 'cubic-bezier(.45,.05,.35,1)', fill: 'forwards' });
+        const done = () => { fl.remove(); UI._tokFlying.delete(h.id); const cur = document.querySelector(`#locs [data-tok="${h.id}"]`); if (cur) { cur.style.visibility = ''; cur.classList.add('tok-landed'); } };
+        a.finished.then(done).catch(done);
+      });
+    }
   };
 
   /** Текст правил локаций: один размер для всех карточек — самый крупный, при котором поле помещается без прокрутки */
