@@ -229,12 +229,13 @@
       else if (w.close) hint = 'Локация обыскана — заколотите её!';
       else hint = 'Можно завершить ход.';
     }
-    // снимок руки до перерисовки — для полёта карт в стопки и из колоды
-    const flipOn = UI._trayHeroId === mh.id && !document.querySelector('#overlay-root > .overlay') && ZG.speed >= 0.2 && !document.documentElement.classList.contains('no-fx');
-    const before = new Map();
-    if (flipOn) tray.querySelectorAll('.hand .card[data-u]').forEach((el) => before.set(+el.dataset.u, { r: el.getBoundingClientRect(), html: el.outerHTML }));
-    const deckBefore = flipOn && tray.querySelector('.piles .pile') ? tray.querySelector('.piles .pile').getBoundingClientRect() : null;
-    UI._trayHeroId = mh.id;
+    // полёт карт: сравниваем с последним ВИДИМЫМ состоянием руки. Пока поверх открыто окно (урон, обновление руки,
+    // проверка), рука под ним меняется без анимации, а когда окно закроется — карты полетят в стопки и из колоды.
+    const visible = !document.querySelector('#overlay-root > .overlay') && ZG.speed >= 0.2 && !document.documentElement.classList.contains('no-fx');
+    const shot = UI._trayShot && UI._trayShot.hero === mh.id ? UI._trayShot : null;
+    const flipOn = visible && !!shot;
+    const before = flipOn ? shot.cards : new Map();
+    const deckBefore = flipOn ? shot.deck : null;
     tray.innerHTML = `
       <div class="hero-panel" style="--hc:${hd.color}">
         <div class="hp-top">${UI.avatar(mh.id)}<div><div class="hp-name">${esc(hd.name)}</div><div class="hp-role">${esc(hd.role)}</div></div><button class="btn small ghost tray-toggle" data-act="traytoggle">${UI.trayCollapsed ? 'Рука ▴' : 'Свернуть ▾'}</button></div>
@@ -276,6 +277,13 @@
     if (bd) bd.classList.toggle('tray-small', !!UI.trayCollapsed);
     UI.fitHand(tray.querySelector('.hand'));
     if (flipOn && before.size) UI.trayFlights(tray, mh, before, deckBefore);
+    if (visible || !shot) {
+      // запомнить, как рука выглядит сейчас (для следующего сравнения)
+      const cards = new Map();
+      tray.querySelectorAll('.hand .card[data-u]').forEach((el) => cards.set(+el.dataset.u, { r: el.getBoundingClientRect(), html: el.outerHTML }));
+      const dp = tray.querySelector('.piles .pile');
+      UI._trayShot = { hero: mh.id, cards, deck: dp ? dp.getBoundingClientRect() : null };
+    }
     // телефон: поле оставляет снизу место ровно под нижнюю панель, чтобы журнал не прятался под ней
     const setTrayH = () => document.documentElement.style.setProperty('--tray-h', tray.offsetHeight + 'px');
     setTrayH();
