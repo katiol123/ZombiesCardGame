@@ -335,7 +335,7 @@
     return new Promise((resolve) => {
       const fl = ZG.html(`<div class="fly-hand-card">${html}</div>`);
       const card = fl.firstElementChild;
-      if (card) { card.classList.remove('new', 'playable', 'selected', 'inpool'); card.style.visibility = ''; card.style.marginLeft = ''; }
+      if (card) { card.classList.remove('new', 'playable', 'selected', 'inpool', 'ghost-in', 'unghost', 'returning'); card.style.visibility = ''; card.style.marginLeft = ''; }
       document.body.appendChild(fl);
       const nat = fl.getBoundingClientRect();
       const w0 = nat.width || 150, h0 = nat.height || 214;
@@ -348,15 +348,21 @@
         const t = Math.min(1, (performance.now() - t0) / dur);
         const k = ease(t);
         const to = tgt();
-        const fx = from.left + from.width / 2, fy = from.top + from.height / 2;
-        const tx = to.left + to.width / 2, ty = to.top + to.height / 2;
+        const s0 = from.width / w0, s1 = to.width / w0;
+        // clipTo/clipFrom: карта выровнена по верху цели и плавно «сворачивается» по высоте до её размера
+        const fx = from.left + from.width / 2, fy = o.clipFrom ? from.top + (h0 * s0) / 2 : from.top + from.height / 2;
+        const tx = to.left + to.width / 2, ty = o.clipTo ? to.top + (h0 * s1) / 2 : to.top + to.height / 2;
         const lift = o.lift != null ? o.lift : Math.min(110, 30 + Math.hypot(tx - fx, ty - fy) * 0.18);
         const cx = (fx + tx) / 2, cy = Math.min(fy, ty) - lift;
         // квадратичная кривая: дуга над столом
         const x = (1 - k) * (1 - k) * fx + 2 * (1 - k) * k * cx + k * k * tx;
         const y = (1 - k) * (1 - k) * fy + 2 * (1 - k) * k * cy + k * k * ty;
-        const s0 = from.width / w0, s1 = to.width / w0;
         const sc = s0 + (s1 - s0) * k;
+        const sm = (q) => { q = Math.max(0, Math.min(1, q)); return q * q * (3 - 2 * q); };
+        let clip = 0;
+        if (o.clipTo) clip = Math.max(clip, (1 - Math.min(1, to.height / (h0 * s1))) * sm((k - 0.45) / 0.55));
+        if (o.clipFrom) clip = Math.max(clip, (1 - Math.min(1, from.height / (h0 * s0))) * (1 - sm(k / 0.4))); // разворачивается в начале пути
+        fl.style.clipPath = clip > 0.001 ? `inset(0 0 ${(clip * 100).toFixed(2)}% 0 round 6px)` : '';
         const rot = (o.rot || 0) * Math.sin(Math.PI * k);
         fl.style.transform = `translate(${x - (w0 * sc) / 2}px, ${y - (h0 * sc) / 2}px) scale(${sc}) rotate(${rot}deg)`;
         fl.style.opacity = o.fade ? String(1 - 0.9 * k) : '1';
@@ -822,23 +828,30 @@
       g.pruneCtx(ctx);
       st.render();
     }));
-    panel.querySelectorAll('[data-unplay]').forEach((el) => el.addEventListener('click', () => {
-      const u = +el.dataset.unplay;
+    // карта возвращается из слота в руку: летит обратно и «проявляется» на месте призрака
+    const unplay = (u) => {
+      const slotEl = panel.querySelector(`.sl-item[data-unplay="${u}"]`);
+      const ghost = panel.querySelector(`.mini-hand .card[data-u="${u}"]`);
+      const fromR = slotEl && slotEl.getBoundingClientRect();
+      const html = ghost && ghost.outerHTML.replace(/<span class="badge-play">[^<]*<\/span>/, ''); // летит уже не «в проверке»
       ctx.played = ctx.played.filter((p) => p.u !== u);
       g.pruneCtx(ctx);
       st.render();
-      mark(u, 'unghost');
-    }));
+      if (!fx || !fromR || !html) return;
+      const live = () => { const e = panel.querySelector(`.mini-hand .card[data-u="${u}"]`); return e ? e.getBoundingClientRect() : null; };
+      const back = panel.querySelector(`.mini-hand .card[data-u="${u}"]`);
+      if (back) back.classList.add('returning');
+      UI.flyCard(html, fromR, live, { dur: 420, clipFrom: true }).then(() => {
+        const e = panel.querySelector(`.mini-hand .card[data-u="${u}"]`);
+        if (e) { e.classList.remove('returning'); e.classList.add('unghost'); setTimeout(() => e.classList.remove('unghost'), 600); }
+      });
+    };
+    panel.querySelectorAll('[data-unplay]').forEach((el) => el.addEventListener('click', () => unplay(+el.dataset.unplay)));
     panel.querySelectorAll('.mini-hand').forEach((row) => {
       const owner = m.heroes.find((h) => h.id === row.dataset.owner);
       row.querySelectorAll('.card').forEach((el) => el.addEventListener('click', async () => {
         const u = +el.dataset.u;
-        if (ctx.played.some((p) => p.u === u)) {
-          ctx.played = ctx.played.filter((p) => p.u !== u);
-          g.pruneCtx(ctx);
-          st.render();
-          return mark(u, 'unghost');
-        }
+        if (ctx.played.some((p) => p.u === u)) return unplay(u);
         const c = owner.hand.find((x) => x.u === u);
         const d = ZG.card(c.id);
         const pis = (d.plays || []).map((p, pi) => (g.canPlay(ctx, owner, c, pi) ? pi : -1)).filter((x) => x >= 0);
@@ -857,7 +870,7 @@
         const slot = panel.querySelector(`.sl-item[data-unplay="${u}"]`);
         if (slot && ZG.speed >= 0.2 && !document.documentElement.classList.contains('no-fx')) {
           slot.style.visibility = 'hidden';
-          UI.flyCardEl(fromHtml, fromR, slot.getBoundingClientRect(), { dur: 420 }).then(() => { slot.style.visibility = ''; slot.classList.add('sl-landed'); });
+          UI.flyCardEl(fromHtml, fromR, slot.getBoundingClientRect(), { dur: 460, clipTo: true }).then(() => { slot.style.visibility = ''; slot.classList.add('sl-landed'); });
         }
       }));
     });

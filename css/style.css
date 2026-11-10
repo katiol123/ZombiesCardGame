@@ -1546,3 +1546,7 @@ body:has(#overlay-root > .overlay) #grain, body:has(.enc-ov) #grain { display: n
 .slotbox.multi .sl-txt { align-items: flex-start; }
 .slotbox.multi .sl-txt > span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
 .slotbox .sl-item:hover .sl-thumb { box-shadow: inset 0 0 0 1px var(--blood2); }
+/* карта летит обратно из слота: на её месте в руке пока призрак */
+.enc-panel .mini-hand .card.returning .face { opacity: .24; filter: grayscale(.85); outline: 2px dashed rgba(127, 210, 122, .75); outline-offset: 2px; }
+.sl-landed .sl-thumb, .sl-landed .sl-txt { animation: slIn .25s ease-out; }
+@keyframes slIn { from { opacity: .3; } }
