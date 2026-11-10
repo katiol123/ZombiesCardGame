@@ -73,4 +73,18 @@ function build() {
   console.log(`Готово: ${path.relative(ROOT, OUT)} — ${files.length} файлов, ${mb} МБ. index.html в корне архива.`);
 }
 
-build();
+// Если в системе есть стандартная утилита zip — собираем ею (максимальная совместимость с загрузчиками площадок),
+// иначе — встроенным упаковщиком.
+function buildWithZipTool() {
+  const { execFileSync } = require('child_process');
+  try { execFileSync('zip', ['-v'], { stdio: 'ignore' }); } catch (e) { return false; }
+  const files = INCLUDE.flatMap((r) => (fs.existsSync(path.join(ROOT, r)) ? walk(r, []) : []));
+  fs.mkdirSync(OUT_DIR, { recursive: true });
+  if (fs.existsSync(OUT)) fs.unlinkSync(OUT);
+  execFileSync('zip', ['-q', '-X', '-9', OUT, ...files], { cwd: ROOT, maxBuffer: 1 << 26 });
+  const mb = (fs.statSync(OUT).size / 1048576).toFixed(1);
+  console.log(`Готово (zip): ${path.relative(ROOT, OUT)} — ${files.length} файлов, ${mb} МБ. index.html в корне архива.`);
+  return true;
+}
+
+if (!buildWithZipTool()) build();
