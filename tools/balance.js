@@ -56,6 +56,7 @@ const P = {
   // Порог выброса ценности карты: отклонение от медианы своего типа и уровня
   OUTLIER: 0.4,
   REF_MISSIONS: 6,
+  KREMEN_ADR: 'd4', // «Адреналин» Кремня в среднем по бою (3–5 карт в сбросе)
 };
 
 /* ============================== Загрузка данных игры ============================== */
@@ -151,6 +152,8 @@ function combatRoll(hid, w, e, xp, night) {
   if (hid === 'grom' && w) { dice.push('d4'); if ((pl.noise || 0) > 0) dice.push('d6'); }
   if (hid === 'marina' && w && traits.has('Медицина')) dice.push('d4');
   if (hid === 'palych' && w && traits.has('Инструмент')) dice.push('d4');
+  if (hid === 'klyk' && e.living) dice.push('d6');
+  if (hid === 'kremen') { dice.push(P.KREMEN_ADR); if (!w) dice.push('d4'); }
   // свойства врага
   const ign = false;
   if (e.weak) for (const t of Object.keys(e.weak)) if (traits.has(t)) dice.push(e.weak[t]);

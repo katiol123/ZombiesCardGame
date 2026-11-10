@@ -322,7 +322,7 @@
       ui.renderBoard();
       if (m.heroes.filter((h) => !h.dead).length > 1) await ui.handoff(mh);
       // флаги хода обнуляются до Часов: орда от события Часов уже воюет в новом ходу
-      m.ts = { moved: false, explored: false, explores: 1, closeTried: false, rested: false, gave: false, scouted: false, med: false, evaded: false };
+      m.ts = { moved: false, explored: false, explores: 1, closeTried: false, rested: false, gave: false, scouted: false, med: false, evaded: false, looted: false };
       const fc = await G.flipClock(mh);
       if (fc === 'lose') return G.finish(false, 'time');
       await G.startTurnConds(mh);
@@ -1118,6 +1118,17 @@
       G.S().campaign.stats.kills++;
       ui.fxDefeat();
       G.log(T('defeated', { name: def.name, pov: ZG.gf(def, 'повержен', 'повержена', 'повержено') }), 'good');
+      if (mh.id === 'klyk' && !mh.dead && !m.ts.looted) {
+        // «Мародёр»: раз в ход после победы — d6, на 5–6 случайный Расходник
+        m.ts.looted = true;
+        const r = ZG.rollDie('d6');
+        if (r >= 5) {
+          const extra = G.inst(ZG.boxPick('consumable', G.def().tier), { l: 1 });
+          mh.hand.push(extra);
+          G.log(`Мародёр (d6 = ${r}): Клык обыскивает тело — «${ZG.card(extra.id).name}».`, 'loot');
+          await ui.gain(extra, `Мародёр: d6 = ${r}`);
+        } else G.note(`Мародёр (d6 = ${r}): у тела ничего полезного.`, '');
+      }
       if (def.lastSwing && !mh.dead) {
         // «Последний взмах»: побеждённый успевает ударить — увернуться
         const ls = def.lastSwing;
@@ -1469,6 +1480,16 @@
       }
     }
     if (mh.id === 'marina' && ck.kind === 'combat' && wp && ZG.card(wp.id).traits.includes('Медицина')) dice.push({ d: 'd4', src: 'Твёрдая рука' });
+    // «Старые счёты»: бой против людей +1d6
+    if (mh.id === 'klyk' && ck.kind === 'combat' && ck.enemy && ck.enemy.living) dice.push({ d: 'd6', src: 'Старые счёты' });
+    if (mh.id === 'kremen') {
+      // «Адреналин»: чем больше карт в сбросе, тем злее
+      const ad = ZG.adrenalineDie(mh.discard.length);
+      const at = ZG.attrOf(skill);
+      if (ad && (ck.kind === 'combat' || at === 'str' || at === 'end')) dice.push({ d: ad, src: `Адреналин (сброс ${mh.discard.length})` });
+      // «Кулаки»: бой без оружия +1d4
+      if (ck.kind === 'combat' && !wp) dice.push({ d: 'd4', src: 'Кулаки' });
+    }
     if (mh.id === 'palych') {
       if (ck.kind === 'close') dice.push({ d: 'd4', src: 'Золотые руки' });
       if (ck.kind === 'combat' && wp && ZG.card(wp.id).traits.includes('Инструмент')) dice.push({ d: 'd4', src: 'Золотые руки' });

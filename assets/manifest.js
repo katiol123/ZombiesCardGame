@@ -14,6 +14,8 @@
  * ===================================================================== */
 window.ZG_ART = {
   cards: {
+    extinguisher: 'assets/cards/extinguisher.webp',
+    nitrogen: 'assets/cards/nitrogen.webp',
     acidcoat: 'assets/cards/acidcoat.webp',
     acidsyringe: 'assets/cards/acidsyringe.webp',
     adrenaline: 'assets/cards/adrenaline.webp',
@@ -231,6 +233,8 @@ window.ZG_ART = {
     woundedstranger: 'assets/cards/woundedstranger.webp',
   },
   heroes: {
+    klyk: 'assets/heroes/klyk.webp',
+    kremen: 'assets/heroes/kremen.webp',
     marina: 'assets/heroes/marina.webp',
     grom: 'assets/heroes/grom.webp',
     ten: 'assets/heroes/ten.webp',
@@ -242,6 +246,8 @@ window.ZG_ART = {
     grom: 'assets/avatars/grom.webp',
     ten: 'assets/avatars/ten.webp',
     palych: 'assets/avatars/palych.webp',
+    klyk: 'assets/avatars/klyk.webp',
+    kremen: 'assets/avatars/kremen.webp',
   },
   locations: {
     lobby: 'assets/locations/lobby.webp',

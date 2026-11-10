@@ -147,7 +147,9 @@
     };
     s.querySelectorAll('.hero-card').forEach((c) => c.addEventListener('click', () => {
       const id = c.dataset.id;
-      if (sel.has(id)) sel.delete(id); else sel.add(id);
+      if (sel.has(id)) sel.delete(id);
+      else if (sel.size >= 4) return UI.toast('В отряде не больше 4 героев — сначала уберите кого-нибудь', 'bad');
+      else sel.add(id);
       upd();
     }));
     s.querySelectorAll('.diff').forEach((d) => d.addEventListener('click', () => { diff = d.dataset.d; upd(); }));

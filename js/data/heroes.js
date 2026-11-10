@@ -116,10 +116,50 @@
       ],
       bio: 'Тридцать лет держал автомастерскую на 9-й улице Холлоу-Крик. Чинил всё, что ездит, — теперь заколачивает всё, что открывается. Говорит, видал и похуже.',
     },
+    klyk: {
+      acc: 'Клыка',
+      id: 'klyk',
+      name: 'Виктор «Клык» Рурк',
+      role: 'Бывший бандит Кейна',
+      icon: 'raider',
+      color: '#d9b23a',
+      attrs: { str: 'd8', dex: 'd10', wit: 'd6', end: 'd8', will: 'd4' },
+      skills: { shooting: 2, melee: 1, stealth: 1 },
+      hand: 4,
+      deck: { weapon: 4, item: 2, consumable: 4, ally: 1, resolve: 2, technique: 2 },
+      prof: ['firearms'],
+      start: ['pistol', 'knife', 'bat', 'hatchet', 'jacket', 'flashlight', 'ammo', 'bandage', 'molotov', 'energy', 'trucker', 'hope', 'medals', 'doubletap', 'headshot'],
+      powers: [
+        { id: 'grudge', name: 'Старые счёты', text: 'Ваши боевые проверки против людей получают +1d6.' },
+        { id: 'looter', name: 'Мародёр', text: 'Раз в ход, победив любого врага, бросьте d6: на 5–6 возьмите случайный Расходник.' },
+      ],
+      bio: 'Три года ездил с бандой Кейна. Ушёл в ночь, когда они заперли беженцев в автобусе. Кейн такого не прощает — и Клык тоже.',
+    },
+    kremen: {
+      acc: 'Кремня',
+      id: 'kremen',
+      name: 'Бо «Кремень» Мэйсон',
+      role: 'Боксёр',
+      icon: 'hand',
+      color: '#b04fc8',
+      attrs: { str: 'd10', dex: 'd6', wit: 'd4', end: 'd10', will: 'd6' },
+      skills: { melee: 3, survival: 1 },
+      hand: 4,
+      deck: { weapon: 1, item: 3, consumable: 3, ally: 1, resolve: 4, technique: 3 },
+      prof: [],
+      start: ['bat', 'jacket', 'pads', 'flashlight', 'bandage', 'cannedfood', 'energy', 'neighbor', 'hope', 'hope', 'medals', 'prayer', 'headshot', 'headshot', 'focus'],
+      powers: [
+        { id: 'adrenaline', name: 'Адреналин', text: 'Боевые проверки и проверки Силы, Выдержки, Рукопашной и Выживания получают бонус по числу карт в вашем сбросе: 3–5 — +1d4, 6–8 — +1d6, 9 и больше — +1d8.' },
+        { id: 'fists', name: 'Кулаки', text: 'В бою без оружия +1d4.' },
+      ],
+      bio: 'Двенадцать боёв, двенадцать побед, одно сломанное ребро. Лучше всего дерётся, когда его уже почти уложили.',
+    },
   };
   /** Короткое имя героя: прозвище, если есть («Гром»), иначе имя («Марина») */
   ZG.heroShort = (id) => { const n = ZG.HEROES[id].name; const m = n.match(/«(.+?)»/); return m ? m[1] : n.split(' ')[0]; };
-  ZG.HERO_ORDER = ['marina', 'grom', 'ten', 'palych'];
+  ZG.HERO_ORDER = ['marina', 'grom', 'ten', 'palych', 'klyk', 'kremen'];
+  /** «Адреналин» Кремня: бонусный кубик по числу карт в сбросе */
+  ZG.adrenalineDie = (n) => (n >= 9 ? 'd8' : n >= 6 ? 'd6' : n >= 3 ? 'd4' : null);
 
   ZG.SCARS = [
     { id: 'scar_hand', text: 'Дрожащие руки: −1 к размеру руки', hand: -1 },

@@ -236,6 +236,7 @@
         <div class="hp-body">${UI.avatar(mh.id, 'portrait', true)}<div class="hp-info">
         ${UI.statsHTML(ph)}
         <div class="power-list">${hd.powers.map((p, i) => `<button class="power-chip" data-power="${i}" style="--hc:${hd.color}">${ZG.icon('star')} ${esc(p.name)}</button>`).join('')}</div>
+        ${mh.id === 'kremen' ? (() => { const n = mh.discard.length; const d = ZG.adrenalineDie(n); return `<div><span class="adr-chip ${d ? '' : 'off'}" title="Адреналин: 3–5 карт в сбросе — +1d4, 6–8 — +1d6, 9+ — +1d8">${ZG.icon('heartbeat')} ${d ? '+1' + d : '—'} · сброс ${n}${d === 'd8' ? '' : '/' + (n < 3 ? 3 : n < 6 ? 6 : 9)}</span></div>`; })() : ''}
         ${Object.keys(mh.conds || {}).length ? `<div class="cond-row">${Object.keys(mh.conds).map((k) => `<span class="cond" title="${esc(ZG.CONDS[k].text)}">${ZG.icon(ZG.CONDS[k].icon)} ${esc(ZG.CONDS[k].name)}</span>`).join('')}</div>` : ''}
         </div></div>
         <div class="piles">
