@@ -178,7 +178,7 @@ h1, h2, h3 { font-family: var(--font-head); font-weight: 600; letter-spacing: 0.
 .progress-dots i.on { background: var(--blood2); border-color: #f07a5f; box-shadow: 0 0 6px var(--blood2); }
 
 /* ---------- Выбор отряда ---------- */
-.hero-pick { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 18px; }
+.hero-pick { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(300px, 100%), 1fr)); gap: 18px; }
 .hero-card {
   display: flex; flex-direction: column;
   position: relative; cursor: pointer; padding: 0; overflow: hidden; border-radius: 14px; border: 1px solid var(--edge);
