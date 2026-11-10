@@ -1462,10 +1462,10 @@
     if (plr.stealthBonus && (ck.kind === 'evade' || skill === 'stealth')) { bonus += plr.stealthBonus; parts.push({ label: 'Локация: укрытие', v: plr.stealthBonus }); }
     if (mh.id === 'grom') {
       if (ck.kind === 'combat' && wp) dice.push({ d: 'd4', src: 'Боевой опыт' });
-      // «Громкий»: любая боевая проверка с оружием — шум +1; если само оружие бесшумное — ещё и +1d6
+      // «Громкий»: любая боевая проверка с оружием — шум +1; если само оружие шумное — ещё и +1d6
       if (ck.kind === 'combat' && wp) {
         noise += 1;
-        if (!(G.playDef(wp).noise || 0)) dice.push({ d: 'd6', src: 'Громкий' });
+        if ((G.playDef(wp).noise || 0) > 0) dice.push({ d: 'd6', src: 'Громкий' });
       }
     }
     if (mh.id === 'marina' && ck.kind === 'combat' && wp && ZG.card(wp.id).traits.includes('Медицина')) dice.push({ d: 'd4', src: 'Твёрдая рука' });
