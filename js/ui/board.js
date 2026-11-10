@@ -770,7 +770,8 @@
       if (!ps.length) return `<div class="slotbox">${T('slot_' + t)}</div>`;
       const one = (p) => {
         const owner = m.heroes.find((h) => h.id === p.owner);
-        return `<div class="sl-item" data-unplay="${p.u}" title="Убрать"><span class="sl-name">${esc(ZG.card(p.id).name)}</span><span class="sl-mode">${T('mode_' + g.playDef(p).mode)}${owner !== mh ? ' · ' + esc(g.hname(owner)) : ''}</span></div>`;
+        const cd = ZG.card(p.id);
+        return `<div class="sl-item" data-unplay="${p.u}" title="Убрать"><span class="sl-thumb">${ZG.art('cards', p.id, cd.icon || 'cards')}</span><span class="sl-txt"><span class="sl-name">${esc(ZG.card(p.id).name)}</span><span class="sl-mode">${T('mode_' + g.playDef(p).mode)}${owner !== mh ? ' · ' + esc(g.hname(owner)) : ''}</span></span></div>`;
       };
       return `<div class="slotbox filled ${ps.length > 1 ? 'multi' : ''}">${ps.map(one).join('')}</div>`;
     }).join('');
@@ -808,15 +809,25 @@
         <div class="enc-actions"><button class="btn primary pulse" data-roll>${ZG.icon('dice')} ${T('roll')}</button></div>
       </div>`;
 
+    // карта, отданная в проверку, остаётся в руке «призраком»: видно, откуда она ушла
+    panel.querySelectorAll('.mini-hand .card.inpool').forEach((e) => (e.title = 'В проверке — нажмите, чтобы вернуть в руку'));
+    const fx = ZG.speed >= 0.2 && !document.documentElement.classList.contains('no-fx');
+    const mark = (u, cls) => {
+      if (!fx) return;
+      const e = panel.querySelector(`.mini-hand .card[data-u="${u}"]`);
+      if (e) { e.classList.add(cls); setTimeout(() => e.classList.remove(cls), 600); }
+    };
     panel.querySelectorAll('[data-skill]').forEach((el) => el.addEventListener('click', () => {
       ctx.skill = el.dataset.skill;
       g.pruneCtx(ctx);
       st.render();
     }));
     panel.querySelectorAll('[data-unplay]').forEach((el) => el.addEventListener('click', () => {
-      ctx.played = ctx.played.filter((p) => p.u !== +el.dataset.unplay);
+      const u = +el.dataset.unplay;
+      ctx.played = ctx.played.filter((p) => p.u !== u);
       g.pruneCtx(ctx);
       st.render();
+      mark(u, 'unghost');
     }));
     panel.querySelectorAll('.mini-hand').forEach((row) => {
       const owner = m.heroes.find((h) => h.id === row.dataset.owner);
@@ -825,7 +836,8 @@
         if (ctx.played.some((p) => p.u === u)) {
           ctx.played = ctx.played.filter((p) => p.u !== u);
           g.pruneCtx(ctx);
-          return st.render();
+          st.render();
+          return mark(u, 'unghost');
         }
         const c = owner.hand.find((x) => x.u === u);
         const d = ZG.card(c.id);
@@ -840,6 +852,7 @@
         ctx.played.push({ owner: owner.id, u, id: c.id, pi });
         g.pruneCtx(ctx);
         st.render();
+        mark(u, 'ghost-in');
         // карта летит из руки в свой слот проверки
         const slot = panel.querySelector(`.sl-item[data-unplay="${u}"]`);
         if (slot && ZG.speed >= 0.2 && !document.documentElement.classList.contains('no-fx')) {
