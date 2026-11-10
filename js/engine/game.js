@@ -292,7 +292,7 @@
   G.cardUsable = (heroId, id) => {
     const d = ZG.card(id);
     if (G.missingProf({ id: heroId }, id).length) return false;
-    if (d.recharge && !d.recharge.skills.some((sk) => (ZG.HEROES[heroId].skills[sk] || 0) > 0)) return false;
+    if (d.recharge && !d.recharge.skills.some((sk) => ZG.ATTRS.includes(sk) || (ZG.HEROES[heroId].skills[sk] || 0) > 0)) return false;
     return true;
   };
   G.cardWarn = (heroId, id) => {
@@ -300,7 +300,7 @@
     const miss = G.missingProf({ id: heroId }, id);
     if (miss.includes('heavyarmor')) return 'сгорит';
     if (miss.length) return '−4';
-    if (d.recharge && !d.recharge.skills.some((sk) => (ZG.HEROES[heroId].skills[sk] || 0) > 0)) return 'сгорит';
+    if (d.recharge && !d.recharge.skills.some((sk) => ZG.ATTRS.includes(sk) || (ZG.HEROES[heroId].skills[sk] || 0) > 0)) return 'сгорит';
     return '';
   };
 
@@ -1195,7 +1195,7 @@
     const dmg = Math.min(def.halfDmg ? Math.floor(diff / 2) : diff, G.dmgCap(def)) + (def.dmgAdd || 0);
     const taken = await G.damage(mh, dmg, { source: def.name, bite: def.bite, combat: true, dmgType: G.enemyDmgType(def, loc), pierceLight: !!def.pierceLight, pierceShield: !!def.pierceShield });
     if ((def.bite && G.lastHit >= 2) || def.infectOnFail) await G.infect(mh); // укус заражает, только если 2+ урона прошло через броню и блоки
-    if (def.inflict && taken > 0 && !mh.dead) {
+    if (def.inflict && (taken > 0 || G.lastHit > 0) && !mh.dead) {
       // inflictCheck: сначала проверка, состояние — только при провале
       const ic = def.inflictCheck;
       const avoid = ic ? (await G.doCheck(mh, { kind: 'event', skills: ic.skills, dc: ic.dc, base: ic.dc, mods: [], card: def, cardId: def.id, title: `${def.name}: рана — ${ZG.CONDS[def.inflict].name}?` })).success : false;
@@ -1965,6 +1965,7 @@
       m.hordeBusy = true;
       try {
         if (!mh.dead && !m.over) await G.encounter(mh, attacker, loc, { horde: true });
+        else if (!loc.closed) { loc.deck.push(attacker); R.shuffle(loc.deck); }
       } finally { m.hordeBusy = false; }
       // шум, накопленный в боях с ордой, проверяется только после всех её боёв
       if (!mh.dead && !m.over) for (const l of G.openLocs()) await G.checkHorde(l);
