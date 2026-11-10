@@ -142,9 +142,8 @@
       const free = !l.closed && (m.bossFree || []).includes(i);
       return `<div class="loc ${l.closed ? 'closed' : ''} ${free ? 'boss-free' : ''} ${alarm ? 'alarm' : ''} ${active && active.loc === i ? 'here' : ''} ${pick ? 'pickable' : ''} ${UI.closingLoc === i ? 'closing' : ''}" data-i="${i}" style="--hc:${active ? ZG.HEROES[active.id].color : ''}">
         <div class="lart" style="--lt:${UI.locTint(ld.icon)}">${ZG.art('locations', ld.id, ld.icon)}${rings}
-          ${l.closed ? '' : `<div class="lstack" title="Карт в колоде локации">${ZG.icon('cards')} ${l.deck.length}</div>`}
+          ${l.closed ? '<div class="planks"><div class="plank p1"></div><div class="plank p2"></div></div>' : `<div class="lstack" title="Карт в колоде локации">${ZG.icon('cards')} ${l.deck.length}</div>`}
           ${free ? `<div class="boss-free-tag" title="Угроза сбежала не сюда: локация была перекрыта или заколочена во время её побега">${ZG.icon('shield')} Угрозы нет</div>` : ''}</div>
-        ${l.closed ? '<div class="planks"><div class="plank p1"></div><div class="plank p2"></div></div>' : ''}
         <div class="lbody">
           <h3>${esc(ld.name)}</h3>
           ${l.closed ? `<span class="shelter-tag">${ZG.icon('tent')} ${T('barricaded')}</span>` : `
@@ -230,6 +229,12 @@
       else if (w.close) hint = 'Локация обыскана — заколотите её!';
       else hint = 'Можно завершить ход.';
     }
+    // снимок руки до перерисовки — для полёта карт в стопки и из колоды
+    const flipOn = UI._trayHeroId === mh.id && !document.querySelector('#overlay-root > .overlay') && ZG.speed >= 0.2 && !document.documentElement.classList.contains('no-fx');
+    const before = new Map();
+    if (flipOn) tray.querySelectorAll('.hand .card[data-u]').forEach((el) => before.set(+el.dataset.u, { r: el.getBoundingClientRect(), html: el.outerHTML }));
+    const deckBefore = flipOn && tray.querySelector('.piles .pile') ? tray.querySelector('.piles .pile').getBoundingClientRect() : null;
+    UI._trayHeroId = mh.id;
     tray.innerHTML = `
       <div class="hero-panel" style="--hc:${hd.color}">
         <div class="hp-top">${UI.avatar(mh.id)}<div><div class="hp-name">${esc(hd.name)}</div><div class="hp-role">${esc(hd.role)}</div></div><button class="btn small ghost tray-toggle" data-act="traytoggle">${UI.trayCollapsed ? 'Рука ▴' : 'Свернуть ▾'}</button></div>
@@ -270,10 +275,79 @@
     const bd = document.getElementById('board');
     if (bd) bd.classList.toggle('tray-small', !!UI.trayCollapsed);
     UI.fitHand(tray.querySelector('.hand'));
+    if (flipOn && before.size) UI.trayFlights(tray, mh, before, deckBefore);
     // телефон: поле оставляет снизу место ровно под нижнюю панель, чтобы журнал не прятался под ней
     const setTrayH = () => document.documentElement.style.setProperty('--tray-h', tray.offsetHeight + 'px');
     setTrayH();
     if (window.ResizeObserver && UI.trayEl !== tray) { if (UI.trayRO) UI.trayRO.disconnect(); UI.trayEl = tray; UI.trayRO = new ResizeObserver(setTrayH); UI.trayRO.observe(tray); }
+  };
+
+  /** Полёт копии карты из одной точки экрана в другую (уменьшаясь) */
+  UI.flyCardEl = function (html, from, to, o) {
+    o = o || {};
+    const el = ZG.html(`<div class="fly-hand-card">${html}</div>`);
+    const card = el.firstElementChild;
+    if (card) { card.classList.remove('new', 'playable', 'selected'); card.style.margin = '0'; }
+    Object.assign(el.style, { left: from.left + 'px', top: from.top + 'px', width: from.width + 'px', height: from.height + 'px' });
+    document.body.appendChild(el);
+    const dx = to.left + to.width / 2 - (from.left + from.width / 2);
+    const dy = to.top + to.height / 2 - (from.top + from.height / 2);
+    const sc = o.scale != null ? o.scale : Math.max(0.15, Math.min(1, to.width / from.width));
+    const sp = Math.max(ZG.speed || 1, 0.4);
+    const a = el.animate([
+      { transform: 'translate(0,0) scale(1) rotate(0deg)', opacity: 1 },
+      { transform: `translate(${dx * 0.5}px, ${dy * 0.5 - 40}px) scale(${(1 + sc) / 2}) rotate(${o.rot || -6}deg)`, opacity: 1, offset: 0.5 },
+      { transform: `translate(${dx}px, ${dy}px) scale(${sc}) rotate(0deg)`, opacity: o.fade ? 0 : 0.85 },
+    ], { duration: (o.dur || 520) * sp, easing: 'cubic-bezier(.35,.6,.3,1)', fill: 'forwards' });
+    return a.finished.then(() => el.remove()).catch(() => el.remove());
+  };
+
+  /** Карты, ушедшие из руки, летят в свои стопки; добранные — вылетают из колоды */
+  UI.trayFlights = function (tray, mh, before, deckBefore) {
+    const piles = tray.querySelectorAll('.piles .pile');
+    const now = new Set(mh.hand.map((c) => c.u));
+    const has = (pile, u) => (pile || []).some((c) => c.u === u);
+    const m = G().M();
+    before.forEach((b, u) => {
+      if (now.has(u)) return;
+      let target = null;
+      if (has(mh.discard, u)) target = piles[1];
+      else if (has(mh.deck, u)) target = piles[0];
+      else if (has(mh.burned, u) || has(mh.buried, u)) target = piles[2];
+      else {
+        const other = m.heroes.findIndex((h) => h !== mh && has(h.hand, u));
+        if (other >= 0) target = document.querySelector(`.pmini[data-hero="${other}"]`);
+      }
+      const to = target ? target.getBoundingClientRect() : { left: b.r.left, top: b.r.top - 120, width: b.r.width * 0.4, height: b.r.height * 0.4 };
+      UI.flyCardEl(b.html, b.r, to, { fade: !target, rot: target === piles[1] ? 8 : -6 });
+    });
+    // добор: новые карты вылетают из колоды
+    const deckR = deckBefore || (piles[0] && piles[0].getBoundingClientRect());
+    if (!deckR) return;
+    let k = 0;
+    tray.querySelectorAll('.hand .card[data-u]').forEach((el) => {
+      const u = +el.dataset.u;
+      if (before.has(u)) return;
+      if (!has(mh.hand, u)) return;
+      const r = el.getBoundingClientRect();
+      const from = { left: deckR.left + deckR.width / 2 - r.width / 2, top: deckR.top + deckR.height / 2 - r.height / 2, width: r.width, height: r.height };
+      el.style.visibility = 'hidden';
+      const delay = k++ * 110 * Math.max(ZG.speed || 1, 0.4);
+      setTimeout(() => {
+        const fl = ZG.html(`<div class="fly-hand-card">${el.outerHTML}</div>`);
+        fl.firstElementChild.style.visibility = '';
+        fl.firstElementChild.classList.remove('new');
+        Object.assign(fl.style, { left: from.left + 'px', top: from.top + 'px', width: r.width + 'px', height: r.height + 'px' });
+        document.body.appendChild(fl);
+        const a = fl.animate([
+          { transform: 'translate(0,0) scale(.3) rotate(-10deg)', opacity: 0 },
+          { transform: `translate(${(r.left - from.left) * 0.5}px, ${(r.top - from.top) * 0.5 - 60}px) scale(.8) rotate(-4deg)`, opacity: 1, offset: 0.55 },
+          { transform: `translate(${r.left - from.left}px, ${r.top - from.top}px) scale(1) rotate(0deg)`, opacity: 1 },
+        ], { duration: 480 * Math.max(ZG.speed || 1, 0.4), easing: 'cubic-bezier(.3,.7,.3,1)', fill: 'forwards' });
+        const done = () => { fl.remove(); el.style.visibility = ''; };
+        a.finished.then(done).catch(done);
+      }, delay);
+    });
   };
 
   /* ---------- Ожидание действия ---------- */
@@ -670,9 +744,16 @@
           pi = await UI.modePop(el, pis.map((k) => ({ label: T('mode_' + d.plays[k].mode) + ' · ' + playBadge(d.plays[k]), sub: ZG.playText(d.plays[k]), pi: k })));
           if (pi == null) return;
         }
+        const fromR = el.getBoundingClientRect(), fromHtml = el.outerHTML;
         ctx.played.push({ owner: owner.id, u, id: c.id, pi });
         g.pruneCtx(ctx);
         st.render();
+        // карта летит из руки в свой слот проверки
+        const slot = panel.querySelector(`.sl-item[data-unplay="${u}"]`);
+        if (slot && ZG.speed >= 0.2 && !document.documentElement.classList.contains('no-fx')) {
+          slot.style.visibility = 'hidden';
+          UI.flyCardEl(fromHtml, fromR, slot.getBoundingClientRect(), { dur: 420 }).then(() => { slot.style.visibility = ''; slot.classList.add('sl-landed'); });
+        }
       }));
     });
     panel.querySelectorAll('.mini-hand').forEach(UI.fitHand);
@@ -704,7 +785,6 @@
   UI.doRoll = async function (panel, ctx, finish) {
     UI.keyRoll = null;
     const res = G().rollCheck(ctx);
-    ZG.Audio.sfx('dice');
     panel.querySelectorAll('[data-skill],[data-unplay]').forEach((el) => (el.style.pointerEvents = 'none'));
     const bottom = panel.querySelector('#check-bottom');
     const diceEl = panel.querySelector('#dice');
@@ -734,8 +814,9 @@
       // на телефоне стол может оказаться ниже края экрана — плавно подвести к нему
       if (window.innerWidth <= 900) setTimeout(() => tray.scrollIntoView({ block: 'center', behavior: 'smooth' }), 120);
       await ZG.sleep(480); // стол раскрывается вниз
-      try { await ZG.Dice3D.roll(tray, specs); } catch (e) { console.error(e); }
-    } else bottom.innerHTML = `<div class="total-line">${T('rolling')}</div>`;
+      // звук — в момент, когда кубики фактически начинают лететь
+      try { await ZG.Dice3D.roll(tray, specs, () => ZG.Audio.sfx('dice')); } catch (e) { console.error(e); }
+    } else { ZG.Audio.sfx('dice'); bottom.innerHTML = `<div class="total-line">${T('rolling')}</div>`; }
     diceEl.innerHTML = res.rolls.map((r) => `<div class="die ${r.d} ${use3d ? '' : 'rolling'}"><div class="die-body"><span>?</span></div><small>${esc(r.src.slice(0, 12))}</small></div>`).join('');
     const els = Array.from(diceEl.querySelectorAll('.die'));
     let spin = !use3d;

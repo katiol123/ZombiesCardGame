@@ -122,7 +122,27 @@
   };
 
   /** Затемнение-переход между экранами */
-  FX.transition = async function (fn) {
+  /** Переход между экранами. dir: 'left' | 'right' | 'zoom' | 'out' — плавная смена без затемнения; без dir — затемнение */
+  FX.transition = async function (fn, dir) {
+    const app = document.getElementById('app');
+    const old = app && app.firstElementChild;
+    if (dir && old && !document.documentElement.classList.contains('no-fx')) {
+      // старый экран остаётся поверх как снимок и уезжает, новый одновременно въезжает
+      const r = old.getBoundingClientRect();
+      const ghost = old.cloneNode(true);
+      ghost.classList.add('screen-ghost', 'sg-' + dir);
+      Object.assign(ghost.style, { position: 'fixed', left: r.left + 'px', top: r.top + 'px', width: r.width + 'px', height: r.height + 'px', animation: '' });
+      ghost.scrollTop = old.scrollTop;
+      document.body.appendChild(ghost);
+      ghost.scrollTop = old.scrollTop;
+      await fn();
+      const now = app.firstElementChild;
+      if (now) { now.style.animation = 'none'; void now.offsetWidth; now.style.animation = ''; now.classList.add('sn-' + dir); }
+      await ZG.sleep(560);
+      ghost.remove();
+      if (now) now.classList.remove('sn-' + dir);
+      return;
+    }
     const t = document.getElementById('transition');
     t.classList.add('on');
     await ZG.sleep(420);

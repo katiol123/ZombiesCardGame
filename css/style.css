@@ -303,12 +303,12 @@ h1, h2, h3 { font-family: var(--font-head); font-weight: 600; letter-spacing: 0.
 .loc .ltokens .avatar.dead { filter: grayscale(1) brightness(.5); border-color: #555; }
 .loc.closed .lart { filter: grayscale(.6) brightness(.6); }
 .loc.closed .lart .art-icon { opacity: .18; }
-.loc .planks { position: absolute; left: 0; right: 0; top: 0; height: 118px; pointer-events: none; }
+.loc .planks { position: absolute; inset: 0; z-index: 2; pointer-events: none; } /* внутри картинки локации — крест по её размеру */
 .plank { position: absolute; left: -8%; width: 116%; height: 18px; border-radius: 3px; background: linear-gradient(180deg, #7a5530, #5a3b1d 60%, #3e2711); box-shadow: 0 3px 6px rgba(0,0,0,.6), inset 0 1px 0 rgba(255,255,255,.15); }
 .plank::before, .plank::after { content: ''; position: absolute; top: 6px; width: 6px; height: 6px; border-radius: 50%; background: #aaa; box-shadow: inset 0 -1px 1px #333; }
 .plank::before { left: 14%; } .plank::after { right: 14%; }
-.plank.p1 { top: 30px; transform: rotate(-9deg); }
-.plank.p2 { top: 66px; transform: rotate(7deg); }
+.plank.p1 { top: calc(50% - 9px); transform: rotate(-14deg); }
+.plank.p2 { top: calc(50% - 9px); transform: rotate(13deg); }
 .loc.closing .plank { animation: plankin .5s var(--ease) both; }
 .loc.closing .plank.p2 { animation-delay: .25s; }
 @keyframes plankin { from { transform: translateY(-80px) rotate(-30deg); opacity: 0; } }
@@ -740,8 +740,7 @@ h1, h2, h3 { font-family: var(--font-head); font-weight: 600; letter-spacing: 0.
   .locs { overflow: visible; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); padding: 12px; gap: 10px; }
   .loc { min-height: 220px; }
   .loc .lart { height: 70px; }
-  .loc .planks { height: 70px; }
-  .plank.p1 { top: 14px; } .plank.p2 { top: 40px; }
+  .plank.p1 { transform: rotate(-21deg); } .plank.p2 { transform: rotate(20deg); }
   .loc .lart .art-icon { font-size: 40px; }
   .side { border-left: 0; border-top: 1px solid var(--edge); max-height: 260px; }
   .party { flex-direction: row; flex-wrap: wrap; }
@@ -1200,10 +1199,18 @@ body.night .guard-art { filter: brightness(.8) saturate(.6); }
 .close-show .cs-art { position: relative; width: min(900px, 92vw); aspect-ratio: 3 / 1; border-radius: 12px; background-size: cover; background-position: center; box-shadow: 0 30px 80px rgba(0,0,0,.8); overflow: hidden; animation: csZoom 2.4s ease-out both; filter: sepia(.25) contrast(1.05); }
 @keyframes csZoom { from { transform: scale(1.06); } to { transform: scale(1); } }
 .close-show .cs-plank { position: absolute; left: -5%; width: 110%; height: 13%; background: linear-gradient(180deg, #6b4a2b, #4a321c); border-top: 2px solid #8a6440; border-bottom: 3px solid #2a1b0e; box-shadow: 0 8px 18px rgba(0,0,0,.6); }
-.close-show .cs-plank.p1 { top: 30%; transform: rotate(-8deg) translateX(-120%); animation: plankIn .32s .25s cubic-bezier(.3,1.4,.5,1) forwards; }
-.close-show .cs-plank.p2 { top: 58%; transform: rotate(6deg) translateX(120%); animation: plankIn2 .32s .55s cubic-bezier(.3,1.4,.5,1) forwards; }
-@keyframes plankIn { to { transform: rotate(-8deg) translateX(0); } }
-@keyframes plankIn2 { to { transform: rotate(6deg) translateX(0); } }
+/* гвозди на досках — как на картинке заколоченной локации; «вбиваются» после того, как доска встала */
+.close-show .cs-plank::before, .close-show .cs-plank::after { content: ''; position: absolute; top: 50%; width: clamp(8px, 1.4vw, 14px); aspect-ratio: 1; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #f2f2f2, #a9a9a9 60%, #6d6d6d); box-shadow: 0 1px 2px rgba(0,0,0,.8), inset 0 -1px 1px #444; transform: translateY(-50%) scale(0); }
+.close-show .cs-plank::before { left: 14%; } .close-show .cs-plank::after { right: 14%; }
+.close-show .cs-plank.p1::before { animation: nailIn .18s .62s cubic-bezier(.3,1.8,.5,1) forwards; }
+.close-show .cs-plank.p1::after { animation: nailIn .18s .74s cubic-bezier(.3,1.8,.5,1) forwards; }
+.close-show .cs-plank.p2::before { animation: nailIn .18s .92s cubic-bezier(.3,1.8,.5,1) forwards; }
+.close-show .cs-plank.p2::after { animation: nailIn .18s 1.04s cubic-bezier(.3,1.8,.5,1) forwards; }
+@keyframes nailIn { 0% { transform: translateY(-50%) scale(2.2); opacity: 0; } 100% { transform: translateY(-50%) scale(1); opacity: 1; } }
+.close-show .cs-plank.p1 { top: 43.5%; transform: rotate(-17deg) translateX(-120%); animation: plankIn .32s .25s cubic-bezier(.3,1.4,.5,1) forwards; }
+.close-show .cs-plank.p2 { top: 43.5%; transform: rotate(16deg) translateX(120%); animation: plankIn2 .32s .55s cubic-bezier(.3,1.4,.5,1) forwards; }
+@keyframes plankIn { to { transform: rotate(-17deg) translateX(0); } }
+@keyframes plankIn2 { to { transform: rotate(16deg) translateX(0); } }
 .close-show .cs-stamp { position: absolute; right: 6%; bottom: 10%; padding: 6px 18px; border: 4px solid #c8322a; color: #e8463b; font-family: var(--font-logo); font-size: clamp(26px, 5vw, 54px); letter-spacing: .06em; transform: rotate(-9deg) scale(2); opacity: 0; animation: stampIn .25s .95s ease-out forwards; background: rgba(0,0,0,.25); }
 @keyframes stampIn { to { transform: rotate(-9deg) scale(1); opacity: .95; } }
 .close-show .cs-name { font-family: var(--font-head); font-size: 22px; letter-spacing: .1em; color: #efe5d2; text-transform: uppercase; }
@@ -1382,3 +1389,28 @@ body:has(#overlay-root > .overlay) #grain, body:has(.enc-ov) #grain { display: n
 .tip-arrow.right svg { transform: rotate(-90deg); }
 .tip-arrow.right { animation-name: tipArrowRight; }
 @keyframes tipArrowRight { 0%, 100% { translate: 0 0; } 50% { translate: -9px 0; } }
+
+/* плавные переходы между экранами: старый экран уезжает снимком, новый въезжает */
+.screen-ghost { z-index: 1900; pointer-events: none; overflow: hidden; }
+.screen-ghost.sg-left { animation: sgLeft .55s cubic-bezier(.5,0,.2,1) forwards !important; }
+.screen-ghost.sg-right { animation: sgRight .55s cubic-bezier(.5,0,.2,1) forwards !important; }
+.screen-ghost.sg-zoom { animation: sgZoom .55s cubic-bezier(.5,0,.2,1) forwards !important; }
+.screen-ghost.sg-out { animation: sgOut .55s cubic-bezier(.5,0,.2,1) forwards !important; }
+.screen.sn-left { animation: snLeft .55s cubic-bezier(.5,0,.2,1) both !important; }
+.screen.sn-right { animation: snRight .55s cubic-bezier(.5,0,.2,1) both !important; }
+.screen.sn-zoom { animation: snZoom .55s cubic-bezier(.5,0,.2,1) both !important; }
+.screen.sn-out { animation: snOut .55s cubic-bezier(.5,0,.2,1) both !important; }
+@keyframes sgLeft { to { transform: translateX(-30%); opacity: 0; } }
+@keyframes sgRight { to { transform: translateX(30%); opacity: 0; } }
+@keyframes sgZoom { to { transform: scale(1.12); opacity: 0; filter: blur(6px); } }
+@keyframes sgOut { to { transform: scale(.9); opacity: 0; filter: blur(4px); } }
+@keyframes snLeft { from { transform: translateX(30%); opacity: 0; } }
+@keyframes snRight { from { transform: translateX(-30%); opacity: 0; } }
+@keyframes snZoom { from { transform: scale(.88); opacity: 0; filter: blur(6px); } }
+@keyframes snOut { from { transform: scale(1.1); opacity: 0; filter: blur(4px); } }
+
+/* полёт карт: из руки в стопки и слоты, из колоды в руку */
+.fly-hand-card { position: fixed; z-index: 2300; pointer-events: none; transform-origin: center; filter: drop-shadow(0 10px 18px rgba(0,0,0,.7)); }
+.fly-hand-card > .card { width: 100% !important; height: 100% !important; transform: none !important; }
+.sl-landed { animation: slLanded .35s ease-out; }
+@keyframes slLanded { from { box-shadow: 0 0 0 2px var(--amber), 0 0 18px rgba(224,166,66,.7); } }

@@ -265,7 +265,7 @@
   D3.hurry = () => { hurry = 6; };
 
   /** Бросок в контейнере. specs: [{ d, v, theme }] */
-  D3.roll = function (container, specs) {
+  D3.roll = function (container, specs, onStart) {
     const s = scene();
     s.dice.forEach((d) => { s.sc.remove(d.mesh); d.dispose(); });
     s.dice = [];
@@ -300,6 +300,7 @@
     D3.last = { frames: len, tries, start: frames.map((f) => f[0].slice(0, 3)), end: frames.map((f) => f[f.length - 1].slice(0, 3)) };
     const speed = Math.max(0.6, 1 / Math.max(ZG.speed || 1, 0.45));
     let last = performance.now(), t = 0;
+    if (onStart) onStart(); // бросок просчитан — кубики начинают движение
     return new Promise((resolve) => {
       const tick = () => {
         const now = performance.now();

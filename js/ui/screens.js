@@ -15,7 +15,7 @@
     app().innerHTML = html;
     return app().firstElementChild;
   };
-  const go = (fn) => ZG.FX.transition(fn);
+  const go = (fn, dir) => ZG.FX.transition(fn, dir);
 
   /* ============================== Главное меню ============================== */
   UI.showTitle = function () {
@@ -196,8 +196,8 @@
       }).join('')}</div>
       <p class="muted" style="margin-top:20px">Склад отряда: ${camp.vault.length} карт · Убито мертвецов: ${camp.stats.kills} · Находок: ${camp.stats.finds} · Потерь: ${camp.stats.deaths} · Сложность: ${S.difficulty === 'hard' ? T('diff_hard') : T('diff_normal')}</p>
     </div></div>`);
-    s.querySelectorAll('[data-m]').forEach((b) => b.addEventListener('click', () => go(() => UI.showBriefing(+b.dataset.m))));
-    s.querySelector('[data-a="camp"]').addEventListener('click', () => go(UI.showCamp));
+    s.querySelectorAll('[data-m]').forEach((b) => b.addEventListener('click', () => go(() => UI.showBriefing(+b.dataset.m), 'zoom')));
+    s.querySelector('[data-a="camp"]').addEventListener('click', () => go(UI.showCamp, 'left'));
     s.querySelector('[data-a="menu"]').addEventListener('click', () => go(UI.showTitle));
     s.querySelector('[data-a="rules"]').addEventListener('click', () => UI.showRules());
   };
@@ -247,7 +247,7 @@
     };
     type();
     s.querySelector('.brief-box').addEventListener('click', (e) => { if (!e.target.closest('.btn')) skip = true; });
-    s.querySelector('[data-back]').addEventListener('click', () => go(UI.showMap));
+    s.querySelector('[data-back]').addEventListener('click', () => go(UI.showMap, 'out'));
     s.querySelector('[data-go]').addEventListener('click', () => {
       skip = true;
       go(() => { G().newMission(idx); G().run(); });
@@ -425,7 +425,7 @@
       if (camp.party.some((p) => p.featsPending > 0) && !(await UI.confirm('Неиспользованный опыт', 'У кого-то остались неиспользованные улучшения. Всё равно выйти?'))) return;
       S.screen = 'map';
       ZG.Save.persist();
-      go(UI.showMap);
+      go(UI.showMap, 'right');
     };
     s.querySelector('[data-done]').addEventListener('click', leave);
     s.querySelector('[data-back]').addEventListener('click', leave);
