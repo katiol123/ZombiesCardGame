@@ -68,13 +68,29 @@
     const s = SIZE[type] || 0.7;
     const V = verts(type).map((v) => v.map((x) => x * s));
     const F = convexFaces(V);
-    const pos = [], uv = [], groups = [], faceUV = [];
+    const pos = [], uv = [], groups = [], faceUV = [], labels = [];
     F.forEach((f, fi) => {
-      const ax = norm(sub(V[f.idx[0]], f.cen)), ay = cross(f.n, ax);
+      let ax = norm(sub(V[f.idx[0]], f.cen)), ay = cross(f.n, ax);
+      // d10: грань — длинный «воздушный змей». Цифру ставим вдоль него: верх цифры смотрит на полюс
+      const pole = type === 'd10' ? f.idx.find((i) => i < 2) : undefined;
+      if (pole !== undefined) {
+        const up = sub(V[pole], f.cen);
+        ay = norm(sub(up, f.n.map((x) => x * dot(up, f.n))));
+        ax = cross(ay, f.n);
+      }
       const pts = f.idx.map((i) => [dot(sub(V[i], f.cen), ax), dot(sub(V[i], f.cen), ay)]);
       const R = Math.max(...pts.map((p) => Math.hypot(p[0], p[1])));
       const toUV = (p) => [0.5 + (p[0] / R) * 0.47, 0.5 + (p[1] / R) * 0.47];
       faceUV.push(f.idx.map((vi, k) => ({ vi, uv: toUV(pts[k]) })));
+      if (pole !== undefined) {
+        // широкая часть грани: между полюсом и поперечной диагональю, ближе к ней
+        const pp = pts[f.idx.indexOf(pole)];
+        const far = pts.reduce((b, p) => (Math.hypot(p[0] - pp[0], p[1] - pp[1]) > Math.hypot(b[0] - pp[0], b[1] - pp[1]) ? p : b), pp);
+        const at = [pp[0] + (far[0] - pp[0]) * 0.56, pp[1] + (far[1] - pp[1]) * 0.56];
+        const uvp = toUV(at);
+        const len = Math.hypot(far[0] - pp[0], far[1] - pp[1]);
+        labels[fi] = { x: uvp[0] * 256, y: (1 - uvp[1]) * 256, px: ((len * 0.27) / R) * 0.47 * 256 * 1.35 };
+      }
       const start = pos.length / 3;
       for (let k = 1; k < f.idx.length - 1; k++) for (const vi of [f.idx[0], f.idx[k], f.idx[k + 1]]) { pos.push(...V[vi]); uv.push(...toUV(pts[f.idx.indexOf(vi)])); }
       groups.push({ start, count: pos.length / 3 - start, fi });
@@ -85,12 +101,12 @@
     groups.forEach((gr) => geo.addGroup(gr.start, gr.count, gr.fi));
     geo.computeVertexNormals();
     const shape = new C.ConvexPolyhedron({ vertices: V.map((v) => new C.Vec3(...v)), faces: F.map((f) => f.idx.slice()) });
-    return (GEO[type] = { V, F, geo, faceUV, shape });
+    return (GEO[type] = { V, F, geo, faceUV, shape, labels });
   }
 
   /* ---------- Тематические текстуры ---------- */
   // wear: blood (бой), dust (поиск), concrete (препятствие), wood (заколотить), glow (стихия), plain
-  function faceCanvas(th, label, d4corners) {
+  function faceCanvas(th, label, d4corners, place) {
     const cv = document.createElement('canvas');
     cv.width = cv.height = 256;
     const g = cv.getContext('2d');
@@ -123,9 +139,11 @@
       g.font = 'bold 56px Oswald, Arial, sans-serif';
       for (const c of d4corners) { g.save(); g.translate(c.x, c.y); g.rotate(c.rot); g.fillText(String(c.v), 0, 0); g.restore(); }
     } else {
-      g.font = `bold ${label >= 10 ? 106 : 128}px Oswald, Arial, sans-serif`;
-      g.fillText(String(label), 128, 136);
-      if (label === 6 || label === 9) g.fillRect(98, 198, 60, 9);
+      const pl = place || { x: 128, y: 136, px: 128 };
+      const px = label >= 10 ? pl.px * 0.83 : pl.px;
+      g.font = `bold ${Math.round(px)}px Oswald, Arial, sans-serif`;
+      g.fillText(String(label), pl.x, pl.y);
+      if (label === 6 || label === 9) g.fillRect(pl.x - px * 0.18, pl.y + px * 0.44, px * 0.36, Math.max(4, px * 0.07));
     }
     const tex = new T.CanvasTexture(cv);
     tex.colorSpace = T.SRGBColorSpace;
@@ -149,7 +167,7 @@
             return { x: 128 + (x - 128) * 0.58, y: 128 + (y - 128) * 0.58, v: die.values[c.vi], rot: Math.atan2(x - 128, -(y - 128)) };
           });
           tex = faceCanvas(th, 0, corners);
-        } else tex = faceCanvas(th, die.values[fi]);
+        } else tex = faceCanvas(th, die.values[fi], null, G.labels && G.labels[fi]);
         if (mats[fi].map) mats[fi].map.dispose();
         mats[fi].map = tex; mats[fi].needsUpdate = true;
       });
@@ -217,7 +235,7 @@
     s.H = 3.5; s.W = Math.max(4.6, s.H * (w / h) * 0.95);
     const fov = (s.cam.fov * Math.PI) / 180;
     const dist = (s.H / 2 + 0.6) / Math.tan(fov / 2);
-    s.cam.position.set(0, dist * 0.94, dist * 0.34);
+    s.cam.position.set(0, dist * 0.99, dist * 0.14); // почти отвесно сверху: верхняя грань читается однозначно
     s.cam.lookAt(0, 0, -0.05);
     s.cam.updateProjectionMatrix();
   }
@@ -309,11 +327,30 @@
         dice.forEach((d, i) => { const f = frames[i][Math.min(k, frames[i].length - 1)]; d.mesh.position.set(f[0], f[1], f[2]); d.mesh.quaternion.set(f[3], f[4], f[5], f[6]); });
         s.r.render(s.sc, s.cam);
         if (k < len - 1 && container.isConnected) requestAnimationFrame(tick);
-        else resolve();
+        else highlight(s, dice, tops, container).then(resolve);
       };
       tick();
     });
   };
+
+  /** После остановки: выпавшая грань подсвечивается, остальные притеняются — сразу видно, что выпало */
+  function highlight(s, dice, tops, container) {
+    const t0 = performance.now(), dur = 260;
+    return new Promise((res) => {
+      const step = () => {
+        const k = Math.min(1, (performance.now() - t0) / dur);
+        dice.forEach((d, i) => d.type !== 'd4' && d.mats.forEach((m, fi) => {
+          if (fi === tops[i].index) {
+            m.emissive = m.emissive || new T.Color(0);
+            m.emissive.set(0xffd9a0); m.emissiveIntensity = 0.16 * k;
+          } else m.color.setScalar(1 - 0.42 * k);
+        }));
+        s.r.render(s.sc, s.cam);
+        if (k < 1 && container.isConnected) requestAnimationFrame(step); else res();
+      };
+      step();
+    });
+  }
 
   /* ---------- Темы ---------- */
   const ELEM = {
