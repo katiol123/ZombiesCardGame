@@ -905,7 +905,8 @@
       const ov = UI.overlay(`<div class="modal panel guard-modal">
         ${art ? `<div class="guard-art" style="background-image:url('${art}')"></div>` : ''}
         <h2>${ZG.icon('hammer')} ${esc(opt.title || 'Перекрыть путь: ' + g.ldef(l).name)}</h2>
-        <div class="mtext">${esc(opt.text || 'Перед боем с Угрозой можно перекрыть эту локацию, чтобы Угрозе некуда было бежать. Награда «Когда заколочено» при этом не срабатывает.')}</div>
+        <div class="mtext">${esc(opt.text || 'Перед боем с Угрозой можно перекрыть эту локацию, чтобы Угрозе некуда было бежать. Проверка — та же, что при заколачивании, со всеми её условиями и штрафом за провал; награда «Когда заколочено» при этом не срабатывает.')}</div>
+        ${info.extra ? `<div class="mtext" style="color:var(--amber)">${esc(info.extra[0].toUpperCase() + info.extra.slice(1))}.</div>` : ''}
         <div class="guard-hero" style="--hc:${hd.color}">${UI.avatar(h.id)}
           <div><b>${esc(hd.name)}</b> <span class="muted">решает и проходит проверку</span>
           <div class="guard-stats"><span>${ZG.icon('cards')} Колода ${h.deck.length}</span><span>Сброс ${h.discard.length}</span><span>${ZG.icon('hand')} Рука ${h.hand.length}</span><span>☣ ${g.infCount(h)}/3</span>${conds ? `<span class="cond-row">${conds}</span>` : ''}</div></div></div>

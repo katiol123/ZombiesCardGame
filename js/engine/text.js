@@ -100,6 +100,17 @@
     return '';
   };
 
+  /** Текст списка эффектов (штраф за провал, проверка при входе и т. п.) */
+  ZG.closeFailText = (list) => (list || []).map((f) => {
+    if (f.damage) return `${f.damage === 'd4' ? '1d4' : f.damage} урона${f.dmgType ? ' (' + ZG.DMG_TYPES[f.dmgType] + ')' : ''}`;
+    if (f.noise) return `шум +${f.noise}`;
+    if (f.cond) return `«${ZG.CONDS[f.cond].name}»`;
+    if (f.summon) return 'приходит мертвец';
+    if (f.clock) return `−${f.clock} Часы`;
+    if (f.toll) return 'сбросьте карту из руки на выбор';
+    return '';
+  }).filter(Boolean).join(', ');
+
   ZG.cardRules = function (def) {
     const lines = [];
     if (def.text) lines.push(def.text);
@@ -158,15 +169,7 @@
       Object.keys(m.acquireDc).forEach((t) => out.push(`Искать ${TYPE_GEN[t]} здесь проще (${m.acquireDc[t]}).`));
     }
     const r = ldef.rules || {};
-    const fxs = (list) => (list || []).map((f) => {
-      if (f.damage) return `${f.damage === 'd4' ? '1d4' : f.damage} урона${f.dmgType ? ' (' + ZG.DMG_TYPES[f.dmgType] + ')' : ''}`;
-      if (f.noise) return `шум +${f.noise}`;
-      if (f.cond) return `«${ZG.CONDS[f.cond].name}»`;
-      if (f.summon) return 'приходит мертвец';
-      if (f.clock) return `−${f.clock} Часы`;
-      if (f.toll) return 'сбросьте карту из руки на выбор';
-      return '';
-    }).filter(Boolean).join(', ');
+    const fxs = ZG.closeFailText;
     if (r.undeadDc) out.push(`Мертвецы здесь +${r.undeadDc}.`);
     if (r.livingDc) out.push(`Люди здесь +${r.livingDc}.`);
     if (r.enemyDmgType) out.push(`Враги здесь бьют: ${ZG.DMG_TYPES[r.enemyDmgType]}.`);
@@ -181,7 +184,7 @@
     if (r.endTurn) out.push(`В конце хода здесь: ${r.endTurn.skills.map(ZG.skillName).join(' / ')} ${r.endTurn.dc}, провал — ${fxs(r.endTurn.fail)}.`);
     if (r.closeCost) out.push(`Чтобы заколотить, сбросьте ${TYPE_GEN[r.closeCost] || r.closeCost}.`);
     if (r.closeTwice) out.push('Заколотить: нужны 2 успешные проверки подряд.');
-    if (r.closeFail) out.push(`Провал попытки заколотить: ${fxs(r.closeFail)}.`);
+    if (r.closeFail) out.push(`Провал попытки заколотить или перекрыть: ${fxs(r.closeFail)}.`);
     return out;
   };
 

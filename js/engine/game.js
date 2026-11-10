@@ -68,7 +68,7 @@
     const c = G.conds(mh);
     const had = Object.keys(c).filter((k) => (keys ? keys.includes(k) : k !== 'detained'));
     had.forEach((k) => delete c[k]);
-    if (had.length) G.log(`${G.hname(mh)}: снято — ${had.map((k) => ZG.CONDS[k].name).join(', ')}.`, 'good');
+    if (had.length) { G.log(`${G.hname(mh)}: снято — ${had.map((k) => ZG.CONDS[k].name).join(', ')}.`, 'good'); if (UI().toast) UI().toast(`${ZG.icon('medkit')} ${ZG.esc(G.hname(mh))}: снято — ${had.map((k) => ZG.esc(ZG.CONDS[k].name)).join(', ')}`, 'loot'); }
     return had.length;
   };
   G.handSizeMh = (mh) => Math.max(2, G.handSize(G.ph(mh)) + ZG.sum((mh.displayed || []).map((c) => (ZG.card(c.id).displayed || {}).hand || 0)));
@@ -411,7 +411,6 @@
     }
     if (sp.raidEvery && m.turn > 1 && m.turn % sp.raidEvery === 0) await G.raid(sp.raidTokens || 3);
     if (old === 'night' && m.phase === 'day') {
-      m.heroes.forEach((h) => { if (G.conds(h).terror) G.clearConds(h, ['terror']); });
       m.locations.forEach((l) => (l.noise = Math.max(0, l.noise - 1)));
       G.log('Утро: шум всех локаций −1.', 'clock');
     }
@@ -557,8 +556,13 @@
         case 'card':
           r = await G.playAction(mh, act.u, act.pi);
           break;
-        case 'end':
+        case 'end': {
+          // обновление руки выбирается сразу, с возможностью вернуться и доиграть карты
+          const pick = await G.refreshPick(mh, true);
+          if (pick === null) break;
+          m.ts.refreshPick = pick;
           return null;
+        }
         default:
       }
       if (r === 'win') return 'win';
@@ -587,17 +591,22 @@
       G.log(`Распад (d4 = ${r}: ${LBL[r]}): захоронено ${gone.length}.`, gone.length ? 'bad' : '');
       if (gone.length) await UI().banner(`Распад: d4 = ${r}`, `${LBL[r]} из сброса захоронены: ${gone.length}`, 'bad');
     }
-    ['vuln', 'doom'].forEach((k) => { if (cs[k]) { cs[k]--; if (!cs[k]) { delete cs[k]; G.log(`${G.hname(mh)}: «${ZG.CONDS[k].name}» проходит.`, 'good'); } } });
     // Обновить руку (как в Pathfinder): можно сбросить любые карты, лишние сверх размера руки — обязательно, затем добрать
     const hs = G.handSizeMh(mh);
-    const ok = (c) => c.id !== 'infection';
-    const extra = Math.max(0, mh.hand.length - hs);
-    if (mh.hand.some(ok)) {
-      const txt = (extra ? `Размер руки — ${hs}: сбросьте лишние (<b>${extra}</b>). ` : '') + `Можно сбросить и любые другие карты — затем рука доберётся до ${hs} из колоды. <b>Колода — это здоровье</b>: в ней сейчас ${mh.deck.length}.`;
-      const us = await UI().pickRange(mh, extra, mh.hand.filter(ok).length, `Обновить руку: ${G.hname(mh)}`, txt, ok);
-      us.forEach((u) => G.moveByMode(mh, u, 'discard'));
-      if (us.length > extra) G.log(`${G.hname(mh)} сбрасывает ${us.length} ${ZG.plural(us.length, 'карту', 'карты', 'карт')} при обновлении руки.`, 'card');
-    }
+    const m = G.M();
+    let us = m.ts && m.ts.refreshPick;
+    if (m.ts) delete m.ts.refreshPick;
+    if (us) {
+      // выбор сделан заранее (кнопкой «Конец хода»); карты могли уйти из руки за конец хода
+      us = us.filter((u) => mh.hand.some((c) => c.u === u));
+      const left = mh.hand.length - us.length - hs;
+      if (left > 0) {
+        const more = await UI().pickRange(mh, left, left, `Обновить руку: ${G.hname(mh)}`, `Размер руки — ${hs}: сбросьте ещё <b>${left}</b>.`, (c) => c.id !== 'infection' && !us.includes(c.u));
+        us = us.concat(more);
+      }
+    } else us = await G.refreshPick(mh, false);
+    us.forEach((u) => G.moveByMode(mh, u, 'discard'));
+    if (us.length) G.log(`${G.hname(mh)} сбрасывает ${us.length} ${ZG.plural(us.length, 'карту', 'карты', 'карт')} при обновлении руки.`, 'card');
     while (mh.hand.length < hs) {
       if (!mh.deck.length) {
         await G.kill(mh, 'exhausted');
@@ -609,10 +618,18 @@
       const c = mh.hand.splice(R.int(mh.hand.length), 1)[0];
       mh.deck.push(c);
       G.log(`Отравление: «${ZG.card(c.id).name}» уходит под низ колоды.`, 'bad');
-      cs.poison--;
-      if (!cs.poison) { delete cs.poison; G.log(`${G.hname(mh)}: яд выветрился.`, 'good'); }
       UI().toast(`${ZG.icon('vial')} Отравление: −1 карта в руке`, 'bad');
     }
+  };
+
+  /** Выбор карт для сброса при обновлении руки. canBack → может вернуть null («Назад», ход продолжается) */
+  G.refreshPick = async function (mh, canBack) {
+    const hs = G.handSizeMh(mh);
+    const ok = (c) => c.id !== 'infection';
+    const extra = Math.max(0, mh.hand.length - hs);
+    if (!mh.hand.some(ok)) return [];
+    const txt = (extra ? `Размер руки — ${hs}: сбросьте лишние (<b>${extra}</b>). ` : '') + `Можно сбросить и любые другие карты — затем рука доберётся до ${hs} из колоды. <b>Колода — это здоровье</b>: в ней сейчас ${mh.deck.length}.`;
+    return UI().pickRange(mh, extra, mh.hand.filter(ok).length, `Обновить руку: ${G.hname(mh)}`, txt, ok, canBack);
   };
 
   /** Состояния в начале хода: Обречённость и Ночной ужас */
@@ -1884,42 +1901,52 @@
   };
 
   /* ============================== Баррикады и угроза ============================== */
-  G.tryClose = async function (mh, loc, fromHench) {
-    G.M().ts.closeTried = true; // одна попытка за ход — в т.ч. сразу после победы над вожаком
-    await UI().tip('close');
+  /** Выполнить условие «При закрытии» локации: цена, проверка (или сжигание карты), двойная проверка, штраф за провал.
+   * Одинаково и для окончательного заколачивания, и для временного перекрытия перед боем с Угрозой (как в Pathfinder). */
+  G.closeAttempt = async function (mh, loc, verb) {
     const lr = G.lrule(loc);
+    const name = G.ldef(loc).name;
+    verb = verb || T('check_close');
     if (lr.closeCost) {
       const t = lr.closeCost;
-      const ok = mh.hand.filter((c) => ZG.card(c.id).type === t);
-      if (!ok.length) {
-        G.log(`Чтобы заколотить «${G.ldef(loc).name}», нужно сбросить ${ZG.T('type_' + t)} — в руке нет.`, 'bad');
+      if (!mh.hand.some((c) => ZG.card(c.id).type === t)) {
+        G.log(`${verb} «${name}»: нужно сбросить ${ZG.T('type_' + t)} — в руке нет.`, 'bad');
         await UI().banner('Нечем заколотить', `Нужно сбросить карту типа «${ZG.T('type_' + t)}»`, 'warn');
-        return null;
+        return { success: false, aborted: true };
       }
-      const us = await UI().pickCards(mh, 1, 'Цена попытки', `Сбросьте карту типа «${ZG.T('type_' + t)}», чтобы попытаться заколотить.`, false, (c) => ZG.card(c.id).type === t);
+      const us = await UI().pickCards(mh, 1, 'Цена попытки', `Сбросьте карту типа «${ZG.T('type_' + t)}», чтобы попытаться: ${verb.toLowerCase()} «${name}».`, false, (c) => ZG.card(c.id).type === t);
       us.forEach((u) => G.moveByMode(mh, u, 'discard'));
     }
     let res;
     if (lr.closeBurn) {
-      // заколачивается без проверки: сожгите карту из руки на выбор
       const ok = (c) => c.id !== 'infection';
       if (!mh.hand.some(ok)) {
         await UI().banner('Нечем заколотить', 'Нужно сжечь карту из руки', 'warn');
-        return null;
+        return { success: false, aborted: true };
       }
-      const us = await UI().pickCards(mh, 1, `Заколотить: ${G.ldef(loc).name}`, 'Без проверки: сожгите карту из руки на выбор.', false, ok);
-      us.forEach((u) => { const c = mh.hand.find((x) => x.u === u); G.moveByMode(mh, u, 'burn'); G.log(`${G.hname(mh)} сжигает «${ZG.card(c.id).name}», чтобы заколотить «${G.ldef(loc).name}».`, 'card'); });
+      const us = await UI().pickCards(mh, 1, `${verb}: ${name}`, 'Без проверки: сожгите карту из руки на выбор.', false, ok);
+      us.forEach((u) => { const c = mh.hand.find((x) => x.u === u); G.moveByMode(mh, u, 'burn'); G.log(`${G.hname(mh)} сжигает «${ZG.card(c.id).name}»: ${verb.toLowerCase()} «${name}».`, 'card'); });
       res = { success: true };
-    } else res = await G.doCheck(mh, G.closeCheck(loc));
+    } else res = await G.doCheck(mh, G.closeCheck(loc, `${verb}: ${name}${lr.closeTwice ? ' (1/2)' : ''}`));
     if (res.success && lr.closeTwice) {
       await UI().banner('Ещё одна доска', 'Нужна вторая успешная проверка', 'warn');
-      res = await G.doCheck(mh, G.closeCheck(loc, `${T('check_close')}: ${G.ldef(loc).name} (2/2)`));
+      res = await G.doCheck(mh, G.closeCheck(loc, `${verb}: ${name} (2/2)`));
     }
     if (!res.success) {
-      G.log(`Не удалось заколотить «${G.ldef(loc).name}».`, 'bad');
-      if (lr.closeFail) return await G.applyFx(mh, loc, lr.closeFail);
-      return null;
+      G.log(`${verb} «${name}» не удалось.`, 'bad');
+      if (lr.closeFail) {
+        const r = await G.applyFx(mh, loc, lr.closeFail);
+        return { success: false, fx: r };
+      }
     }
+    return { success: res.success };
+  };
+
+  G.tryClose = async function (mh, loc, fromHench) {
+    G.M().ts.closeTried = true; // одна попытка за ход — в т.ч. сразу после победы над вожаком
+    await UI().tip('close');
+    const at = await G.closeAttempt(mh, loc, T('check_close'));
+    if (!at.success) return at.fx || null;
     // Если в колоде притаилась Угроза — локация остаётся открытой, всё остальное изгоняется
     const villains = loc.deck.filter((i) => ZG.card(i.id).type === 'boss');
     if (villains.length) {
@@ -2036,14 +2063,18 @@
         const lc = G.ldef(l).close;
         const gck = G.closeCheck(l, `Перекрыть: ${G.ldef(l).name}`);
         const ginfo = G.closeInfo(h, l, `Перекрыть: ${G.ldef(l).name}`);
-        ginfo.line = `${lc.skills.map(ZG.skillName).join(' / ')} ${gck.dc}`; // перекрытие — всегда обычная проверка
+        const glr = G.lrule(l);
+        if (glr.closeCost && !h.hand.some((c) => ZG.card(c.id).type === glr.closeCost)) { G.log(`${G.hname(h)} не может перекрыть «${G.ldef(l).name}»: нужно сбросить ${ZG.T('type_' + glr.closeCost)}.`, 'bad'); continue; }
+        ginfo.extra = [glr.closeCost ? `цена: сбросить ${ZG.T('type_' + glr.closeCost)}` : '', glr.closeTwice ? 'нужны 2 успешные проверки подряд' : '', glr.closeFail ? 'провал: ' + ZG.closeFailText(glr.closeFail) : ''].filter(Boolean).join('; ');
         const c = ui.guardAsk
           ? await ui.guardAsk(h, l, ginfo)
           : await ui.choose({ title: 'Перекрыть путь', text: `${G.hname(h)}: перекрыть «${G.ldef(l).name}»?`, options: [{ label: 'Перекрыть', primary: true }, { label: 'Нет' }] });
         ui.trayHero = null;
         ui.renderBoard();
         if (c !== 0) continue;
-        const res = await G.doCheck(h, G.closeCheck(l, `Перекрыть: ${G.ldef(l).name}`));
+        // та же проверка, что и при заколачивании: цена, двойная проверка, штраф за провал; награды нет
+        const res = await G.closeAttempt(h, l, 'Перекрыть');
+        if (h.dead || G.M().over) break;
         if (res.success) {
           guarded.push(li);
           G.log(`«${G.ldef(l).name}» временно перекрыта.`, 'good');
@@ -2152,8 +2183,11 @@
       });
     });
     const scars = [];
+    const lostHeroes = [];
     m.heroes.forEach((mh) => {
       if (!mh.dead) return;
+      // обращённый в мертвеца герой потерян для кампании навсегда
+      if (mh.turned) { lostHeroes.push(mh.id); return; }
       const ph = G.ph(mh);
       const sc = R.pick(ZG.SCARS);
       ph.scars.push({ id: sc.id, attr: sc.attr, hand: sc.hand });
@@ -2161,15 +2195,28 @@
       camp.stats.deaths++;
     });
     let reward = null;
+    const xpGot = [];
     if (win) {
       if (!camp.done[m.idx] && def.reward) { vault.push(def.reward.card); reward = def.reward.card; }
-      if (!camp.done[m.idx]) camp.party.forEach((ph) => (ph.featsPending = (ph.featsPending || 0) + 1));
+      // опыт — каждому выжившему, если он ещё не получал его за эту миссию (погибший сможет получить при повторе)
+      camp.party.forEach((ph) => {
+        if (!ph.xpDone) ph.xpDone = camp.done.map((d, i) => (d ? i : -1)).filter((i) => i >= 0); // старые сохранения
+        const mh = m.heroes.find((h) => h.id === ph.id);
+        if (!mh || mh.dead || ph.xpDone.includes(m.idx)) return;
+        ph.xpDone.push(m.idx);
+        ph.featsPending = (ph.featsPending || 0) + 1;
+        xpGot.push(ph.id);
+      });
       camp.done[m.idx] = true;
       camp.progress = Math.max(camp.progress, m.idx + 1);
     }
     camp.vault = vault;
+    if (lostHeroes.length) {
+      camp.party = camp.party.filter((ph) => !lostHeroes.includes(ph.id));
+      camp.lost = (camp.lost || []).concat(lostHeroes);
+    }
     const burnedIds = []; m.heroes.forEach((mh) => (mh.burned || []).forEach((c) => burnedIds.push(c.id)));
-    S.lastResult = { burned: burnedIds, win, reason, idx: m.idx, stats: m.stats, turns: m.turn, scars, loot, reward, dead: m.heroes.filter((h) => h.dead).map((h) => h.id) };
+    S.lastResult = { burned: burnedIds, win, reason, idx: m.idx, stats: m.stats, turns: m.turn, scars, loot, reward, xpGot, lostHeroes, partyGone: !camp.party.length, dead: m.heroes.filter((h) => h.dead).map((h) => h.id) };
     S.mission = null;
     S.screen = 'result';
     G.ensureDecks();
