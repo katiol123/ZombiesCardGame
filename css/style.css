@@ -1362,3 +1362,9 @@ body:has(#overlay-root > .overlay) #grain, body:has(.enc-ov) #grain { display: n
 @keyframes trayOpen { to { height: 240px; } }
 .dice-tray canvas { display: block; }
 @media (max-width: 900px) { @keyframes trayOpen { to { height: 190px; } } }
+
+/* недоступный вариант розыгрыша: перечёркнут и не нажимается */
+.mode-pop .choice.off { opacity: .55; cursor: not-allowed; }
+.mode-pop .choice.off b, .mode-pop .choice.off span { text-decoration: line-through; text-decoration-color: rgba(214,60,47,.85); text-decoration-thickness: 2px; }
+.mode-pop .choice.off:hover { background: inherit; transform: none; }
+.mode-pop .choice em { display: block; font-style: normal; font-size: 11.5px; color: #ff9c86; margin-top: 3px; }

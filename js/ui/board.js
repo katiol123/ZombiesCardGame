@@ -343,7 +343,7 @@
     await UI.tip('modes');
     return new Promise((resolve) => {
       document.querySelectorAll('.mode-pop').forEach((x) => x.remove());
-      const el = ZG.html(`<div class="mode-pop panel">${opts.map((o, i) => `<button class="choice" data-i="${i}"><b>${esc(o.label)}</b>${o.sub ? `<span>${esc(o.sub)}</span>` : ''}</button>`).join('')}</div>`);
+      const el = ZG.html(`<div class="mode-pop panel">${opts.map((o, i) => `<button class="choice ${o.disabled ? 'off' : ''}" data-i="${i}" ${o.disabled ? 'aria-disabled="true"' : ''}><b>${esc(o.label)}</b>${o.sub ? `<span>${esc(o.sub)}</span>` : ''}${o.reason ? `<em>${esc(o.reason)}</em>` : ''}</button>`).join('')}</div>`);
       document.body.appendChild(el);
       const r = anchor.getBoundingClientRect();
       const h = el.offsetHeight;
@@ -355,7 +355,7 @@
       const done = (v) => { el.remove(); document.removeEventListener('pointerdown', outside, true); resolve(v); };
       const outside = (e) => { if (!el.contains(e.target)) done(null); };
       setTimeout(() => document.addEventListener('pointerdown', outside, true), 0);
-      el.querySelectorAll('.choice').forEach((b) => b.addEventListener('click', () => done(opts[+b.dataset.i].pi)));
+      el.querySelectorAll('.choice').forEach((b) => b.addEventListener('click', () => { if (!opts[+b.dataset.i].disabled) done(opts[+b.dataset.i].pi); }));
     });
   };
 
@@ -794,6 +794,17 @@
       const sel = new Set();
       // те же правила, что и в движке (броня — только физический урон и т.д.)
       const isRed = (p, d) => p.on === 'damage' && G().playBlocks(p, opts, d);
+      /** Почему эта защита сейчас не работает */
+      const whyNot = (p, d) => {
+        if (opts.noReduce) return 'Уязвимость: этот урон нельзя уменьшить';
+        if (p.physical && opts.dmgType) return `не защищает от урона «${ZG.DMG_TYPES[opts.dmgType]}» — только от физического`;
+        if (p.nonPhysical && !opts.dmgType) return 'защищает только от огня, кислоты, электричества и холода';
+        if (p.onlyType && !p.onlyType.includes(opts.dmgType)) return `защищает только от урона «${p.onlyType.map((t) => ZG.DMG_TYPES[t]).join(', ')}»`;
+        if (opts.pierceShield && G().isShield(d)) return 'враг пробивает щит';
+        if (opts.pierceLight && G().lightArmor(d)) return 'враг пробивает лёгкую броню';
+        if (p.combatOnly && !opts.combat) return 'работает только в бою';
+        return 'сейчас не действует';
+      };
       ZG.FX.flash('red');
       ZG.FX.shake();
       ZG.Audio.synth('hit');
@@ -842,8 +853,15 @@
             return render();
           }
           const red = (d.plays || []).map((p, pi) => (isRed(p, d) ? pi : -1)).filter((x) => x >= 0);
-          if (red.length && !plays.some((x) => G().blockSlot(ZG.card(x.id)) === G().blockSlot(d)) && !sel.has(u)) {
-            const opts2 = red.map((pi) => ({ label: T('mode_' + d.plays[pi].mode), sub: ZG.playText(d.plays[pi]), pi }));
+          const slotBusy = plays.some((x) => G().blockSlot(ZG.card(x.id)) === G().blockSlot(d));
+          const dmgPlays = (d.plays || []).map((p, pi) => (p.on === 'damage' ? pi : -1)).filter((x) => x >= 0);
+          // у карты есть защита — показать все её варианты; неработающие перечёркнуты, с причиной
+          if (dmgPlays.length && !sel.has(u)) {
+            const opts2 = dmgPlays.map((pi) => {
+              const ok = red.includes(pi) && !slotBusy;
+              const reason = ok ? '' : red.includes(pi) ? 'уже сыграна защита этого типа' : whyNot(d.plays[pi], d);
+              return { label: T('mode_' + d.plays[pi].mode), sub: ZG.playText(d.plays[pi]), pi, disabled: !ok, reason };
+            });
             opts2.push({ label: 'Сбросить как урон', sub: '', pi: -2 });
             const pi = await UI.modePop(el, opts2);
             if (pi == null) return;
