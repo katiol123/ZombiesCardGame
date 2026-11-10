@@ -108,7 +108,7 @@
   };
 
   ZG.Settings = {
-    data: { speed: 'normal', fx: true, tips: true, music: true, sfx: true, musicVol: 0.5, sfxVol: 0.8 },
+    data: { speed: 'normal', fx: true, tips: true, music: true, sfx: true, musicVol: 0.5, sfxVol: 0.8, dice3d: true },
     load() {
       try { Object.assign(this.data, JSON.parse(store.get(SET) || '{}')); } catch (e) { /* ignore */ }
       this.apply();

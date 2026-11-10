@@ -704,18 +704,45 @@
     ZG.Audio.sfx('dice');
     panel.querySelectorAll('[data-skill],[data-unplay]').forEach((el) => (el.style.pointerEvents = 'none'));
     const bottom = panel.querySelector('#check-bottom');
-    bottom.innerHTML = `<div class="total-line">${T('rolling')}</div>`;
     const diceEl = panel.querySelector('#dice');
-    diceEl.innerHTML = res.rolls.map((r) => `<div class="die ${r.d} rolling"><div class="die-body"><span>?</span></div><small>${esc(r.src.slice(0, 12))}</small></div>`).join('');
+    // 3D-кубики: карты руки плавно уходят, полоса кубиков плавно раскрывается вниз в стол,
+    // и только потом кубики катятся по физике и ложатся результатом игры
+    const use3d = ZG.Dice3D && ZG.Dice3D.available() && ZG.speed >= 0.2 && !document.documentElement.classList.contains('no-fx');
+    if (use3d) {
+      // карты руки плавно тают, затем место под ними плавно схлопывается
+      bottom.style.height = bottom.offsetHeight + 'px';
+      bottom.style.overflow = 'hidden';
+      bottom.style.transition = 'opacity .38s ease';
+      void bottom.offsetHeight;
+      bottom.style.opacity = '0';
+      await ZG.sleep(380);
+      bottom.style.transition = 'height .34s ease';
+      bottom.style.height = '44px';
+      await ZG.sleep(340);
+      bottom.style.transition = 'opacity .25s ease';
+      bottom.innerHTML = `<div class="total-line">${T('rolling')}</div>`;
+      bottom.style.opacity = '1'; bottom.style.height = ''; bottom.style.overflow = '';
+      const tray = ZG.html('<div class="dice-tray" title="Нажмите, чтобы ускорить"></div>');
+      diceEl.parentElement.insertBefore(tray, diceEl);
+      diceEl.innerHTML = '';
+      tray.addEventListener('click', () => ZG.Dice3D.hurry());
+      const hc = ZG.HEROES[ctx.mh.id].color;
+      const specs = res.rolls.map((r) => ({ d: r.d, v: r.v, theme: ZG.Dice3D.theme(r.src, ctx.check.kind, ctx, hc) }));
+      // на телефоне стол может оказаться ниже края экрана — плавно подвести к нему
+      if (window.innerWidth <= 900) setTimeout(() => tray.scrollIntoView({ block: 'center', behavior: 'smooth' }), 120);
+      await ZG.sleep(480); // стол раскрывается вниз
+      try { await ZG.Dice3D.roll(tray, specs); } catch (e) { console.error(e); }
+    } else bottom.innerHTML = `<div class="total-line">${T('rolling')}</div>`;
+    diceEl.innerHTML = res.rolls.map((r) => `<div class="die ${r.d} ${use3d ? '' : 'rolling'}"><div class="die-body"><span>?</span></div><small>${esc(r.src.slice(0, 12))}</small></div>`).join('');
     const els = Array.from(diceEl.querySelectorAll('.die'));
-    let spin = true;
+    let spin = !use3d;
     (async () => {
       while (spin) {
         els.forEach((e, i) => { if (e.classList.contains('rolling')) e.querySelector('span').textContent = 1 + Math.floor(Math.random() * ZG.sides(res.rolls[i].d)); });
         await new Promise((r) => setTimeout(r, 60));
       }
     })();
-    await ZG.sleep(700);
+    if (!use3d) await ZG.sleep(700);
     let run = res.pool.bonus;
     for (let i = 0; i < els.length; i++) {
       const e = els[i];
@@ -725,7 +752,7 @@
       if (res.rolls[i].v === ZG.sides(res.rolls[i].d)) { e.classList.add('max'); ZG.FX.burstAt(e, 'spark', 14); }
       run += res.rolls[i].v;
       bottom.querySelector('.total-line').innerHTML = `Итого: <b>${run}</b> против ${res.dc}`;
-      await ZG.sleep(180);
+      await ZG.sleep(use3d ? 90 : 180);
     }
     spin = false;
     await ZG.sleep(250);

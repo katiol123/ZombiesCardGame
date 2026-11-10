@@ -507,6 +507,7 @@
     const st = ZG.Settings.data;
     const ov = UI.overlay(`<div class="modal panel"><div class="page-head" style="margin-bottom:6px"><h1 style="font-size:28px">${T('settings')}</h1><button class="btn icon ghost" data-x>${ZG.icon('x')}</button></div>
       <div class="set-row"><span>${T('set_speed')}</span><div class="seg" data-k="speed"><button data-v="normal">${T('normal')}</button><button data-v="fast">${T('fast')}</button></div></div>
+      <div class="set-row"><span>3D-кубики</span><div class="seg" data-k="dice3d"><button data-v="1">${T('on')}</button><button data-v="0">${T('off')}</button></div></div>
       <div class="set-row"><span>${T('set_fx')}</span><div class="seg" data-k="fx"><button data-v="1">${T('on')}</button><button data-v="0">${T('off')}</button></div></div>
       <div class="set-row"><span>Музыка</span><div class="seg" data-k="music"><button data-v="1">${T('on')}</button><button data-v="0">${T('off')}</button></div></div>
       <div class="set-row"><span>Громкость музыки</span><input type="range" min="0" max="100" data-vol="musicVol" style="width:180px"></div>
