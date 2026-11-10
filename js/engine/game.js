@@ -429,9 +429,19 @@
       case 'rain':
         m.locations.forEach((l) => (l.noise = Math.max(0, l.noise - 1)));
         break;
-      case 'hunger':
-        m.heroes.filter((h) => !h.dead && h.deck.length).forEach((h) => h.discard.push(h.deck.shift()));
+      case 'hunger': {
+        // «Голод»: ходящий герой сбрасывает Консервы из руки; нет Консервов — Обречённость
+        const food = mh && !mh.dead ? mh.hand.find((c) => c.id === 'cannedfood') : null;
+        if (food) {
+          G.moveByMode(mh, food.u, 'discard');
+          G.note(`Голод: ${G.hname(mh)} съедает Консервы.`, 'card');
+          m.turnEvent.detail = `${G.hname(mh)} съедает Консервы.`;
+        } else if (mh && !mh.dead) {
+          m.turnEvent.detail = `${G.hname(mh)}: есть нечего — Обречённость.`;
+          await G.addCond(mh, 'doom');
+        }
         break;
+      }
       case 'howl': {
         const open = G.openLocs();
         if (open.length) {
