@@ -31,7 +31,8 @@
       missions: ['m1', 'm6', 'm9', 'm10'], // находится только там, где есть лаборатории и аптеки
       acquire: { skills: ['medicine', 'dex'], dc: 6 },
       plays: [
-        { on: 'check', mode: 'discard', kind: COMBAT, weapon: ['medicine', 'dex'], dice: ['d8'] },
+        { on: 'check', mode: 'recharge', kind: COMBAT, weapon: ['medicine', 'dex'], dice: ['d6'] },
+        { on: 'check', mode: 'discard', kind: COMBAT, weapon: ['medicine', 'dex'], dice: ['d8'], bonus: 1 },
       ],
       flavor: 'Серная кислота из лабораторного шкафа. Марина знает, куда колоть.' },
     { id: 'acidcoat', type: 'item', name: 'Едкая смазка', tier: 1, icon: 'biohazard', traits: ['Кислота', 'Самоделка'],
@@ -75,7 +76,7 @@
     { id: 'machete', type: 'weapon', name: 'Мачете', tier: 1, icon: 'sword', traits: ['Ближнее', 'Тихое'],
       acquire: { skills: ['str', 'melee'], dc: 7 },
       plays: [
-        { on: 'check', mode: 'recharge', kind: COMBAT, weapon: ['str', 'dex', 'melee'], dice: ['d8'], bonus: 1, perResolve: 2 },
+        { on: 'check', mode: 'recharge', kind: COMBAT, weapon: ['str', 'dex', 'melee'], dice: ['d6'], bonus: 1, perResolve: 2 },
         { on: 'check', mode: 'recharge', kind: ['event'], dice: ['d6'] },
       ],
       flavor: 'Садовый инвентарь мистера Оуэнса.' },
@@ -238,11 +239,11 @@
       flavor: 'Считай каждый.' },
     { id: 'painkillers', type: 'consumable', name: 'Обезболивающее', tier: 0, icon: 'pill', traits: ['Медицина'],
       acquire: { skills: ['medicine', 'wit', 'persuasion'], dc: 4 },
-      plays: [{ on: 'damage', mode: 'burn', reduce: 2 }],
+      plays: [{ on: 'damage', mode: 'burn', reduce: 3 }],
       flavor: 'Боль никуда не уходит. Просто ждёт.' },
     { id: 'energy', type: 'consumable', name: 'Энергетик', tier: 0, icon: 'bolt', traits: [],
       acquire: { skills: ['survival', 'persuasion'], dc: 3 },
-      plays: [{ on: 'check', mode: 'burn', kind: 'any', dice: ['d4'], bonus: 1 }],
+      plays: [{ on: 'check', mode: 'burn', kind: 'any', dice: ['d6'], bonus: 1 }],
       flavor: '«Взрывной вкус граната». Тёплый.' },
     { id: 'cannedfood', type: 'consumable', name: 'Консервы', tier: 0, icon: 'can', traits: ['Еда'],
       acquire: { skills: ['survival', 'persuasion'], dc: 3 },
@@ -788,7 +789,10 @@
   ]);
   U('m3', [
     { id: 'flaregun', type: 'weapon', name: 'Ракетница', icon: 'flare', traits: ['Дальнее', 'Огонь'], acquire: { skills: ['dex', 'survival'], dc: 6 },
-      plays: [{ on: 'check', mode: 'discard', kind: COMBAT, weapon: ['dex', 'shooting'], dice: ['d8'], bonus: 1, noise: 2 }], flavor: 'Красная звезда. Горячая.' },
+      plays: [
+        { on: 'check', mode: 'recharge', kind: COMBAT, weapon: ['dex', 'shooting'], dice: ['d6'], noise: 2 },
+        { on: 'check', mode: 'discard', kind: COMBAT, weapon: ['dex', 'shooting'], dice: ['d8'], bonus: 1, noise: 2 },
+      ], flavor: 'Красная звезда. Горячая.' },
     { id: 'climbgear', type: 'item', name: 'Альпинистское снаряжение', icon: 'tower', traits: [], acquire: { skills: ['str', 'survival'], dc: 6 },
       plays: [{ on: 'check', mode: 'reveal', kind: NONCOMBAT, dice: ['d6'] }], flavor: 'Карабины, верёвка, страховка. Вверх — безопаснее.' },
     { id: 'batterypack', type: 'consumable', name: 'Аккумулятор вышки', icon: 'bolt', traits: ['Электричество'], acquire: { skills: ['tech'], dc: 6 },
