@@ -437,6 +437,12 @@
     { id: 'raider', type: 'enemy', living: true, name: 'Рейдер', tier: 2, icon: 'raider', dc: 9, before: { damage: 1 }, noiseOnEncounter: 1,
       text: 'Человек. До проверки: 1 урон (стреляет первым), шум локации +1.',
       flavor: 'Банда Кейна. Красная бандана — их знак.' },
+    { id: 'refugee', type: 'enemy', living: true, name: 'Беженец с топором', tier: 0, icon: 'axe', dc: 6, theft: true, pierceShield: true,
+      flavor: '«Это моё! Всё моё!»' },
+    { id: 'deserterz', type: 'enemy', living: true, name: 'Дезертир', tier: 1, icon: 'gun', dc: 8, before: { damage: 1 }, noiseOnEncounter: 2, armor: 1,
+      flavor: '«Я свою войну закончил. А вы свою — сейчас».' },
+    { id: 'cultist', type: 'enemy', living: true, name: 'Сектант «Последнего дня»', tier: 1, icon: 'candle', dc: 8, before: { sermon: { skills: ['will'], dc: 6 } }, weak: { 'Огонь': 'd6' },
+      flavor: 'Балахон пропитан лампадным маслом. Он улыбается.' },
   ]);
 
   /* ============================== ВОЖАКИ И УГРОЗЫ ============================== */
@@ -470,7 +476,7 @@
       flavor: 'Бывший помощник шерифа. Теперь закон — он.' },
 
     { id: 'veteran', type: 'henchman', name: 'Ветеран-мертвец', tier: 2, icon: 'ghost', dc: 12, bite: true, armor: 2, deathBlast: { skills: ['dex'], dc: 6, die: 'd4', minus: 1 },
-      text: 'Вожак. Граната на поясе: когда его побеждают, каждый герой в локации проходит проверку Ловкости 6 — при провале 1d4−1 урона огнём. Победив его, можно сразу попытаться заколотить локацию.',
+      text: 'Вожак. Граната: когда его побеждают, все герои здесь — Ловкость 6, провал — 1d4−1 урона огнём. Победив, можно сразу заколотить локацию.',
       flavor: 'Медали звенят при каждом шаге.' },
     { id: 'colossus', type: 'boss', name: 'Колосс', tier: 2, icon: 'bossskull', dc: 13, bite: true, dmgAdd: 1, hits: 2,
       text: 'Угроза. Нужно победить в двух проверках подряд. Урон от него +1.',
@@ -606,8 +612,8 @@
     { id: 'assaultrifle', type: 'weapon', name: 'Винтовка полковника', tier: 9, reward: true, icon: 'shotgun', traits: ['Огнестрел', 'Трофей'],
       acquire: { skills: ['dex'], dc: 4 },
       plays: [
-        { on: 'check', mode: 'recharge', kind: COMBAT, weapon: ['dex', 'shooting'], dice: ['d10', 'd6'], noise: 3 },
-        { on: 'check', mode: 'discard', kind: COMBAT, weapon: ['dex', 'shooting'], dice: ['d10', 'd10', 'd6'], noise: 4 },
+        { on: 'check', mode: 'recharge', kind: COMBAT, weapon: ['dex', 'shooting'], dice: ['d10', 'd6'], noise: 3, text: 'Перезарядите для боя (Ловкость / Стрельба): +1d10+1d6, шум +3.' },
+        { on: 'check', mode: 'discard', kind: COMBAT, weapon: ['dex', 'shooting'], dice: ['d10', 'd10', 'd6'], noise: 4, text: 'Или сбросьте: +2d10+1d6, шум +4.' },
       ],
       flavor: 'Табельный номер спилен. Приклад исцарапан засечками.' },
     { id: 'minerlamp', type: 'item', name: 'Лампа горноспасателя', tier: 9, reward: true, icon: 'flashlight', traits: ['Свет', 'Трофей'],
@@ -664,8 +670,8 @@
     { id: 'guardz', type: 'henchman', name: 'Охрана «Хейл Биомед»', tier: 3, icon: 'ghost', dc: 15, bite: true, armor: 2, alarm: 1,
       text: 'Вожак. Тревога: если вы не победили его, сбросьте карту Часов. Победив его, можно сразу попытаться заколотить локацию.', flavor: 'Пропуск уровня 4. Доступ куда угодно.' },
     { id: 'patientzero', type: 'boss', name: 'Чистильщик', tier: 3, icon: 'shield', dc: 17, hits: 2, secondPerHench: { v: -1, label: 'Пропуска охраны' },
-      text: 'Угроза, машина. Нужно победить в двух проверках подряд. Вторая проверка −1 за каждую побеждённую в этой миссии Охрану «Хейл Биомед»: их пропуска открывают сервисный люк экзоскелета.',
-      flavor: 'Экзоскелет зачистки «Хейл Биомед». Оператор внутри умер неделю назад. Протокол продолжает работу.' },
+      text: 'Угроза, машина. Победите дважды подряд. Вторая проверка −1 за каждую убитую Охрану «Хейл Биомед».',
+      flavor: 'Экзоскелет зачистки. Оператор умер неделю назад. Протокол работает.' },
   ]);
 
 

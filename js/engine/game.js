@@ -1050,7 +1050,19 @@
     // до проверки
     if (def.before && def.before.damage) {
       G.log(`${def.name} атакует первым: ${def.before.damage} урона.`, 'bad');
-      await G.damage(mh, def.before.damage, { source: def.name, combat: true, dmgType: G.enemyDmgType(def, loc) });
+      await G.damage(mh, def.before.damage, { source: def.name, combat: true, dmgType: G.enemyDmgType(def, loc), pierceShield: !!def.pierceShield });
+    }
+    if (def.before && def.before.sermon && !mh.dead) {
+      // «Проповедь»: проверка Воли; провал — Ночной ужас, враг без боя замешивается в колоду локации
+      const sc = def.before.sermon;
+      await ui.banner('Проповедь', `${def.name} начинает говорить — и вы слушаете`, 'warn');
+      const res = await G.doCheck(mh, { kind: 'event', skills: sc.skills, dc: sc.dc, base: sc.dc, mods: [], card: def, cardId: def.id, title: `${def.name}: не слушать проповедь` });
+      if (!res.success) {
+        await G.addCond(mh, 'terror');
+        if (!loc.closed) { loc.deck.push(inst); R.shuffle(loc.deck); }
+        G.note(`Проповедь сломила ${ZG.HEROES[mh.id].acc || G.hname(mh)}. ${def.name} уходит в темноту без боя — и вернётся.`, 'bad');
+        return null;
+      }
     }
     if (def.before && def.before.infectCheck) {
       const ic = def.before.infectCheck;
@@ -1166,7 +1178,7 @@
     if (isBoss) m.guarded = [];
     const diff = ck.dc - res.total;
     const dmg = Math.min(def.halfDmg ? Math.floor(diff / 2) : diff, G.dmgCap(def)) + (def.dmgAdd || 0);
-    const taken = await G.damage(mh, dmg, { source: def.name, bite: def.bite, combat: true, dmgType: G.enemyDmgType(def, loc), pierceLight: !!def.pierceLight });
+    const taken = await G.damage(mh, dmg, { source: def.name, bite: def.bite, combat: true, dmgType: G.enemyDmgType(def, loc), pierceLight: !!def.pierceLight, pierceShield: !!def.pierceShield });
     if ((def.bite && G.lastHit >= 2) || def.infectOnFail) await G.infect(mh); // укус заражает, только если 2+ урона прошло через броню и блоки
     if (def.inflict && taken > 0 && !mh.dead) {
       // inflictCheck: сначала проверка, состояние — только при провале
@@ -1699,6 +1711,7 @@
   /* ============================== Урон, инфекция, смерть ============================== */
   G.passiveReduce = (mh, opts) => ZG.sum((mh.displayed || []).map((c) => {
     if (opts && opts.pierceLight && G.lightArmor(ZG.card(c.id))) return 0;
+    if (opts && opts.pierceShield && G.isShield(ZG.card(c.id))) return 0;
     const dd = ZG.card(c.id).displayed;
     return dd && dd.reduce && (!dd.combatOnly || (opts && opts.combat)) ? dd.reduce : 0;
   }));
@@ -1706,7 +1719,9 @@
   G.blockSlot = (def) => (def.type === 'item' && (def.traits || []).includes('Щит') ? 'shield' : def.type);
   /** Лёгкая броня: «Броня» без «Тяжёлой брони» */
   G.lightArmor = (def) => !!def && (def.traits || []).includes('Броня') && !(def.traits || []).includes('Тяжёлая броня');
-  G.playBlocks = (pl, opts, def) => !(pl.nonPhysical && !(opts && opts.dmgType)) && !(pl.physical && opts && opts.dmgType) && !(opts && opts.noReduce) && !(opts && opts.pierceLight && G.lightArmor(def)) && (!pl.onlyType || pl.onlyType.includes(opts && opts.dmgType)) && (!pl.combatOnly || (opts && opts.combat));
+  /** Щит: снаряжение с признаком «Щит» (топор и подобное его пробивает) */
+  G.isShield = (def) => !!def && (def.traits || []).includes('Щит');
+  G.playBlocks = (pl, opts, def) => !(opts && opts.pierceShield && G.isShield(def)) && !(pl.nonPhysical && !(opts && opts.dmgType)) && !(pl.physical && opts && opts.dmgType) && !(opts && opts.noReduce) && !(opts && opts.pierceLight && G.lightArmor(def)) && (!pl.onlyType || pl.onlyType.includes(opts && opts.dmgType)) && (!pl.combatOnly || (opts && opts.combat));
   G.damageNeeded = function (mh, n, plays, opts) {
     let reduce = 0;
     let removed = 0;

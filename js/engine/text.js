@@ -121,9 +121,11 @@
       if (def.before && def.before.damage) lines.push(`До проверки: ${def.before.damage} урон.`);
       if (def.noEvade) lines.push('От него нельзя уклониться.');
 
+      if (def.before && def.before.sermon) lines.push(`Проповедь: до боя проверка: ${skillsList(def.before.sermon.skills)} ${def.before.sermon.dc}. Провал — «Ночной ужас», а ${ZG.gf(def, 'он', 'она', 'оно')} без боя замешивается в колоду локации.`);
       if (def.theft) lines.push(`Если вы не победили ${ZG.gf(def, 'его', 'её', 'его')}, ${ZG.gf(def, 'он', 'она', 'оно')} забирает случайную карту из руки.`);
     }
-    if (ZG.isEnemy(def) && def.armor) lines.push(`Бронежилет: −${def.armor} к броску в бою любым физическим ударом — ближним, дальним и без оружия. Огонь, кислота, электричество и холод его не замечают.`);
+    if (ZG.isEnemy(def) && def.armor) lines.push(`Бронежилет: −${def.armor} к броску против физических ударов (огонь, кислота, электричество и холод проходят).`);
+    if (ZG.isEnemy(def) && def.pierceShield) lines.push('Пробивает щит: щиты не блокируют его урон.');
     if (ZG.isEnemy(def) && def.strArmor && !(def.text || '').includes('Каска')) lines.push(`Каска: −${def.strArmor} к броску в проверках Силой и Рукопашной.`);
     if (ZG.isEnemy(def) && def.nightDc && !(def.text || '').includes('Ночная охота')) lines.push(`Ночная охота: ночью сложность ещё +${def.nightDc}.`);
     if (ZG.isEnemy(def) && def.dmgType) lines.push(`Урон: ${ZG.DMG_TYPES[def.dmgType]}.`);
